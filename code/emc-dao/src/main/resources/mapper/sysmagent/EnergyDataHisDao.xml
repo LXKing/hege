@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.mdc.dao.EnergyDataHisDao">
+    <resultMap id="BaseResultMap" type="com.huak.mdc.model.EnergyDataHis">
+        <constructor>
+            <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR"/>
+            <arg column="COLLECT_ID" javaType="java.lang.String" jdbcType="VARCHAR"/>
+            <arg column="COLLECT_NUM" javaType="java.lang.Double" jdbcType="DOUBLE"/>
+            <arg column="COLLECT_TIME" javaType="java.lang.String" jdbcType="VARCHAR"/>
+            <arg column="ISCHANGE" javaType="java.lang.Byte" jdbcType="TINYINT"/>
+            <arg column="CHANGE_NUM" javaType="java.lang.Double" jdbcType="DOUBLE"/>
+            <arg column="ISPRESTORE" javaType="java.lang.Byte" jdbcType="TINYINT"/>
+            <arg column="PRESTORE_NUM" javaType="java.lang.Double" jdbcType="DOUBLE"/>
+        </constructor>
+    </resultMap>
+    <sql id="Base_Column_List">
+    ID, COLLECT_ID, COLLECT_NUM, COLLECT_TIME, ISCHANGE, CHANGE_NUM, ISPRESTORE, PRESTORE_NUM
+  </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_emc_energy_data_his
+        where ID = #{id,jdbcType=VARCHAR}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_energy_data_his
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+
+    <insert id="insertSelective" parameterType="com.huak.mdc.model.EnergyDataHis">
+        insert into t_emc_energy_data_his
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                ID,
+            </if>
+            <if test="collectId != null">
+                COLLECT_ID,
+            </if>
+            <if test="collectNum != null">
+                COLLECT_NUM,
+            </if>
+            <if test="collectTime != null">
+                COLLECT_TIME,
+            </if>
+            <if test="ischange != null">
+                ISCHANGE,
+            </if>
+            <if test="changeNum != null">
+                CHANGE_NUM,
+            </if>
+            <if test="isprestore != null">
+                ISPRESTORE,
+            </if>
+            <if test="prestoreNum != null">
+                PRESTORE_NUM,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="collectId != null">
+                #{collectId,jdbcType=VARCHAR},
+            </if>
+            <if test="collectNum != null">
+                #{collectNum,jdbcType=DOUBLE},
+            </if>
+            <if test="collectTime != null">
+                #{collectTime,jdbcType=VARCHAR},
+            </if>
+            <if test="ischange != null">
+                #{ischange,jdbcType=TINYINT},
+            </if>
+            <if test="changeNum != null">
+                #{changeNum,jdbcType=DOUBLE},
+            </if>
+            <if test="isprestore != null">
+                #{isprestore,jdbcType=TINYINT},
+            </if>
+            <if test="prestoreNum != null">
+                #{prestoreNum,jdbcType=DOUBLE},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.huak.mdc.model.EnergyDataHis">
+        update t_emc_energy_data_his
+        <set>
+            <if test="collectId != null">
+                COLLECT_ID = #{collectId,jdbcType=VARCHAR},
+            </if>
+            <if test="collectNum != null">
+                COLLECT_NUM = #{collectNum,jdbcType=DOUBLE},
+            </if>
+            <if test="collectTime != null">
+                COLLECT_TIME = #{collectTime,jdbcType=VARCHAR},
+            </if>
+            <if test="ischange != null">
+                ISCHANGE = #{ischange,jdbcType=TINYINT},
+            </if>
+            <if test="changeNum != null">
+                CHANGE_NUM = #{changeNum,jdbcType=DOUBLE},
+            </if>
+            <if test="isprestore != null">
+                ISPRESTORE = #{isprestore,jdbcType=TINYINT},
+            </if>
+            <if test="prestoreNum != null">
+                PRESTORE_NUM = #{prestoreNum,jdbcType=DOUBLE},
+            </if>
+        </set>
+        where ID = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <select id="findBqHis" parameterType="com.huak.mdc.model.EnergyDataHis" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_emc_energy_data_his
+        where COLLECT_ID = #{collectId,jdbcType=VARCHAR} AND  COLLECT_TIME = #{collectTime,jdbcType=VARCHAR}
+    </select>
+
+    <select id="findQqHis" parameterType="com.huak.mdc.model.EnergyDataHis" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_emc_energy_data_his
+        where COLLECT_ID = #{collectId,jdbcType=VARCHAR} AND  COLLECT_TIME <![CDATA[ < ]]> #{collectTime,jdbcType=VARCHAR}
+        ORDER BY COLLECT_TIME DESC limit 1
+    </select>
+
+    <select id="findHqHis" parameterType="com.huak.mdc.model.EnergyDataHis" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_emc_energy_data_his
+        where COLLECT_ID = #{collectId,jdbcType=VARCHAR} AND  COLLECT_TIME <![CDATA[ > ]]> #{collectTime,jdbcType=VARCHAR}
+        ORDER BY COLLECT_TIME ASC limit 1
+    </select>
+
+</mapper>

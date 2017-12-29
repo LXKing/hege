@@ -1,0 +1,995 @@
+<!doctype html>
+<html lang="zh-CN">
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="renderer" content="webkit">
+		<title>项目后评估-项目详情</title>
+		<meta name="description" content="">
+		<meta name="keywords" content="">
+
+		<!-- bootstrap & fontawesome -->
+		<link rel="stylesheet" href="assets/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="assets/css/font-awesome.css" />
+
+		<!-- text fonts -->
+		<link rel="stylesheet" href="assets/css/ace-fonts.css" />
+
+		<!-- ace styles -->
+		<link rel="stylesheet" href="assets/css/ace.css" class="ace-main-stylesheet" id="main-ace-style" />
+
+		<!-- page specific plugin styles -->
+		<link rel="stylesheet" href="css/huarestyle.css" />
+		<link rel="stylesheet" href="css/homemian.css" />
+		<link rel="stylesheet" href="css/dark.css" />
+		<!--[if lte IE 9]>
+		<link rel="stylesheet" href="assets/css/ace-part2.css" class="ace-main-stylesheet" />
+	<![endif]-->
+
+		<!--[if lte IE 9]>
+	  <link rel="stylesheet" href="assets/css/ace-ie.css" />
+	<![endif]-->
+
+		<!-- ace settings handler -->
+		<script src="assets/js/ace-extra.js"></script>
+
+		<!-- HTML5shiv and Respond.js for IE8 to support HTML5 elements and media queries -->
+		<!--[if lte IE 8]>
+		<script src="assets/js/html5shiv.js"></script>
+		<script src="assets/js/respond.js"></script>
+	<![endif]-->
+		<!--[if lt IE 9]>
+		<script src="js/Bsie/selectivizr.js"></script>
+	<![endif]-->
+
+	</head>
+
+	<body>
+		<div id="header">
+			<div class="changeface"></div>
+			<!--顶部导航条-->
+			<div id="navbar" class="navbar navbar-default">
+				<script type="text/javascript">
+					try {
+						ace.settings.check('navbar', 'fixed')
+					} catch(e) {}
+				</script>
+				<div class="navbar-container" id="navbar-container">
+					<!--<button type="button" class="navbar-toggle menu-toggler pull-left" id="menu-toggler" data-target="#sidebar">
+					<span class="sr-only">Toggle sidebar</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>-->
+					<div class="navbar-header pull-left">
+						<a href="index.html" class="navbar-brand">
+							<img src="img/logo.png" width="296" height="31" alt="华热能源管控" />
+						</a>
+					</div>
+					<div class="navbar-buttons navbar-header pull-right" role="navigation">
+						<ul class="nav ace-nav" id="ace-nav">
+							<li class="navlh">
+								<a href="index.html">
+									<div class="icon-hm"></div>
+									<p>首页</p>
+								</a>
+							</li>
+							<li class="navlh ">
+								<a href="energy_analysis.html">
+									<div class="icon-nh"></div>
+									<p>能耗分析</p>
+								</a>
+							</li>
+							<li class="navlh">
+								<a href="#">
+									<div class="icon-cb"></div>
+									<p>成本管控</p>
+								</a>
+							</li>
+							<li class="navlh">
+								<a href="#">
+									<div class="icon-tp"></div>
+									<p>碳排管理</p>
+								</a>
+							</li>
+							<li class="navlh">
+								<a href="alarm_mgr.html">
+									<div class="icon-bj"></div>
+									<p>报警管理</p>
+								</a>
+							</li>
+							<li class="navlh">
+								<a href="project_assess.html">
+									<div class="icon-pg"></div>
+									<p>项目后评估</p>
+								</a>
+							</li>
+							<li class="navlh">
+								<a href="#">
+									<div class="icon-aq"></div>
+									<p>安全与后台</p>
+								</a>
+							</li>
+
+							<li class="tijian bordertopnone">
+								<a href="#">
+									<img src="img/tijian.png" alt="" />
+								</a>
+							</li>
+
+							<li class="tianqi clearfix bordertopnone">
+								<div class="right-tianqi">
+									<span id="date_today" class="date_today"></span>
+									<iframe name="tianqiiframe" id="tianqiiframe" src="http://i.tianqi.com/index.php?c=code&id=99&color=%23a3abb8&icon=3&num=1" width="120" height="32" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"></iframe>
+								</div>
+
+							</li>
+							<li class="light-blue bordertopnone">
+								<a data-toggle="dropdown" href="#" class="dropdown-toggle">
+									<span class="navline-left"></span>
+									<img class="nav-user-photo" src="img/manager.png" alt="管理员" />
+									<span class="user-info">管理员
+								</span>
+									<i class="ace-icon fa fa-caret-down"></i>
+								</a>
+
+								<!--<ul class="user-menu dropdown-menu-right dropdown-menu dropdown-yellow dropdown-caret dropdown-close">
+								<li>
+									<a href="#">
+										<i class="ace-icon fa fa-cog"></i>
+										Settings
+									</a>
+								</li>
+	
+								<li>
+									<a href="profile.html">
+										<i class="ace-icon fa fa-user"></i>
+										Profile
+									</a>
+								</li>
+	
+								<li class="divider"></li>
+	
+								<li>
+									<a href="#">
+										<i class="ace-icon fa fa-power-off"></i>
+										Logout
+									</a>
+								</li>
+							</ul>-->
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="main-container">
+
+			<!--面包屑导航-->
+			<div class="bread-crumb row no-margin">
+				<a class="goback" href="project_assess.html">返回上级</a>
+				当前位置：
+				<a href="project_assess.html">[<var class="xmhpg">项目后评估</var>]</a>
+				<span style="color: #666;">&gt;</span>
+				<a href="javascript:;">项目详情</a>
+			</div>
+			<!--标题-->
+			<div class="titbox clearfix">
+				<div class="pull-left yuce-tit xiangqing-tit">项目详情 <small class="font-sm">PROJECT DETAILS</small></div>
+			</div>
+			<div class="main-box row">
+				<div class="left-sm col-md-3 col-sm-12">
+					<div class="detail-subtit" id="projectName"></div>
+					<table class="table-nob">
+						<tbody>
+							<tr>
+								<td class="tb-label">项目编号</td>
+								<td id="projectNumber"></td>
+							</tr>
+							<tr>
+								<td class="tb-label">项目内容</td>
+								<td id="projectContent"></td>
+							</tr>
+							<tr>
+								<td class="tb-label">项目状态</td>
+								<td>
+									<div id="projectState" class="complete-box">已完成</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<div class="line-gray-auto"></div>
+					<table class="table-nob">
+						<tbody>
+							<tr>
+								<td class="tb-label">开始时间</td>
+								<td id="startDate"></td>
+							</tr>
+							<tr>
+								<td class="tb-label">结束时间</td>
+								<td id="endDate"></td>
+							</tr>
+							<tr>
+								<td class="tb-label">实施目的</td>
+								<td id="implemenPurpose"></td>
+							</tr>
+							<tr>
+								<td class="tb-label">负责人</td>
+								<td id="personinCharge"></td>
+							</tr>
+						</tbody>
+					</table>
+					<div class="line-gray-auto"></div>
+					<table class="table-nob table-nob-smp">
+						<tbody>
+							<tr>
+								<td class="tb-label">改前能耗</td>
+								<td class="tb-label">改后能耗</td>
+							</tr>
+							<tr>
+								<td class="num-textlg"><span class="num-textlg-blue" id="beforeEnergy"></span> <span class="fs14">GJ</span></td>
+								<td><span id="afterEnergy" class="num-textlg-green"></span><span class="num-textsm-green" id="changeRate"></span></td>
+							</tr>
+						</tbody>
+					</table>
+					<div class="line-gray-auto"></div>
+					<dl class="evaluate">
+						<dt class="tb-label">项目评价</dt>
+						<dd id="projectEvaluate">
+							[
+							<a class="more-dd" href="">更多</a>]
+						</dd>
+					</dl>
+				</div>
+				<div class="right-lg col-md-9 col-sm-12">
+					<div class="tit-border">节能目标值</div>
+					<div class="row no-margin main-jieneng">
+						<div class="col-md-4 col-sm-12">
+							<div class="jn-box">
+								<i class="icon-water"></i>
+								<div class="jn-text">
+									<div class="jn-text-up">水能耗</div>
+									<div><span class="jn-text-down" id="numEnergyW"></span><span class="song-sm">GJ</span><span class="song-sm-sub" id="changeRateW"></span></div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4 col-sm-12">
+							<div class="jn-box">
+								<i class="icon-electric"></i>
+								<div class="jn-text">
+									<div class="jn-text-up">电能耗</div>
+									<div><span class="jn-text-down" id="numEnergyE"></span><span class="song-sm">GJ</span><span class="song-sm-sub" id="changeRateE"></span></div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4 col-sm-12">
+							<div class="jn-box">
+								<i class="icon-heat"></i>
+								<div class="jn-text">
+									<div class="jn-text-up">热能耗</div>
+									<div><span class="jn-text-down" id="numEnergyH"></span><span class="song-sm">GJ</span><span class="song-sm-sub" id="changeRateH"></span></div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="line-gray-lg"></div>
+					<div class="tit-border">改造前后能耗对比</div>
+					<div class="row no-margin charts-box">
+						<div class="col-md-6 col-sm-12 mt15">
+							<div id="shuinh" style="width: 100%;height: 100%;min-height: 220px;"></div>
+						</div>
+						<div class="col-md-6 col-sm-12 mt15">
+							<div id="shuinhz" style="width: 100%;height: 100%;min-height: 220px;"></div>
+						</div>
+					</div>
+					<div class="line-gray-md"></div>
+					<div class="row no-margin charts-box">
+						<div class="col-md-6 col-sm-12 mt15">
+							<div id="diannh" style="width: 100%;height: 100%;min-height: 220px;"></div>
+						</div>
+						<div class="col-md-6 col-sm-12 mt15">
+							<div id="diannhz" style="width: 100%;height: 100%;min-height: 220px;"></div>
+						</div>
+					</div>
+					<div class="line-gray-lg"></div>
+					<div class="tit-border">关联站点信息</div>
+					<div class="col-xs-12 main-table no-padding">
+						<table class="table table-striped table-bordered table-hover pgtable">
+							<thead>
+								<tr>
+									<td width="10%">
+										<div class="text-left">编号</div>
+									</td>
+									<td width="25%">
+										<div class="text-left">名称</div>
+									</td>
+									<td width="25%">
+										<div class="text-left">所属单位</div>
+									</td>
+									<td width="25%">
+										<div class="text-left">所属服务站</div>
+									</td>
+									<td width="15%">
+										<div class="text-left">管理类型</div>
+									</td>
+								</tr>
+							</thead>
+							<tbody id="siteTable">
+								<!--<tr>
+								<td><div class="text-left">1649</div></td>
+								<td><div class="text-left">翠微路24号站</div></td>
+								<td><div class="text-left">西八里中心</div></td>
+								<td><div class="text-left">西八里中心</div></td>
+								<td><div class="text-left">代管</div></td>
+							</tr>
+							<tr>
+								<td><div class="text-left">1649</div></td>
+								<td><div class="text-left">翠微路24号站</div></td>
+								<td><div class="text-left">西八里中心</div></td>
+								<td><div class="text-left">西八里中心</div></td>
+								<td><div class="text-left">代管</div></td>
+							</tr>-->
+
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="energy_black clearfix">
+			<a href="javascript:history.back(-1);" class="block pull-left"><img src="img/images/btn01.png" alt="上级" /></a>
+			<a href="index.html" class="block pull-left"><img src="img/images/btn02.png" alt="首页" /></a>
+			<a href="javascript:;" id="returnTop" class="block pull-left"><img src="img/images/btn03.png" alt="顶部" /></a>
+		</div>
+		<div id="footer">
+			<!--footerload加载-->
+		</div>
+
+		<script src="js/jquery/jquery.min.js"></script>
+		<script src="js/echarts/echarts3/echarts.min.js"></script>
+		<script src="assets/js/bootstrap.min.js"></script>
+		<script src="js/My97DatePicker/WdatePicker.js"></script>
+
+		<script src="js/public.js"></script>
+		<script src="js/navscript.js"></script>
+		<script>
+			startTime("#date_today");
+		</script>
+
+		<!-- inline scripts related to this page -->
+		<script>
+			$(function() {
+
+				//$("#header").load("header.html",function(){});
+				$("#footer").load("footer.html", function() {});
+			})
+
+			$.ajax({
+				url: "json/3-1.json",
+				type: "GET",
+				dataType: "json",
+				error: function(request) {
+					alert("Connection error");
+				},
+				success: function(data) {
+					$("#projectName").html(data.data.projectName);
+					$("#projectNumber").html(data.data.projectNumber);
+					$("#projectContent").html(data.data.projectContent);
+					$("#projectState").html(data.data.projectState);
+					$("#startDate").html(data.data.startDate);
+					$("#endDate").html(data.data.endDate);
+					$("#implemenPurpose").html(data.data.implemenPurpose);
+					$("#personinCharge").html(data.data.personinCharge);
+					$("#beforeEnergy").html(data.data.beforeEnergy);
+					$("#afterEnergy").html(data.data.afterEnergy);
+					/*改后能耗比*/
+					var afterEnergyNum = "GJ " + "(" + data.data.changeRate;
+					afterEnergyNum += "%";
+					if(data.data.changeRateState == "1") {
+						afterEnergyNum += "↑)";
+					} else {
+						afterEnergyNum += "↓)";
+					}
+					$("#changeRate").html(afterEnergyNum);
+
+					$("#projectEvaluate").html(data.data.projectEvaluate);
+				}
+			});
+
+			$.ajax({
+				url: "json/3-2.json",
+				type: "GET",
+				dataType: "json",
+				error: function(request) {
+					alert("Connection error");
+				},
+				success: function(data) {
+					/*水能耗*/
+					$("#numEnergyW").text(data.data.targetValue.water.numEnergy);
+					var afterEnergyNum = " (" + data.data.targetValue.water.changeRate;
+					afterEnergyNum += "%";
+					if(data.data.targetValue.water.changeRateState == "1") {
+						afterEnergyNum += "↑)";
+					} else {
+						afterEnergyNum += "↓)";
+					}
+					$("#changeRateW").text(afterEnergyNum);
+					/*电能耗*/
+					$("#numEnergyE").text(data.data.targetValue.electric.numEnergy);
+					var afterEnergyNum = " (" + data.data.targetValue.electric.changeRate;
+					afterEnergyNum += "%";
+					if(data.data.targetValue.electric.changeRateState == "1") {
+						afterEnergyNum += "↑)";
+					} else {
+						afterEnergyNum += "↓)";
+					}
+					$("#changeRateE").text(afterEnergyNum);
+					/*热能耗*/
+					$("#numEnergyH").text(data.data.targetValue.heat.numEnergy);
+					$("#numEnergyE").text(data.data.targetValue.electric.numEnergy);
+					var afterEnergyNum = " (" + data.data.targetValue.heat.changeRate;
+					afterEnergyNum += "%";
+					if(data.data.targetValue.heat.changeRateState == "1") {
+						afterEnergyNum += "↑)";
+					} else {
+						afterEnergyNum += "↓)";
+					}
+					$("#changeRateH").text(afterEnergyNum);
+
+					var html = "";
+					$.each(data.data.siteTable, function(index, siteTable) {
+						html += "<tr>" + "<td>" + "<div class='text-left'>" + siteTable.sitetNumber + "</div>" + "</td>";
+						html += "<td>" + "<div class='text-left'>" + siteTable.siteName + "</div>" + "</td>";
+						html += "<td>" + "<div class='text-left'>" + siteTable.subordinateUnit + "</div>" + "</td>";
+						html += "<td>" + "<div class='text-left'>" + siteTable.serviceStation + "</div>" + "</td>";
+						var managementName;
+						if(siteTable.managementType == "1") {
+							managementName = "代管";
+						} else {
+							managementName = "统管";
+						}
+						html += "<td>" + "<div class='text-left'>" + managementName + "</div>" + "</td>";
+						html += "</tr>";
+					});
+					$("#siteTable").append(html);
+				}
+			});
+
+			$.ajax({
+				url: "json/3-3.json",
+				type: "GET",
+				dataType: "json",
+				error: function(request) {
+					alert("Connection error");
+				},
+				success: function(data) {
+					shuinhFun(data.data.water.waterEnergy, data.data.water.yearDate);
+					diannhFun(data.data.electric.electricEnergy, data.data.electric.yearDate);
+					shuinhzFun(data.data.water.waterEnergy, data.data.water.yearDate);
+					diannhzFun(data.data.electric.electricEnergy, data.data.electric.yearDate);
+				}
+			});
+
+			var shuinh;
+			var diannh;
+			var shuinhz;
+			var diannhz;
+			/*水能耗--折线图*/
+			function shuinhFun(datalist, datelist) {
+				$("#shuinh").empty();
+				shuinh = echarts.init(document.getElementById('shuinh'));
+				var option = {
+					tooltip: {
+						trigger: 'axis'
+					},
+					legend: {
+						right: '20px',
+						data: ['改造后', '改造前'],
+						selectedMode: false,
+						textStyle: {
+							color: '#666',
+							fontStyle: 'normal',
+							fontWeight: 'lighter',
+							fontFamily: '微软雅黑',
+							fontSize: 12,
+						}
+					},
+					grid: {
+						left: '20',
+						top: '35',
+						right: '40',
+						bottom: '10',
+						containLabel: true
+					},
+					xAxis: {
+						type: 'category',
+						boundaryGap: false,
+						axisTick: {
+							show: false
+						},
+						splitLine: {
+							show: false,
+						},
+						splitArea: {
+							show: true
+						},
+						axisLine: {
+							show: true,
+							lineStyle: {
+								color: '#9a9a9b'
+							}
+						},
+						axisLabel: {
+							show: true,
+							textStyle: {
+								color: '#666',
+								fontFamily: 'arial',
+							}
+						},
+						data: datelist
+
+					},
+					yAxis: {
+						type: 'value',
+						name: '水能耗 (单位: 万m3)',
+						nameLocation: 'end',
+						nameGap: 15,
+						nameTextStyle: {
+							color: '#666',
+							fontStyle: 'normal',
+							fontWeight: 'normal',
+							fontFamily: '微软雅黑',
+							fontSize: 12,
+						},
+						axisTick: {
+							show: false
+						},
+						axisLine: {
+							show: true,
+							lineStyle: {
+								color: '#9a9a9b'
+							}
+						},
+						splitLine: {
+							show: false,
+							lineStyle: {
+								color: '#e8e8e8',
+								type: 'dashed'
+							}
+						},
+						axisLabel: {
+							show: true,
+							textStyle: {
+								color: '#666',
+								fontFamily: 'arial'
+							}
+						},
+					},
+					color: ['#32bbb6', '#c2ccd3'],
+					series: []
+				}
+				$.each(datalist, function(index, data) {
+					var typeName = data.typeName;
+					var typeLine = "";
+					if(index == 0) {
+						typeLine = "solid";
+					}
+					if(index == 1) {
+						typeLine = "dashed";
+					}
+					var item = {
+						name: typeName,
+						type: 'line',
+						symbol: 'circle',
+						smooth: false,
+						lineStyle: {
+							normal: {
+								type: typeLine
+							}
+						},
+						data: data.waterEnergyDetail
+					}
+					option.series.push(item);
+				});
+				shuinh.setOption(option);
+			}
+
+			/*电能耗--折线图*/
+			function diannhFun(datalist, datelist) {
+				$("#diannh").empty();
+				diannh = echarts.init(document.getElementById('diannh'));
+				var option = {
+					tooltip: {
+						trigger: 'axis'
+					},
+					legend: {
+						right: '20px',
+						data: ['改造后', '改造前'],
+						selectedMode: false,
+						textStyle: {
+							color: '#666',
+							fontStyle: 'normal',
+							fontWeight: 'lighter',
+							fontFamily: '微软雅黑',
+							fontSize: 12,
+						}
+					},
+					grid: {
+						left: '20',
+						top: '35',
+						right: '40',
+						bottom: '10',
+						containLabel: true
+					},
+					xAxis: {
+						type: 'category',
+						boundaryGap: false,
+						axisTick: {
+							show: false
+						},
+						splitLine: {
+							show: false,
+						},
+						splitArea: {
+							show: true
+						},
+						axisLine: {
+							show: true,
+							lineStyle: {
+								color: '#9a9a9b'
+							}
+						},
+						axisLabel: {
+							show: true,
+							textStyle: {
+								color: '#666',
+								fontFamily: 'arial',
+							}
+						},
+						data: datelist
+
+					},
+					yAxis: {
+						type: 'value',
+						name: '电能耗 (单位: 万m3)',
+						nameLocation: 'end',
+						nameGap: 15,
+						nameTextStyle: {
+							color: '#666',
+							fontStyle: 'normal',
+							fontWeight: 'normal',
+							fontFamily: '微软雅黑',
+							fontSize: 12,
+						},
+						axisTick: {
+							show: false
+						},
+						axisLine: {
+							show: true,
+							lineStyle: {
+								color: '#9a9a9b'
+							}
+						},
+						splitLine: {
+							show: false,
+							lineStyle: {
+								color: '#e8e8e8',
+								type: 'dashed'
+							}
+						},
+						axisLabel: {
+							show: true,
+							textStyle: {
+								color: '#666',
+								fontFamily: 'arial'
+							}
+						},
+					},
+					color: ['#32bbb6', '#c2ccd3'],
+					series: []
+				}
+				$.each(datalist, function(index, data) {
+					var typeName = data.typeName;
+					var typeLine = "";
+					if(index == 0) {
+						typeLine = "solid";
+					}
+					if(index == 1) {
+						typeLine = "dashed";
+					}
+					var item = {
+						name: typeName,
+						type: 'line',
+						symbol: 'circle',
+						smooth: false,
+						lineStyle: {
+							normal: {
+								type: typeLine
+							}
+						},
+						data: data.electricEnergyDetail
+					}
+					option.series.push(item);
+				});
+				diannh.setOption(option);
+			}
+
+			/*水能耗--柱状图*/
+			function shuinhzFun(datalist, datelist) {
+				$("#shuinhz").empty();
+				shuinhz = echarts.init(document.getElementById('shuinhz'));
+				var option = {
+					tooltip: {
+						trigger: 'axis',
+						axisPointer: {
+							type: 'cross',
+							crossStyle: {
+								color: '#666'
+							}
+						}
+					},
+					legend: {
+						data: ['改造前', '改造后'],
+						right: '20px',
+						textStyle: {
+							color: '#666',
+							fontStyle: 'normal',
+							fontWeight: 'lighter',
+							fontFamily: '微软雅黑',
+							fontSize: 12,
+						}
+					},
+					grid: {
+						left: '20',
+						top: '35',
+						right: '40',
+						bottom: '10',
+						containLabel: true
+					},
+					xAxis: [{
+						type: 'category',
+						data: datelist,
+						axisTick: {
+							show: false
+						},
+						axisLine: {
+							show: true,
+							lineStyle: {
+								color: '#9a9a9b'
+							}
+						},
+						splitLine: {
+							show: false,
+							lineStyle: {
+								color: '#e8e8e8',
+								type: 'dashed'
+							}
+						},
+						axisPointer: {
+							type: 'shadow'
+						},
+						axisLabel: {
+							show: true,
+							textStyle: {
+								color: '#666'
+							}
+						}
+					}],
+					yAxis: [{
+						type: 'value',
+						name: '水能耗 (单位: 万m3)',
+						axisTick: {
+							show: false
+						},
+						nameTextStyle: {
+							color: '#666',
+							fontStyle: 'normal',
+							fontWeight: 'normal',
+							fontFamily: '微软雅黑',
+							fontSize: 12,
+						},
+						splitArea: {
+							show: true
+						},
+						axisLine: {
+							show: true,
+							lineStyle: {
+								color: '#9a9a9b'
+							}
+						},
+						splitLine: {
+							show: false,
+							lineStyle: {
+								color: '#e8e8e8',
+								type: 'dashed'
+							}
+						},
+						axisLabel: {
+							show: true,
+							textStyle: {
+								color: '#666'
+							}
+						}
+					}],
+					grid: {
+						left: 60,
+						top: 60,
+						right: 60,
+						bottom: 30
+					},
+					series: []
+				}
+				$.each(datalist, function(index, data) {
+					var typeName = data.typeName;
+					var color = "";
+					var positionVal = 'left';
+					if(index == 0) {
+						color = "#32bbb6";
+					}
+					if(index == 1) {
+						color = "#a1b1c5";
+						positionVal = 'right';
+					}
+
+					var item = {
+						name: typeName,
+						type: 'bar',
+						barWidth: '20',
+						itemStyle: {
+							normal: {
+								color: color
+							}
+						},
+						data: data.waterEnergyDetail
+					}
+					option.series.push(item);
+				});
+				shuinhz.setOption(option);
+			}
+
+			/*电能耗--柱状图*/
+			function diannhzFun(datalist, datelist) {
+				$("#diannhz").empty();
+				diannhz = echarts.init(document.getElementById('diannhz'));
+				var option = {
+					tooltip: {
+						trigger: 'axis',
+						axisPointer: {
+							type: 'cross',
+							crossStyle: {
+								color: '#666'
+							}
+						}
+					},
+					legend: {
+						data: ['改造前', '改造后'],
+						right: '20px',
+						textStyle: {
+							color: '#666',
+							fontStyle: 'normal',
+							fontWeight: 'lighter',
+							fontFamily: '微软雅黑',
+							fontSize: 12,
+						}
+					},
+					grid: {
+						left: '20',
+						top: '35',
+						right: '40',
+						bottom: '10',
+						containLabel: true
+					},
+					xAxis: [{
+						type: 'category',
+						data: datelist,
+						axisTick: {
+							show: false
+						},
+						axisLine: {
+							show: true,
+							lineStyle: {
+								color: '#9a9a9b'
+							}
+						},
+						splitLine: {
+							show: false,
+							lineStyle: {
+								color: '#e8e8e8',
+								type: 'dashed'
+							}
+						},
+						axisPointer: {
+							type: 'shadow'
+						},
+						axisLabel: {
+							show: true,
+							textStyle: {
+								color: '#666'
+							}
+						}
+					}],
+					yAxis: [{
+						type: 'value',
+						name: '电能耗 (单位: 万m3)',
+						axisTick: {
+							show: false
+						},
+						nameTextStyle: {
+							color: '#666',
+							fontStyle: 'normal',
+							fontWeight: 'normal',
+							fontFamily: '微软雅黑',
+							fontSize: 12,
+						},
+						splitArea: {
+							show: true
+						},
+						axisLine: {
+							show: true,
+							lineStyle: {
+								color: '#9a9a9b'
+							}
+						},
+						splitLine: {
+							show: false,
+							lineStyle: {
+								color: '#e8e8e8',
+								type: 'dashed'
+							}
+						},
+						axisLabel: {
+							show: true,
+							textStyle: {
+								color: '#666'
+							}
+						}
+					}],
+					grid: {
+						left: 60,
+						top: 60,
+						right: 60,
+						bottom: 30
+					},
+					series: []
+				}
+				$.each(datalist, function(index, data) {
+					var typeName = data.typeName;
+					var color = "";
+					var positionVal = 'left';
+					if(index == 0) {
+						color = "#32bbb6";
+					}
+					if(index == 1) {
+						color = "#a1b1c5";
+						positionVal = 'right';
+					}
+
+					var item = {
+						name: typeName,
+						type: 'bar',
+						barWidth: '20',
+						itemStyle: {
+							normal: {
+								color: color
+							}
+						},
+						data: data.electricEnergyDetail
+					}
+					option.series.push(item);
+				});
+				diannhz.setOption(option);
+			}
+
+			window.onresize = function() {
+				shuinh.resize();
+				diannh.resize();
+				shuinhz.resize();
+				diannhz.resize();
+			}
+		</script>
+	</body>
+
+</html>

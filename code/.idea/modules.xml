@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/emc.iml" filepath="$PROJECT_DIR$/emc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/emc-common/emc-common.iml" filepath="$PROJECT_DIR$/emc-common/emc-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/emc-dao/emc-dao.iml" filepath="$PROJECT_DIR$/emc-dao/emc-dao.iml" />
+      <module fileurl="file://$PROJECT_DIR$/emc-generator/emc-generator.iml" filepath="$PROJECT_DIR$/emc-generator/emc-generator.iml" />
+      <module fileurl="file://$PROJECT_DIR$/emc-platform/emc-platform.iml" filepath="$PROJECT_DIR$/emc-platform/emc-platform.iml" />
+      <module fileurl="file://$PROJECT_DIR$/emc-service-home/emc-service-home.iml" filepath="$PROJECT_DIR$/emc-service-home/emc-service-home.iml" />
+      <module fileurl="file://$PROJECT_DIR$/emc-service-home-api/emc-service-home-api.iml" filepath="$PROJECT_DIR$/emc-service-home-api/emc-service-home-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/emc-service-sysmagent/emc-service-sysmagent.iml" filepath="$PROJECT_DIR$/emc-service-sysmagent/emc-service-sysmagent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/emc-service-sysmagent-api/emc-service-sysmagent-api.iml" filepath="$PROJECT_DIR$/emc-service-sysmagent-api/emc-service-sysmagent-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/emc-task/emc-task.iml" filepath="$PROJECT_DIR$/emc-task/emc-task.iml" />
+      <module fileurl="file://$PROJECT_DIR$/emc-task-api/emc-task-api.iml" filepath="$PROJECT_DIR$/emc-task-api/emc-task-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/emc-task-impl/emc-task-impl.iml" filepath="$PROJECT_DIR$/emc-task-impl/emc-task-impl.iml" />
+      <module fileurl="file://$PROJECT_DIR$/emc-web/emc-web.iml" filepath="$PROJECT_DIR$/emc-web/emc-web.iml" />
+    </modules>
+  </component>
+</project>
+

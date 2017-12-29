@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://code.alibabatech.com/schema/dubbo
+        http://code.alibabatech.com/schema/dubbo/dubbo.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+
+    <!-- 提供方应用信息，用于计算依赖关系 -->
+    <dubbo:application name="${dubbo.name}" owner="${dubbo.owner}" logger="log4j"/>
+    <!-- 使用zookeeper注册中心暴露服务地址   端口是zookeeper 中配置的2181-->
+    <dubbo:registry protocol="zookeeper" address="${dubbo.address}"/>
+    <!-- <dubbo:registry address="multicast://224.5.6.7:1234" /> -->
+    <!-- 设置服务传输协议及端口 \服务线程池大小-->
+    <dubbo:protocol name="${dubbo.protocol.name}" port="${dubbo.protocol.port}" threads="${dubbo.protocol.threads}"/>
+    <!-- 	<dubbo:protocol name="http" port="20881" threads="200" serialization="kryo"/>  -->
+    <!--    <dubbo:protocol name="hessian" port="20882" threads="200"/>-->
+
+    <!-- 声明需要暴露的服务接口 -->
+
+    <!-- 二级菜单成本管理 -->
+    <bean id="twoLevelMenuCostService" class="com.huak.home.cost.TwoLevelMenuCostServiceImpl"></bean>
+    <dubbo:service interface="com.huak.home.cost.TwoLevelMenuCostService" ref="twoLevelMenuCostService" timeout="3000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+    <!-- 成本管理 -->
+    <bean id="costService" class="com.huak.home.cost.CostServiceImpl"></bean>
+    <dubbo:service interface="com.huak.home.cost.CostService" ref="costService" timeout="3000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+    <!--能耗分析-->
+    <bean id="energyAnalysisService" class="com.huak.home.EnergyMonitorServiceImpl"></bean>
+    <dubbo:service interface="com.huak.home.EnergyMonitorService" ref="energyAnalysisService" timeout="3000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+
+    <bean id="componentService" class="com.huak.home.component.ComponentServiceImpl"></bean>
+    <dubbo:service interface="com.huak.home.component.ComponentService" ref="componentService" timeout="30000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+    <bean id="healthScoreRecordService" class="com.huak.home.component.HealthScoreRecordServiceImpl"></bean>
+    <dubbo:service interface="com.huak.home.component.HealthScoreRecordService" ref="healthScoreRecordService" timeout="3000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+
+    <!--三级页面service注册-->
+    <bean id="thiredpageEnergyService" class="com.huak.home.thiredpage.ThiredpageEnergyImpl"></bean>
+    <dubbo:service interface="com.huak.home.thiredpage.ThiredpageEnergyService" ref="thiredpageEnergyService" timeout="3000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+
+    <bean id="consAnalysisService" class="com.huak.home.ConsAnalysisServiceImpl"></bean>
+    <dubbo:service interface="com.huak.home.ConsAnalysisService" ref="consAnalysisService" timeout="3000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+    <bean id="searchService" class="com.huak.home.SearchServiceImpl"></bean>
+    <dubbo:service interface="com.huak.home.SearchService" ref="searchService" timeout="3000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+    <bean id="frameService" class="com.huak.home.FrameServiceImpl"></bean>
+    <dubbo:service interface="com.huak.home.FrameService" ref="frameService" timeout="3000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+    <bean id="workOrderRecordService" class="com.huak.home.workorder.WorkOrderRecordServiceImpl"></bean>
+    <dubbo:service interface="com.huak.home.workorder.WorkOrderRecordService" ref="workOrderRecordService" timeout="3000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+    <bean id="workOrderInfoService" class="com.huak.home.workorder.WorkOrderInfoServiceImpl"></bean>
+
+
+    <dubbo:service interface="com.huak.home.workorder.WorkOrderInfoService" ref="workOrderInfoService" timeout="3000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+    <bean id="thirdAnalysisService" class="com.huak.home.thiredpage.ThirdAnalysisServiceImpl"></bean>
+    <dubbo:service interface="com.huak.home.thiredpage.ThirdAnalysisService" ref="thirdAnalysisService" timeout="3000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+
+    <bean id="dataStatisticsService" class="com.huak.home.DataStatisticsServiceImpl"></bean>
+    <dubbo:service interface="com.huak.home.DataStatisticsService" ref="dataStatisticsService" timeout="3000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+    <bean id="thiredPageCostService" class="com.huak.home.cost.ThiredPageCostImpl"></bean>
+    <dubbo:service interface="com.huak.home.cost.ThiredPageCostService" ref="thiredPageCostService" timeout="3000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+    <bean id="thiredCostTypeService" class="com.huak.home.cost.ThiredCostTypeImpl"></bean>
+    <dubbo:service interface="com.huak.home.cost.ThiredCostTypeService" ref="thiredCostTypeService" timeout="3000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+
+</beans>

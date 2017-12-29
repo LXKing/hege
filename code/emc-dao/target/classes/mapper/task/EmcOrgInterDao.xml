@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.task.dao.EmcOrgInterDao">
+  <resultMap id="BaseResultMap" type="com.huak.task.model.EmcOrgInter">
+    <constructor>
+      <arg column="COM_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ORG_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="EMC_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="UNIT_TYPE" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    COM_ID, ORG_ID, EMC_ID,UNIT_TYPE
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_org_inter
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <insert id="insert" parameterType="com.huak.task.model.EmcOrgInter">
+    insert into t_emc_org_inter (COM_ID, ORG_ID,
+      EMC_ID,UNIT_TYPE)
+    values (#{comId,jdbcType=VARCHAR}, #{orgId,jdbcType=VARCHAR},
+      #{emcId,jdbcType=VARCHAR},#{unitType,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.huak.task.model.EmcOrgInter">
+    insert into t_emc_org_inter
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="comId != null">
+        COM_ID,
+      </if>
+      <if test="orgId != null">
+        ORG_ID,
+      </if>
+      <if test="emcId != null">
+        EMC_ID,
+      </if>
+      <if test="emcId != null">
+        UNIT_TYPE
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="comId != null">
+        #{comId,jdbcType=VARCHAR},
+      </if>
+      <if test="orgId != null">
+        #{orgId,jdbcType=VARCHAR},
+      </if>
+      <if test="emcId != null">
+        #{emcId,jdbcType=VARCHAR},
+      </if>
+      <if test="emcId != null">
+        #{unitType,jdbcType=VARCHAR}
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.task.model.EmcOrgInter">
+    update t_emc_org_inter
+    <set>
+      <if test="comId != null">
+        COM_ID = #{comId,jdbcType=VARCHAR},
+      </if>
+      <if test="orgId != null">
+        ORG_ID = #{orgId,jdbcType=VARCHAR},
+      </if>
+      <if test="emcId != null">
+        EMC_ID = #{emcId,jdbcType=VARCHAR},
+      </if>
+      <if test="unitType != null">
+            UNIT_TYPE = #{unitType,jdbcType=VARCHAR}
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.huak.task.model.EmcOrgInter">
+    update t_emc_org_inter
+    set COM_ID = #{comId,jdbcType=VARCHAR},
+      ORG_ID = #{orgId,jdbcType=VARCHAR},
+      EMC_ID = #{emcId,jdbcType=VARCHAR},
+      UNIT_TYPE = #{unitType,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+
+    <select id="selectAllByMap" parameterType="com.huak.task.model.EmcOrgInter" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_org_inter
+        where 1=1
+        <if test="comId != null and comId!='' and comId !='null'">
+            and  COM_ID = #{comId,jdbcType=VARCHAR}
+        </if>
+        <if test="orgId != null and orgId !=''">
+            and  ORG_ID =  #{orgId,jdbcType=VARCHAR}
+        </if>
+
+        <if test="emcId != null and emcId!=''">
+            and  EMC_ID = #{emcId,jdbcType=VARCHAR}
+        </if>
+        <if test="unitType !=null and unitType!=''">
+            and UNIT_TYPE = #{unitType,jdbcType=VARCHAR}
+        </if>
+    </select>
+    <select id="selectEmcOrgByMap" parameterType="java.util.HashMap" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_org_inter
+        where 1=1
+        <if test="comId != null and comId!='' and comId !='null'">
+            and  COM_ID = #{comId,jdbcType=VARCHAR}
+        </if>
+        <if test="pid != null and pid !=''">
+            and  ORG_ID =  #{pid,jdbcType=VARCHAR}
+        </if>
+
+        <if test="emcId != null and emcId!=''">
+            and  EMC_ID = #{emcId,jdbcType=VARCHAR}
+        </if>
+        <if test="unitType !=null and unitType!=''">
+            and UNIT_TYPE = #{unitType,jdbcType=VARCHAR}
+        </if>
+    </select>
+</mapper>

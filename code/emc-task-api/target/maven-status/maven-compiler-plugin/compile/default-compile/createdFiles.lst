@@ -1,0 +1,5 @@
+com\huak\api\EnergyAnalyService.class
+com\huak\diacrisis\WorkWarnService.class
+com\huak\weather\WeatherTaskService.class
+com\huak\energy\AutoSaveEnergyService.class
+com\huak\api\RoomTempService.class

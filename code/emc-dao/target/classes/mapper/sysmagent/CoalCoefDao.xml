@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.mdc.dao.CoalCoefDao">
+  <resultMap id="BaseResultMap" type="com.huak.mdc.model.CoalCoef">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="COMID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="TYPEID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="COEF" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="SDATE" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    ID, COMID, TYPEID, COEF, SDATE
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_coal_coef
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_coal_coef
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+
+  <insert id="insertSelective" parameterType="com.huak.mdc.model.CoalCoef">
+    insert into t_emc_coal_coef
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="comid != null">
+        COMID,
+      </if>
+      <if test="typeid != null">
+        TYPEID,
+      </if>
+      <if test="coef != null">
+        COEF,
+      </if>
+      <if test="sdate != null">
+        SDATE,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="comid != null">
+        #{comid,jdbcType=VARCHAR},
+      </if>
+      <if test="typeid != null">
+        #{typeid,jdbcType=VARCHAR},
+      </if>
+      <if test="coef != null">
+        #{coef,jdbcType=DOUBLE},
+      </if>
+      <if test="sdate != null">
+        #{sdate,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.mdc.model.CoalCoef">
+    update t_emc_coal_coef
+    <set>
+      <if test="comid != null">
+        COMID = #{comid,jdbcType=VARCHAR},
+      </if>
+      <if test="typeid != null">
+        TYPEID = #{typeid,jdbcType=VARCHAR},
+      </if>
+      <if test="coef != null">
+        COEF = #{coef,jdbcType=DOUBLE},
+      </if>
+      <if test="sdate != null">
+        SDATE = #{sdate,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+
+    <select id="getCoalCoefByTime" parameterType="java.util.Map" resultType="java.lang.Double">
+        SELECT IFNULL(c.COEF,t.COEF) COEF FROM t_emc_energy_type t
+        LEFT JOIN (
+        SELECT COEF,TYPEID FROM t_emc_coal_coef
+        WHERE COMID = #{id} AND TYPEID = #{energyTypeId}
+        AND  SDATE <![CDATA[ <= ]]> #{time}
+        ORDER BY SDATE DESC LIMIT 1
+        ) c ON t.ID = c.TYPEID
+        WHERE t.ID = #{energyTypeId}
+    </select>
+</mapper>

@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.weather.dao.WeatherDao">
+  <resultMap id="BaseResultMap" type="com.huak.weather.model.Weather">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.Long" jdbcType="BIGINT" />
+      <arg column="CODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="REPORT_DATE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="WEEK_DAY" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="TEMPERATURE_CURR" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="CITY_NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="HUMIDITY" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="WIND" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="WINP" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="TEMP_HIGH" javaType="java.math.BigDecimal" jdbcType="DECIMAL" />
+      <arg column="TEMP_LOW" javaType="java.math.BigDecimal" jdbcType="DECIMAL" />
+      <arg column="HUMI_HIGH" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="HUMI_LOW" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="STATUS"  javaType="java.lang.Byte" jdbcType="TINYINT"/>
+      <arg column="WEATHER_ICON" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="WEATHER_CURRENT" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    ID, CODE, REPORT_DATE, WEEK_DAY, TEMPERATURE_CURR, CITY_NAME, HUMIDITY, WIND, WINP, 
+    TEMP_HIGH, TEMP_LOW, HUMI_HIGH, HUMI_LOW, WEATHER_ICON, STATUS, WEATHER_CURRENT
+  </sql>
+
+  <select id="selectByPrimaryKey" parameterType="java.util.Map" resultMap="BaseResultMap">
+      select   <include refid="Base_Column_List" /> from t_emc_weather_actual where (code,REPORT_DATE) = (
+      select code,max(report_date) from t_emc_weather_actual where code =#{code,jdbcType=VARCHAR} group by code) LIMIT 0,1
+  </select>
+
+  <select id="getLatestWeathers" parameterType="java.util.Map" resultMap="BaseResultMap">
+      SELECT
+      <include refid="Base_Column_List" />
+      FROM
+      t_emc_weather_actual
+      WHERE
+      CODE =#{code,jdbcType=VARCHAR}
+      and
+      REPORT_DATE <![CDATA[ <= ]]> #{reportDate,jdbcType=VARCHAR}
+      ORDER BY
+      REPORT_DATE DESC
+      LIMIT 0,
+      23;
+  </select>
+  <select id="getParams" resultType="java.util.Map">
+        select WCODE as code from t_emc_company ,t_emc_weather_city where WCODE = W_CODE;
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from t_emc_weather_actual
+    where ID = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.huak.weather.model.Weather">
+    insert into t_emc_weather_actual (ID, CODE, REPORT_DATE, 
+      WEEK_DAY, TEMPERATURE_CURR, CITY_NAME, 
+      HUMIDITY, WIND, WINP, 
+      TEMP_HIGH, TEMP_LOW, HUMI_HIGH, 
+      HUMI_LOW,STATUS, WEATHER_ICON,
+      WEATHER_CURRENT)
+    values (#{id,jdbcType=BIGINT}, #{code,jdbcType=VARCHAR}, #{reportDate,jdbcType=VARCHAR}, 
+      #{weekDay,jdbcType=VARCHAR}, #{temperatureCurr,jdbcType=VARCHAR}, #{cityName,jdbcType=VARCHAR}, 
+      #{humidity,jdbcType=VARCHAR}, #{wind,jdbcType=VARCHAR}, #{winp,jdbcType=VARCHAR}, 
+      #{tempHigh,jdbcType=DECIMAL}, #{tempLow,jdbcType=DECIMAL}, #{humiHigh,jdbcType=VARCHAR}, 
+      #{humiLow,jdbcType=VARCHAR},#{status,jdbcType=TINYINT}, #{weatherIcon,jdbcType=VARCHAR},
+      #{weatherCurrent,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.huak.weather.model.Weather">
+    insert into t_emc_weather_actual
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="code != null">
+        CODE,
+      </if>
+      <if test="reportDate != null">
+        REPORT_DATE,
+      </if>
+      <if test="weekDay != null">
+        WEEK_DAY,
+      </if>
+      <if test="temperatureCurr != null">
+        TEMPERATURE_CURR,
+      </if>
+      <if test="cityName != null">
+        CITY_NAME,
+      </if>
+      <if test="humidity != null">
+        HUMIDITY,
+      </if>
+      <if test="wind != null">
+        WIND,
+      </if>
+      <if test="winp != null">
+        WINP,
+      </if>
+      <if test="tempHigh != null">
+        TEMP_HIGH,
+      </if>
+      <if test="tempLow != null">
+        TEMP_LOW,
+      </if>
+      <if test="humiHigh != null">
+        HUMI_HIGH,
+      </if>
+      <if test="humiLow != null">
+        HUMI_LOW,
+      </if>
+      <if test="weatherIcon != null">
+        WEATHER_ICON,
+      </if>
+      <if test="weatherCurrent != null">
+        WEATHER_CURRENT,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="code != null">
+        #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="reportDate != null">
+        #{reportDate,jdbcType=VARCHAR},
+      </if>
+      <if test="weekDay != null">
+        #{weekDay,jdbcType=VARCHAR},
+      </if>
+      <if test="temperatureCurr != null">
+        #{temperatureCurr,jdbcType=VARCHAR},
+      </if>
+      <if test="cityName != null">
+        #{cityName,jdbcType=VARCHAR},
+      </if>
+      <if test="humidity != null">
+        #{humidity,jdbcType=VARCHAR},
+      </if>
+      <if test="wind != null">
+        #{wind,jdbcType=VARCHAR},
+      </if>
+      <if test="winp != null">
+        #{winp,jdbcType=VARCHAR},
+      </if>
+      <if test="tempHigh != null">
+        #{tempHigh,jdbcType=DECIMAL},
+      </if>
+      <if test="tempLow != null">
+        #{tempLow,jdbcType=DECIMAL},
+      </if>
+      <if test="humiHigh != null">
+        #{humiHigh,jdbcType=VARCHAR},
+      </if>
+      <if test="humiLow != null">
+        #{humiLow,jdbcType=VARCHAR},
+      </if>
+      <if test="weatherIcon != null">
+        #{weatherIcon,jdbcType=VARCHAR},
+      </if>
+      <if test="weatherCurrent != null">
+        #{weatherCurrent,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.weather.model.Weather">
+    update t_emc_weather_actual
+    <set>
+      <if test="code != null">
+        CODE = #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="reportDate != null">
+        REPORT_DATE = #{reportDate,jdbcType=VARCHAR},
+      </if>
+      <if test="weekDay != null">
+        WEEK_DAY = #{weekDay,jdbcType=VARCHAR},
+      </if>
+      <if test="temperatureCurr != null">
+        TEMPERATURE_CURR = #{temperatureCurr,jdbcType=VARCHAR},
+      </if>
+      <if test="cityName != null">
+        CITY_NAME = #{cityName,jdbcType=VARCHAR},
+      </if>
+      <if test="humidity != null">
+        HUMIDITY = #{humidity,jdbcType=VARCHAR},
+      </if>
+      <if test="wind != null">
+        WIND = #{wind,jdbcType=VARCHAR},
+      </if>
+      <if test="winp != null">
+        WINP = #{winp,jdbcType=VARCHAR},
+      </if>
+      <if test="tempHigh != null">
+        TEMP_HIGH = #{tempHigh,jdbcType=DECIMAL},
+      </if>
+      <if test="tempLow != null">
+        TEMP_LOW = #{tempLow,jdbcType=DECIMAL},
+      </if>
+      <if test="humiHigh != null">
+        HUMI_HIGH = #{humiHigh,jdbcType=VARCHAR},
+      </if>
+      <if test="humiLow != null">
+        HUMI_LOW = #{humiLow,jdbcType=VARCHAR},
+      </if>
+      <if test="weatherIcon != null">
+        WEATHER_ICON = #{weatherIcon,jdbcType=VARCHAR},
+      </if>
+
+      <if test="weatherCurrent != null">
+        WEATHER_CURRENT = #{weatherCurrent,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.huak.weather.model.Weather">
+    update t_emc_weather_actual
+    set CODE = #{code,jdbcType=VARCHAR},
+      REPORT_DATE = #{reportDate,jdbcType=VARCHAR},
+      WEEK_DAY = #{weekDay,jdbcType=VARCHAR},
+      TEMPERATURE_CURR = #{temperatureCurr,jdbcType=VARCHAR},
+      CITY_NAME = #{cityName,jdbcType=VARCHAR},
+      HUMIDITY = #{humidity,jdbcType=VARCHAR},
+      WIND = #{wind,jdbcType=VARCHAR},
+      WINP = #{winp,jdbcType=VARCHAR},
+      TEMP_HIGH = #{tempHigh,jdbcType=DECIMAL},
+      TEMP_LOW = #{tempLow,jdbcType=DECIMAL},
+      HUMI_HIGH = #{humiHigh,jdbcType=VARCHAR},
+      HUMI_LOW = #{humiLow,jdbcType=VARCHAR},
+      STATUS = #{status,jdbcType=TINYINT},
+      WEATHER_ICON = #{weatherIcon,jdbcType=VARCHAR},
+      WEATHER_CURRENT = #{weatherCurrent,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=BIGINT}
+  </update>
+
+    <select id="selectWeathers" parameterType="java.util.Map" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_weather_actual
+        where 1=1
+        <if test="status != null and status != ''">
+            and  STATUS = #{status,jdbcType=TINYINT}
+        </if>
+        <if test="code != null and code != ''">
+            and  CODE = #{code,jdbcType=VARCHAR}
+        </if>
+
+        <if test="reportDate != null and reportDate != ''">
+            and REPORT_DATE = #{reportDate,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+    <update id="updateWeather" parameterType="com.huak.weather.model.Weather">
+        update t_emc_weather_actual
+        set
+        WEEK_DAY = #{weekDay,jdbcType=VARCHAR},
+        TEMPERATURE_CURR = #{temperatureCurr,jdbcType=VARCHAR},
+        CITY_NAME = #{cityName,jdbcType=VARCHAR},
+        HUMIDITY = #{humidity,jdbcType=VARCHAR},
+        WIND = #{wind,jdbcType=VARCHAR},
+        WINP = #{winp,jdbcType=VARCHAR},
+        TEMP_HIGH = #{tempHigh,jdbcType=DECIMAL},
+        TEMP_LOW = #{tempLow,jdbcType=DECIMAL},
+        HUMI_HIGH = #{humiHigh,jdbcType=VARCHAR},
+        HUMI_LOW = #{humiLow,jdbcType=VARCHAR},
+        WEATHER_ICON = #{weatherIcon,jdbcType=VARCHAR},
+        WEATHER_CURRENT = #{weatherCurrent,jdbcType=VARCHAR}
+        where CODE = #{code,jdbcType=VARCHAR} AND REPORT_DATE = #{reportDate,jdbcType=VARCHAR}
+        AND  STATUS = #{status,jdbcType=TINYINT}
+    </update>
+
+    <select id="getWeatherByTime" parameterType="java.util.Map" resultType="java.lang.Double">
+        SELECT REPLACE(TEMPERATURE_CURR,'℃','') TEMPERATURE_CURR FROM t_emc_weather_actual
+        WHERE CODE = #{wcode}
+        AND  DATE_FORMAT(REPORT_DATE,'%Y-%m-%d %H:00:00') = #{time}
+    </select>
+
+</mapper>

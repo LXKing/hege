@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.task.dao.AutoSaveDataDao">
+    <select id="getMaxDataTime" parameterType="java.util.Map" resultType="java.lang.String">
+        SELECT DATE_FORMAT(MAX(md.COLLECT_TIME),'%Y-%m-%d %H')  FROM t_emc_meta_data md,t_emc_meter_collect mc
+         WHERE md.COLLECT_TIME<![CDATA[ < ]]>#{time} AND md.READ_SATE = 0
+         AND mc.TAG = md.TAG
+          AND mc.COM_ID=#{comId}
+          AND mc.ISDELETE=0
+    </select>
+  <select id="selectAutoDataByTime" parameterType="java.util.Map" resultType="java.util.Map">
+SELECT a.ID,a.TIME,MAX(a.NUM) NUM   FROM (
+SELECT
+	mc.ID,
+	DATE_FORMAT(
+		md.COLLECT_TIME,
+		'%Y-%m-%d %H'
+	) TIME,
+	md.COLLECT_VALUE NUM
+FROM
+	t_emc_meta_data md,
+	t_emc_meter_collect mc
+WHERE
+	DATE_FORMAT(
+		md.COLLECT_TIME,
+		'%Y-%m-%d %H'
+	) = #{maxTime}
+AND md.READ_SATE = 0
+AND md.TAG = mc.TAG
+AND mc.ISAUTO = 0
+AND md.COLLECT_VALUE is not null
+AND mc.COM_ID=#{comId}
+AND mc.ISDELETE=0) a
+GROUP BY a.ID,a.TIME
+
+  </select>
+    <select id="selectTags" parameterType="java.util.Map" resultType="java.lang.String">
+        SELECT
+    md.TAG
+    FROM
+    t_emc_meta_data md,
+    t_emc_meter_collect mc
+    WHERE
+    DATE_FORMAT(
+    md.COLLECT_TIME,
+    '%Y-%m-%d %H'
+    ) = #{maxTime}
+    AND md.READ_SATE = 0
+    AND md.TAG = mc.TAG
+    AND mc.ISAUTO = 0
+    AND md.COLLECT_VALUE is not null
+    AND mc.COM_ID=#{comId}
+    AND mc.ISDELETE=0
+
+    </select>
+
+    <update id="updateStates" parameterType="java.util.Map">
+        UPDATE t_emc_meta_data SET READ_SATE = #{status}
+        WHERE TAG =#{tag}
+        AND DATE_FORMAT(
+        COLLECT_TIME,
+        '%Y-%m-%d %H'
+        ) <![CDATA[ <= ]]>#{maxTime}
+    </update>
+
+</mapper>

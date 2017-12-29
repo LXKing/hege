@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huak.org.dao.BanDao" >
+  <resultMap id="BaseResultMap" type="com.huak.org.model.Ban" >
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="BAN_NAME" property="banName" jdbcType="VARCHAR" />
+    <result column="PROVINCE_ID" property="provinceId" jdbcType="VARCHAR" />
+    <result column="CITY_ID" property="cityId" jdbcType="VARCHAR" />
+    <result column="COUNTY_ID" property="countyId" jdbcType="VARCHAR" />
+    <result column="TOWN_ID" property="townId" jdbcType="VARCHAR" />
+    <result column="VILLAGE_ID" property="villageId" jdbcType="VARCHAR" />
+    <result column="ADDR" property="addr" jdbcType="VARCHAR" />
+    <result column="COMMUNITY_ID" property="communityId" jdbcType="VARCHAR" />
+    <result column="ORG_ID" property="orgId" jdbcType="BIGINT" />
+    <result column="COM_ID" property="comId" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <resultMap id="BaseVOResultMap" type="com.huak.org.model.vo.BanVo" >
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="BAN_NAME" property="banName" jdbcType="VARCHAR" />
+    <result column="COMMUNITY_ID" property="communityId" jdbcType="VARCHAR" />
+    <result column="COMMUNITY_NAME" property="communityName" jdbcType="VARCHAR" />
+    <result column="ORG_ID" property="orgId" jdbcType="BIGINT" />
+    <result column="COM_ID" property="comId" jdbcType="VARCHAR" />
+    <result column="COM_NAME" property="comName" jdbcType="VARCHAR" />
+    <result column="ORG_NAME" property="orgName" jdbcType="VARCHAR" />
+    <result column="ADDR" property="addr" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    ID, BAN_NAME, PROVINCE_ID, CITY_ID, COUNTY_ID, TOWN_ID, VILLAGE_ID, ADDR, COMMUNITY_ID, 
+    ORG_ID, COM_ID
+  </sql>
+  
+  <!-- 根据主键获取楼座信息 -->
+  <select id="get" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_unit_ban
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 分页查询楼座信息 -->
+  <select id="selectByPage" resultMap="BaseVOResultMap" parameterType="java.util.Map" >
+    SELECT b.ID,b.BAN_NAME,c.ID COMMUNITY_ID,c.COMMUNITY_NAME,com.CNAME COM_NAME,
+    o.ORG_NAME,c.ORG_ID,c.COM_ID,b.ADDR
+	FROM t_emc_unit_ban b,t_emc_unit_community c,t_emc_company com,t_emc_org o
+	WHERE b.COMMUNITY_ID = c.id AND b.ORG_ID = o.id AND b.COM_ID = com.id
+    <if test="banName!=null and banName!=''"> and b.BAN_NAME LIKE CONCAT('%',#{banName,jdbcType=VARCHAR},'%')</if>
+    <if test="communityId!=null and communityId!=''"> and c.ID = #{communityId,jdbcType=VARCHAR}</if>
+    <if test="orgId!=null and orgId!=''"> and c.ORG_ID=#{orgId,jdbcType=VARCHAR}</if>
+    <if test="comId!=null and comId!=''"> and c.COM_ID=#{comId,jdbcType=VARCHAR}</if>
+  </select>
+  
+  <!-- 导出楼座信息 -->
+  <select id="export" resultType="java.util.Map" parameterType="java.util.Map" >
+    SELECT b.ID,b.BAN_NAME,c.ID COMMUNITY_ID,c.COMMUNITY_NAME,com.CNAME COM_NAME,
+    o.ORG_NAME,c.ORG_ID,c.COM_ID,b.ADDR
+	FROM t_emc_unit_ban b,t_emc_unit_community c,t_emc_company com,t_emc_org o
+	WHERE b.COMMUNITY_ID = c.id AND b.ORG_ID = o.id AND b.COM_ID = com.id
+    <if test="banName!=null and banName!=''"> and b.BAN_NAME LIKE CONCAT('%',#{banName,jdbcType=VARCHAR},'%')</if>
+    <if test="communityId!=null and communityId!=''"> and c.ID = #{communityId,jdbcType=VARCHAR}</if>
+    <if test="orgId!=null and orgId!=''"> and c.ORG_ID=#{orgId,jdbcType=VARCHAR}</if>
+    <if test="comId!=null and comId!=''"> and c.COM_ID=#{comId,jdbcType=VARCHAR}</if>
+  </select>
+  
+  <select id="selectBanCount" parameterType="java.util.Map" resultType="java.lang.Long">
+  	select count(1) from t_emc_unit_ban where BAN_NAME = #{banName,jdbcType=VARCHAR} 
+  	and COMMUNITY_ID = #{communityId,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 删除楼座信息 -->
+  <delete id="deleteBan" parameterType="java.lang.String" >
+    delete from t_emc_unit_ban
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  
+  <insert id="insertByPrimaryKeySelective" parameterType="com.huak.org.model.Ban" >
+    insert into t_emc_unit_ban (ID, BAN_NAME, PROVINCE_ID, 
+      CITY_ID, COUNTY_ID, TOWN_ID, 
+      VILLAGE_ID, ADDR, COMMUNITY_ID, 
+      ORG_ID, COM_ID)
+    values (#{id,jdbcType=VARCHAR}, #{banName,jdbcType=VARCHAR}, #{provinceId,jdbcType=VARCHAR}, 
+      #{cityId,jdbcType=VARCHAR}, #{countyId,jdbcType=VARCHAR}, #{townId,jdbcType=VARCHAR}, 
+      #{villageId,jdbcType=VARCHAR}, #{addr,jdbcType=VARCHAR}, #{communityId,jdbcType=VARCHAR}, 
+      #{orgId,jdbcType=BIGINT}, #{comId,jdbcType=VARCHAR})
+  </insert>
+  
+  <!-- 新增楼座信息 -->
+  <insert id="insertBan" parameterType="com.huak.org.model.Ban" >
+    insert into t_emc_unit_ban
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="banName != null" >
+        BAN_NAME,
+      </if>
+      <if test="provinceId != null" >
+        PROVINCE_ID,
+      </if>
+      <if test="cityId != null" >
+        CITY_ID,
+      </if>
+      <if test="countyId != null" >
+        COUNTY_ID,
+      </if>
+      <if test="townId != null" >
+        TOWN_ID,
+      </if>
+      <if test="villageId != null" >
+        VILLAGE_ID,
+      </if>
+      <if test="addr != null" >
+        ADDR,
+      </if>
+      <if test="communityId != null" >
+        COMMUNITY_ID,
+      </if>
+      <if test="orgId != null" >
+        ORG_ID,
+      </if>
+      <if test="comId != null" >
+        COM_ID,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="banName != null" >
+        #{banName,jdbcType=VARCHAR},
+      </if>
+      <if test="provinceId != null" >
+        #{provinceId,jdbcType=VARCHAR},
+      </if>
+      <if test="cityId != null" >
+        #{cityId,jdbcType=VARCHAR},
+      </if>
+      <if test="countyId != null" >
+        #{countyId,jdbcType=VARCHAR},
+      </if>
+      <if test="townId != null" >
+        #{townId,jdbcType=VARCHAR},
+      </if>
+      <if test="villageId != null" >
+        #{villageId,jdbcType=VARCHAR},
+      </if>
+      <if test="addr != null" >
+        #{addr,jdbcType=VARCHAR},
+      </if>
+      <if test="communityId != null" >
+        #{communityId,jdbcType=VARCHAR},
+      </if>
+      <if test="orgId != null" >
+        #{orgId,jdbcType=BIGINT},
+      </if>
+      <if test="comId != null" >
+        #{comId,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  
+  <!-- 更新楼座信息 -->
+  <update id="updateBan" parameterType="com.huak.org.model.Ban" >
+    update t_emc_unit_ban
+    <set >
+      <if test="banName != null" >
+        BAN_NAME = #{banName,jdbcType=VARCHAR},
+      </if>
+      <if test="provinceId != null" >
+        PROVINCE_ID = #{provinceId,jdbcType=VARCHAR},
+      </if>
+      <if test="cityId != null" >
+        CITY_ID = #{cityId,jdbcType=VARCHAR},
+      </if>
+      <if test="countyId != null" >
+        COUNTY_ID = #{countyId,jdbcType=VARCHAR},
+      </if>
+      <if test="townId != null" >
+        TOWN_ID = #{townId,jdbcType=VARCHAR},
+      </if>
+      <if test="villageId != null" >
+        VILLAGE_ID = #{villageId,jdbcType=VARCHAR},
+      </if>
+      <if test="addr != null" >
+        ADDR = #{addr,jdbcType=VARCHAR},
+      </if>
+      <if test="communityId != null" >
+        COMMUNITY_ID = #{communityId,jdbcType=VARCHAR},
+      </if>
+      <if test="orgId != null" >
+        ORG_ID = #{orgId,jdbcType=BIGINT},
+      </if>
+      <if test="comId != null" >
+        COM_ID = #{comId,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <update id="updateByPrimaryKey" parameterType="com.huak.org.model.Ban" >
+    update t_emc_unit_ban
+    set BAN_NAME = #{banName,jdbcType=VARCHAR},
+      PROVINCE_ID = #{provinceId,jdbcType=VARCHAR},
+      CITY_ID = #{cityId,jdbcType=VARCHAR},
+      COUNTY_ID = #{countyId,jdbcType=VARCHAR},
+      TOWN_ID = #{townId,jdbcType=VARCHAR},
+      VILLAGE_ID = #{villageId,jdbcType=VARCHAR},
+      ADDR = #{addr,jdbcType=VARCHAR},
+      COMMUNITY_ID = #{communityId,jdbcType=VARCHAR},
+      ORG_ID = #{orgId,jdbcType=BIGINT},
+      COM_ID = #{comId,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

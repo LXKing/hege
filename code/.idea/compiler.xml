@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <wildcardResourcePatterns>
+      <entry name="!?*.java" />
+      <entry name="!?*.form" />
+      <entry name="!?*.class" />
+      <entry name="!?*.groovy" />
+      <entry name="!?*.scala" />
+      <entry name="!?*.flex" />
+      <entry name="!?*.kt" />
+      <entry name="!?*.clj" />
+    </wildcardResourcePatterns>
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="eccp-common" />
+        <module name="eccp-platform" />
+        <module name="eccp-service" />
+        <module name="eccp-web" />
+        <module name="emc-common" />
+        <module name="emc-dao" />
+        <module name="emc-generator" />
+        <module name="emc-platform" />
+        <module name="emc-service-home" />
+        <module name="emc-service-home-api" />
+        <module name="emc-service-sysmagent" />
+        <module name="emc-service-sysmagent-api" />
+        <module name="emc-sql" />
+        <module name="emc-task" />
+        <module name="emc-task-api" />
+        <module name="emc-task-impl" />
+        <module name="emc-web" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel target="1.7">
+      <module name="eccp" target="1.7" />
+      <module name="eccp-api" target="1.7" />
+      <module name="eccp-common" target="1.7" />
+      <module name="eccp-platform" target="1.7" />
+      <module name="eccp-service" target="1.7" />
+      <module name="eccp-web" target="1.7" />
+      <module name="emc" target="1.5" />
+      <module name="emc-bean" target="1.7" />
+      <module name="emc-common" target="1.7" />
+      <module name="emc-dao" target="1.7" />
+      <module name="emc-generator" target="1.7" />
+      <module name="emc-platform" target="1.7" />
+      <module name="emc-service" target="1.7" />
+      <module name="emc-service-home" target="1.7" />
+      <module name="emc-service-home-api" target="1.7" />
+      <module name="emc-service-sysmagent" target="1.7" />
+      <module name="emc-service-sysmagent-api" target="1.7" />
+      <module name="emc-task" target="1.7" />
+      <module name="emc-task-api" target="1.7" />
+      <module name="emc-task-impl" target="1.7" />
+      <module name="emc-web" target="1.7" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

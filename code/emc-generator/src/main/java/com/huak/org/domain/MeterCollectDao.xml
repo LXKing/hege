@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.org.dao.MeterCollectDao">
+  <resultMap id="BaseResultMap" type="com.huak.org.model.MeterCollect">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="CODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="SERIAL_NO" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ENERGY_TYPE_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ISREAL" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="ISTOTAL" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="UNIT_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="UNIT_TYPE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="ISAUTO" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="DEPICT" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="TAG" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="COEF" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="FORMULA" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ISPRESTORE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="ISDELETE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="COM_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    ID, CODE, NAME, SERIAL_NO, ENERGY_TYPE_ID, ISREAL, ISTOTAL, UNIT_ID, UNIT_TYPE, ISAUTO, 
+    DEPICT, TAG, COEF, FORMULA, ISPRESTORE, ISDELETE, COM_ID
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_meter_collect
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_meter_collect
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.huak.org.model.MeterCollect">
+    insert into t_emc_meter_collect (ID, CODE, NAME, 
+      SERIAL_NO, ENERGY_TYPE_ID, ISREAL, 
+      ISTOTAL, UNIT_ID, UNIT_TYPE, 
+      ISAUTO, DEPICT, TAG, 
+      COEF, FORMULA, ISPRESTORE, 
+      ISDELETE, COM_ID)
+    values (#{id,jdbcType=VARCHAR}, #{code,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, 
+      #{serialNo,jdbcType=VARCHAR}, #{energyTypeId,jdbcType=VARCHAR}, #{isreal,jdbcType=TINYINT}, 
+      #{istotal,jdbcType=TINYINT}, #{unitId,jdbcType=VARCHAR}, #{unitType,jdbcType=TINYINT}, 
+      #{isauto,jdbcType=TINYINT}, #{depict,jdbcType=VARCHAR}, #{tag,jdbcType=VARCHAR}, 
+      #{coef,jdbcType=TINYINT}, #{formula,jdbcType=VARCHAR}, #{isprestore,jdbcType=TINYINT}, 
+      #{isdelete,jdbcType=TINYINT}, #{comId,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.huak.org.model.MeterCollect">
+    insert into t_emc_meter_collect
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="code != null">
+        CODE,
+      </if>
+      <if test="name != null">
+        NAME,
+      </if>
+      <if test="serialNo != null">
+        SERIAL_NO,
+      </if>
+      <if test="energyTypeId != null">
+        ENERGY_TYPE_ID,
+      </if>
+      <if test="isreal != null">
+        ISREAL,
+      </if>
+      <if test="istotal != null">
+        ISTOTAL,
+      </if>
+      <if test="unitId != null">
+        UNIT_ID,
+      </if>
+      <if test="unitType != null">
+        UNIT_TYPE,
+      </if>
+      <if test="isauto != null">
+        ISAUTO,
+      </if>
+      <if test="depict != null">
+        DEPICT,
+      </if>
+      <if test="tag != null">
+        TAG,
+      </if>
+      <if test="coef != null">
+        COEF,
+      </if>
+      <if test="formula != null">
+        FORMULA,
+      </if>
+      <if test="isprestore != null">
+        ISPRESTORE,
+      </if>
+      <if test="isdelete != null">
+        ISDELETE,
+      </if>
+      <if test="comId != null">
+        COM_ID,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="code != null">
+        #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="serialNo != null">
+        #{serialNo,jdbcType=VARCHAR},
+      </if>
+      <if test="energyTypeId != null">
+        #{energyTypeId,jdbcType=VARCHAR},
+      </if>
+      <if test="isreal != null">
+        #{isreal,jdbcType=TINYINT},
+      </if>
+      <if test="istotal != null">
+        #{istotal,jdbcType=TINYINT},
+      </if>
+      <if test="unitId != null">
+        #{unitId,jdbcType=VARCHAR},
+      </if>
+      <if test="unitType != null">
+        #{unitType,jdbcType=TINYINT},
+      </if>
+      <if test="isauto != null">
+        #{isauto,jdbcType=TINYINT},
+      </if>
+      <if test="depict != null">
+        #{depict,jdbcType=VARCHAR},
+      </if>
+      <if test="tag != null">
+        #{tag,jdbcType=VARCHAR},
+      </if>
+      <if test="coef != null">
+        #{coef,jdbcType=TINYINT},
+      </if>
+      <if test="formula != null">
+        #{formula,jdbcType=VARCHAR},
+      </if>
+      <if test="isprestore != null">
+        #{isprestore,jdbcType=TINYINT},
+      </if>
+      <if test="isdelete != null">
+        #{isdelete,jdbcType=TINYINT},
+      </if>
+      <if test="comId != null">
+        #{comId,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.org.model.MeterCollect">
+    update t_emc_meter_collect
+    <set>
+      <if test="code != null">
+        CODE = #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        NAME = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="serialNo != null">
+        SERIAL_NO = #{serialNo,jdbcType=VARCHAR},
+      </if>
+      <if test="energyTypeId != null">
+        ENERGY_TYPE_ID = #{energyTypeId,jdbcType=VARCHAR},
+      </if>
+      <if test="isreal != null">
+        ISREAL = #{isreal,jdbcType=TINYINT},
+      </if>
+      <if test="istotal != null">
+        ISTOTAL = #{istotal,jdbcType=TINYINT},
+      </if>
+      <if test="unitId != null">
+        UNIT_ID = #{unitId,jdbcType=VARCHAR},
+      </if>
+      <if test="unitType != null">
+        UNIT_TYPE = #{unitType,jdbcType=TINYINT},
+      </if>
+      <if test="isauto != null">
+        ISAUTO = #{isauto,jdbcType=TINYINT},
+      </if>
+      <if test="depict != null">
+        DEPICT = #{depict,jdbcType=VARCHAR},
+      </if>
+      <if test="tag != null">
+        TAG = #{tag,jdbcType=VARCHAR},
+      </if>
+      <if test="coef != null">
+        COEF = #{coef,jdbcType=TINYINT},
+      </if>
+      <if test="formula != null">
+        FORMULA = #{formula,jdbcType=VARCHAR},
+      </if>
+      <if test="isprestore != null">
+        ISPRESTORE = #{isprestore,jdbcType=TINYINT},
+      </if>
+      <if test="isdelete != null">
+        ISDELETE = #{isdelete,jdbcType=TINYINT},
+      </if>
+      <if test="comId != null">
+        COM_ID = #{comId,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.huak.org.model.MeterCollect">
+    update t_emc_meter_collect
+    set CODE = #{code,jdbcType=VARCHAR},
+      NAME = #{name,jdbcType=VARCHAR},
+      SERIAL_NO = #{serialNo,jdbcType=VARCHAR},
+      ENERGY_TYPE_ID = #{energyTypeId,jdbcType=VARCHAR},
+      ISREAL = #{isreal,jdbcType=TINYINT},
+      ISTOTAL = #{istotal,jdbcType=TINYINT},
+      UNIT_ID = #{unitId,jdbcType=VARCHAR},
+      UNIT_TYPE = #{unitType,jdbcType=TINYINT},
+      ISAUTO = #{isauto,jdbcType=TINYINT},
+      DEPICT = #{depict,jdbcType=VARCHAR},
+      TAG = #{tag,jdbcType=VARCHAR},
+      COEF = #{coef,jdbcType=TINYINT},
+      FORMULA = #{formula,jdbcType=VARCHAR},
+      ISPRESTORE = #{isprestore,jdbcType=TINYINT},
+      ISDELETE = #{isdelete,jdbcType=TINYINT},
+      COM_ID = #{comId,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

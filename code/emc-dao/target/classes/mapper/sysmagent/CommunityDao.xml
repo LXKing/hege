@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huak.org.dao.CommunityDao" >
+  <resultMap id="BaseResultMap" type="com.huak.org.model.Community" >
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="COMMUNITY_NAME" property="communityName" jdbcType="VARCHAR" />
+    <result column="ORG_ID" property="orgId" jdbcType="BIGINT" />
+    <result column="COM_ID" property="comId" jdbcType="VARCHAR" />
+  </resultMap>
+  <resultMap id="BaseVOResultMap" type="com.huak.org.model.vo.CommunityVo" >
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="COMMUNITY_NAME" property="communityName" jdbcType="VARCHAR" />
+    <result column="ORG_ID" property="orgId" jdbcType="BIGINT" />
+    <result column="COM_ID" property="comId" jdbcType="VARCHAR" />
+    <result column="COM_NAME" property="comName" jdbcType="VARCHAR" />
+    <result column="ORG_NAME" property="orgName" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, COMMUNITY_NAME, ORG_ID, COM_ID
+  </sql>
+  
+  <!-- 根据主键获取小区信息 -->
+  <select id="get" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_unit_community
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 分页查询小区信息 -->
+  <select id="selectByPage" resultMap="BaseVOResultMap" parameterType="java.util.Map" >
+    select c.ID,c.COMMUNITY_NAME,com.CNAME COM_NAME,o.ORG_NAME,c.ORG_ID,c.COM_ID
+    from t_emc_unit_community c,t_emc_company com,t_emc_org o 
+    where c.ORG_ID = o.id and c.COM_ID = com.id
+    <if test="communityName!=null and communityName!=''"> and c.COMMUNITY_NAME LIKE CONCAT('%',#{communityName,jdbcType=VARCHAR},'%')</if>
+    <if test="orgId!=null and orgId!=''"> and c.ORG_ID=#{orgId,jdbcType=VARCHAR}</if>
+    <if test="comId!=null and comId!=''"> and c.COM_ID=#{comId,jdbcType=VARCHAR}</if>
+  </select>
+  
+  <!-- 导出小区信息 -->
+  <select id="export" resultType="java.util.Map" parameterType="java.util.Map" >
+    select c.ID,c.COMMUNITY_NAME,com.CNAME COM_NAME,o.ORG_NAME
+    from t_emc_unit_community c,t_emc_company com,t_emc_org o 
+    where c.ORG_ID = o.id and c.COM_ID = com.id
+    <if test="communityName!=null and communityName!=''"> and c.COMMUNITY_NAME LIKE CONCAT('%',#{communityName,jdbcType=VARCHAR},'%')</if>
+    <if test="orgId!=null and orgId!=''"> and c.ORG_ID=#{orgId,jdbcType=VARCHAR}</if>
+    <if test="comId!=null and comId!=''"> and c.COM_ID=#{comId,jdbcType=VARCHAR}</if>
+  </select>
+  
+  <!-- ######################################################################################### -->
+  <!-- 公司下拉框HTML文 -->
+  <select id="selectCompanySelectHtmlStr" resultType="java.util.Map">
+  	select ID,CNAME NAME from t_emc_company
+  </select>
+  <!-- 小区下拉框HTML文 -->
+  <select id="selectCommunitySelectHtmlStr" resultType="java.util.Map" parameterType="java.util.Map">
+  	select ID,COMMUNITY_NAME NAME
+    from t_emc_unit_community
+  	where 1=1 
+  	<if test="comId!=null and comId!=''"> and COM_ID = #{comId,jdbcType=VARCHAR}</if>
+  	<if test="orgId!=null and orgId!=''"> and ORG_ID = #{orgId,jdbcType=VARCHAR}</if>
+  </select>
+  <!-- 楼座下拉框HTML文 -->
+  <select id="selectBanSelectHtmlStr" resultType="java.util.Map" parameterType="java.util.Map">
+  	select ID,BAN_NAME NAME
+    from t_emc_unit_ban
+  	where 1=1
+  	<if test="comId!=null and comId!=''"> and COM_ID = #{comId,jdbcType=VARCHAR}</if>
+  	<if test="orgId!=null and orgId!=''"> and ORG_ID = #{orgId,jdbcType=VARCHAR}</if>
+  	<if test="communityId!=null and communityId!=''"> and COMMUNITY_ID=#{communityId,jdbcType=VARCHAR}</if>
+  </select>
+  <!-- 单元下拉框HTML文 -->
+  <select id="selectCellSelectHtmlStr" resultType="java.util.Map" parameterType="java.util.Map">
+  	SELECT ID, NAME
+	FROM t_emc_unit_cell
+	where 1=1
+	<if test="banId!=null and banId!=''"> and BAN_ID = #{banId,jdbcType=VARCHAR}</if>
+	<if test="comId!=null and comId!=''"> and COM_ID = #{comId,jdbcType=VARCHAR}</if>
+  	<if test="orgId!=null and orgId!=''"> and ORG_ID = #{orgId,jdbcType=VARCHAR}</if>
+  	<if test="communityId!=null and communityId!=''"> and COMMUNITY_ID=#{communityId,jdbcType=VARCHAR}</if>
+  </select>
+  <!-- 管线下拉框HTML文 -->
+  <select id="selectLineSelectHtmlStr" resultType="java.util.Map" parameterType="java.util.Map">
+  	SELECT ID,LINE_NAME NAME
+	FROM t_emc_unit_line
+	where 1=1
+	<if test="comId!=null and comId!=''"> and COM_ID = #{comId,jdbcType=VARCHAR}</if>
+  	<if test="orgId!=null and orgId!=''"> and ORG_ID = #{orgId,jdbcType=VARCHAR}</if>
+  	<if test="heatType!=null and heatType!=''"> and HEAT_TYPE = #{heatType,jdbcType=VARCHAR}</if>
+  </select>
+  <select id="getHeatTypeSelectHtmlStr" resultType="java.util.Map" parameterType="java.util.Map">
+  	SELECT
+		SEQ ID,DES NAME
+	FROM
+		t_emc_sys_dic
+	WHERE
+		TYPE_US = 'supportheattype'
+  </select>
+  <!-- ######################################################################################### -->
+ 
+  <!-- 删除小区信息 -->
+  <delete id="deleteCommunity" parameterType="java.lang.String" >
+    delete from t_emc_unit_community
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  
+  <insert id="insertByPrimaryKeySelective" parameterType="com.huak.org.model.Community" >
+    insert into t_emc_unit_community (ID, COMMUNITY_NAME, ORG_ID, 
+      COM_ID)
+    values (#{id,jdbcType=VARCHAR}, #{communityName,jdbcType=VARCHAR}, #{orgId,jdbcType=BIGINT}, 
+      #{comId,jdbcType=VARCHAR})
+  </insert>
+  
+  <!-- 新增小区信息 -->
+  <insert id="insertCommunity" parameterType="com.huak.org.model.Community" >
+    insert into t_emc_unit_community
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="communityName != null" >
+        COMMUNITY_NAME,
+      </if>
+      <if test="orgId != null" >
+        ORG_ID,
+      </if>
+      <if test="comId != null" >
+        COM_ID,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="communityName != null" >
+        #{communityName,jdbcType=VARCHAR},
+      </if>
+      <if test="orgId != null" >
+        #{orgId,jdbcType=BIGINT},
+      </if>
+      <if test="comId != null" >
+        #{comId,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  
+  <!-- 更新小区信息 -->
+  <update id="updateCommunity" parameterType="com.huak.org.model.Community" >
+    update t_emc_unit_community
+    <set >
+      <if test="communityName != null" >
+        COMMUNITY_NAME = #{communityName,jdbcType=VARCHAR},
+      </if>
+      <if test="orgId != null" >
+        ORG_ID = #{orgId,jdbcType=BIGINT},
+      </if>
+      <if test="comId != null" >
+        COM_ID = #{comId,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <update id="updateByPrimaryKey" parameterType="com.huak.org.model.Community" >
+    update t_emc_unit_community
+    set COMMUNITY_NAME = #{communityName,jdbcType=VARCHAR},
+      ORG_ID = #{orgId,jdbcType=BIGINT},
+      COM_ID = #{comId,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.task.dao.MetaDataDao">
+  <resultMap id="BaseResultMap" type="com.huak.task.model.MetaData">
+    <constructor>
+      <arg column="TAG" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="COLLECT_TIME" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+      <arg column="COLLECT_TYPE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="COLLECT_VALUE" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="READ_SATE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+    </constructor>
+  </resultMap>
+  <insert id="insert" parameterType="com.huak.task.model.MetaData">
+    insert into t_emc_meta_data (TAG, COLLECT_TIME, COLLECT_TYPE, 
+      COLLECT_VALUE, READ_SATE)
+    values (#{tag,jdbcType=VARCHAR}, #{collectTime,jdbcType=TIMESTAMP}, #{collectType,jdbcType=VARCHAR}, 
+      #{collectValue,jdbcType=DOUBLE}, #{readSate,jdbcType=TINYINT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.huak.task.model.MetaData">
+    insert into t_emc_meta_data
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="tag != null">
+        TAG,
+      </if>
+      <if test="collectTime != null">
+        COLLECT_TIME,
+      </if>
+      <if test="collectType != null">
+        COLLECT_TYPE,
+      </if>
+      <if test="collectValue != null">
+        COLLECT_VALUE,
+      </if>
+      <if test="readSate != null">
+        READ_SATE,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="tag != null">
+        #{tag,jdbcType=VARCHAR},
+      </if>
+      <if test="collectTime != null">
+        #{collectTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="collectType != null">
+        #{collectType,jdbcType=VARCHAR},
+      </if>
+      <if test="collectValue != null">
+        #{collectValue,jdbcType=DOUBLE},
+      </if>
+      <if test="readSate != null">
+        #{readSate,jdbcType=TINYINT},
+      </if>
+    </trim>
+  </insert>
+</mapper>

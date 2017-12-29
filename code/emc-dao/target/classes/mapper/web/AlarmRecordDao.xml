@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.health.dao.AlarmRecordDao">
+  <resultMap id="BaseResultMap" type="com.huak.health.model.AlarmRecord">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="CONFIG_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ALARM_NUM" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="START_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="END_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    ID, CONFIG_ID, ALARM_NUM, START_TIME, END_TIME
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_alarm_record
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_alarm_record
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.huak.health.model.AlarmRecord">
+    insert into t_emc_alarm_record (ID, CONFIG_ID, ALARM_NUM, 
+      START_TIME, END_TIME)
+    values (#{id,jdbcType=VARCHAR}, #{configId,jdbcType=VARCHAR}, #{alarmNum,jdbcType=DOUBLE}, 
+      #{startTime,jdbcType=VARCHAR}, #{endTime,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.huak.health.model.AlarmRecord">
+    insert into t_emc_alarm_record
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="configId != null">
+        CONFIG_ID,
+      </if>
+      <if test="alarmNum != null">
+        ALARM_NUM,
+      </if>
+      <if test="startTime != null">
+        START_TIME,
+      </if>
+      <if test="endTime != null">
+        END_TIME,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="configId != null">
+        #{configId,jdbcType=VARCHAR},
+      </if>
+      <if test="alarmNum != null">
+        #{alarmNum,jdbcType=DOUBLE},
+      </if>
+      <if test="startTime != null">
+        #{startTime,jdbcType=VARCHAR},
+      </if>
+      <if test="endTime != null">
+        #{endTime,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.health.model.AlarmRecord">
+    update t_emc_alarm_record
+    <set>
+      <if test="configId != null">
+        CONFIG_ID = #{configId,jdbcType=VARCHAR},
+      </if>
+      <if test="alarmNum != null">
+        ALARM_NUM = #{alarmNum,jdbcType=DOUBLE},
+      </if>
+      <if test="startTime != null">
+        START_TIME = #{startTime,jdbcType=VARCHAR},
+      </if>
+      <if test="endTime != null">
+        END_TIME = #{endTime,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.huak.health.model.AlarmRecord">
+    update t_emc_alarm_record
+    set CONFIG_ID = #{configId,jdbcType=VARCHAR},
+      ALARM_NUM = #{alarmNum,jdbcType=DOUBLE},
+      START_TIME = #{startTime,jdbcType=VARCHAR},
+      END_TIME = #{endTime,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+
+    <select id="selectByConfigId"  parameterType="java.util.Map" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        from t_emc_alarm_record  er
+        where er.CONFIG_ID=#{id,jdbcType=VARCHAR}
+        and er.END_TIME is null
+    </select>
+</mapper>

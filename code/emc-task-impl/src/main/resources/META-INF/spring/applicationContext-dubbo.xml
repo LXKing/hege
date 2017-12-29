@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://code.alibabatech.com/schema/dubbo
+        http://code.alibabatech.com/schema/dubbo/dubbo.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+
+    <!-- 提供方应用信息，用于计算依赖关系 -->
+    <dubbo:application name="${dubbo.name}" owner="${dubbo.owner}" logger="log4j"/>
+    <!-- 使用zookeeper注册中心暴露服务地址   端口是zookeeper 中配置的2181-->
+    <dubbo:registry protocol="zookeeper" address="${dubbo.address}"/>
+    <!-- <dubbo:registry address="multicast://224.5.6.7:1234" /> -->
+    <!-- 设置服务传输协议及端口 \服务线程池大小-->
+    <dubbo:protocol name="${dubbo.protocol.name}" port="${dubbo.protocol.port}" threads="${dubbo.protocol.threads}"/>
+    <!-- 	<dubbo:protocol name="http" port="20881" threads="200" serialization="kryo"/>  -->
+<!--    <dubbo:protocol name="hessian" port="20882" threads="200"/>-->
+
+    <bean id="weatherTaskService" class="com.huak.weather.WeatherServiceImpl"></bean>
+    <dubbo:service interface="com.huak.weather.WeatherTaskService" ref="weatherTaskService" timeout="3000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+    <bean id="workWarnService" class="com.huak.diacrisis.WorkWarnServiceImpl"></bean>
+    <dubbo:service interface="com.huak.diacrisis.WorkWarnService" ref="workWarnService" timeout="3000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+    <bean id="roomTempService" class="com.huak.api.RoomTempServiceImpl"></bean>
+    <dubbo:service interface="com.huak.api.RoomTempService" ref="roomTempService" timeout="3000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+    <bean id="energyAnalyService" class="com.huak.api.EnergyAnalyServiceImpl"></bean>
+    <dubbo:service interface="com.huak.api.EnergyAnalyService" ref="energyAnalyService" timeout="3000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+    <bean id="autoSaveEnergyService" class="com.huak.energy.AutoSaveEnergyServiceImpl"></bean>
+    <dubbo:service interface="com.huak.energy.AutoSaveEnergyService" ref="autoSaveEnergyService" timeout="120000" loadbalance="random"
+                   executes="200"
+                   actives="0" owner="${dubbo.owner}" version="${service.version}"/>
+</beans>

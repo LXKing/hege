@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.dao.UserDao">
+  <resultMap id="BaseResultMap" type="com.huak.model.User">
+    <constructor>
+      <idArg column="USER_ID" javaType="java.lang.Long" jdbcType="BIGINT" />
+      <arg column="ORG_ID" javaType="java.lang.Long" jdbcType="BIGINT" />
+      <arg column="LOGIN" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="PASSWORD" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="LOGIN_TIME" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+      <arg column="LAST_LOGIN_TIME" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+      <arg column="LOGIN_NUM" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="USE_STATUS" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="CREATOR" javaType="java.lang.Long" jdbcType="BIGINT" />
+      <arg column="CREATE_TIME" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    USER_ID, ORG_ID, LOGIN, PASSWORD, LOGIN_TIME, LAST_LOGIN_TIME, LOGIN_NUM, USE_STATUS, 
+    CREATOR, CREATE_TIME
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_ecc_auth_user
+    where USER_ID = #{userId,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from t_ecc_auth_user
+    where USER_ID = #{userId,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.huak.model.User">
+    insert into t_ecc_auth_user (USER_ID, ORG_ID, LOGIN, 
+      PASSWORD, LOGIN_TIME, LAST_LOGIN_TIME, 
+      LOGIN_NUM, USE_STATUS, CREATOR, 
+      CREATE_TIME)
+    values (#{userId,jdbcType=BIGINT}, #{orgId,jdbcType=BIGINT}, #{login,jdbcType=VARCHAR}, 
+      #{password,jdbcType=VARCHAR}, #{loginTime,jdbcType=TIMESTAMP}, #{lastLoginTime,jdbcType=TIMESTAMP}, 
+      #{loginNum,jdbcType=INTEGER}, #{useStatus,jdbcType=TINYINT}, #{creator,jdbcType=BIGINT}, 
+      #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.huak.model.User">
+    insert into t_ecc_auth_user
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="userId != null">
+        USER_ID,
+      </if>
+      <if test="orgId != null">
+        ORG_ID,
+      </if>
+      <if test="login != null">
+        LOGIN,
+      </if>
+      <if test="password != null">
+        PASSWORD,
+      </if>
+      <if test="loginTime != null">
+        LOGIN_TIME,
+      </if>
+      <if test="lastLoginTime != null">
+        LAST_LOGIN_TIME,
+      </if>
+      <if test="loginNum != null">
+        LOGIN_NUM,
+      </if>
+      <if test="useStatus != null">
+        USE_STATUS,
+      </if>
+      <if test="creator != null">
+        CREATOR,
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="userId != null">
+        #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="orgId != null">
+        #{orgId,jdbcType=BIGINT},
+      </if>
+      <if test="login != null">
+        #{login,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null">
+        #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="loginTime != null">
+        #{loginTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="lastLoginTime != null">
+        #{lastLoginTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="loginNum != null">
+        #{loginNum,jdbcType=INTEGER},
+      </if>
+      <if test="useStatus != null">
+        #{useStatus,jdbcType=TINYINT},
+      </if>
+      <if test="creator != null">
+        #{creator,jdbcType=BIGINT},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.model.User">
+    update t_ecc_auth_user
+    <set>
+      <if test="orgId != null">
+        ORG_ID = #{orgId,jdbcType=BIGINT},
+      </if>
+      <if test="login != null">
+        LOGIN = #{login,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null">
+        PASSWORD = #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="loginTime != null">
+        LOGIN_TIME = #{loginTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="lastLoginTime != null">
+        LAST_LOGIN_TIME = #{lastLoginTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="loginNum != null">
+        LOGIN_NUM = #{loginNum,jdbcType=INTEGER},
+      </if>
+      <if test="useStatus != null">
+        USE_STATUS = #{useStatus,jdbcType=TINYINT},
+      </if>
+      <if test="creator != null">
+        CREATOR = #{creator,jdbcType=BIGINT},
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where USER_ID = #{userId,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.huak.model.User">
+    update t_ecc_auth_user
+    set ORG_ID = #{orgId,jdbcType=BIGINT},
+      LOGIN = #{login,jdbcType=VARCHAR},
+      PASSWORD = #{password,jdbcType=VARCHAR},
+      LOGIN_TIME = #{loginTime,jdbcType=TIMESTAMP},
+      LAST_LOGIN_TIME = #{lastLoginTime,jdbcType=TIMESTAMP},
+      LOGIN_NUM = #{loginNum,jdbcType=INTEGER},
+      USE_STATUS = #{useStatus,jdbcType=TINYINT},
+      CREATOR = #{creator,jdbcType=BIGINT},
+      CREATE_TIME = #{createTime,jdbcType=TIMESTAMP}
+    where USER_ID = #{userId,jdbcType=BIGINT}
+  </update>
+</mapper>

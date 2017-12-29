@@ -1,0 +1,552 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.task.dao.EnergyAnalySisdataDao">
+  <resultMap id="BaseResultMap" type="com.huak.task.model.EnergyAnalySisdata">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="UNITID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="AREA" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="HOTPLAN" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="HOTFINISHPLAN" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="HOTSUMANALYSIS" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="HOTONEANALYSIS" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="POWERPLAN" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="POWERFINISHPLAN" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="POWERSUMANALYSIS" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="POWERONEANALYSIS" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="WATERPLAN" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="WATERFINISHPLAN" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="WATERSUMANALYSIS" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="WATERONEANALYSIS" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="COMPREHENSIVECONSUMPTION" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="AVGTEAIRMPERATURE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="AVGROOMTEMPERATURE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="TYPE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="BEFORHEAT" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="SCADATIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ZSHOTONEANALYSIS" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ZSPOWERONEANALYSIS" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ZSWATERONEANALYSIS" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="HEATCONSUMPTION" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <arg column="COMID" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    ID, UNITID, AREA, HOTPLAN, HOTFINISHPLAN, HOTSUMANALYSIS, HOTONEANALYSIS, POWERPLAN, 
+    POWERFINISHPLAN, POWERSUMANALYSIS, POWERONEANALYSIS, WATERPLAN, WATERFINISHPLAN, 
+    WATERSUMANALYSIS, WATERONEANALYSIS, COMPREHENSIVECONSUMPTION, AVGTEAIRMPERATURE, 
+    AVGROOMTEMPERATURE, TYPE, BEFORHEAT, SCADATIME, ZSHOTONEANALYSIS, ZSPOWERONEANALYSIS, 
+    ZSWATERONEANALYSIS, HEATCONSUMPTION,COMID
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_energyanalysisdata_tj
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_energyanalysisdata_tj
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.huak.task.model.EnergyAnalySisdata">
+    insert into t_emc_energyanalysisdata_tj (ID, UNITID, AREA,
+      HOTPLAN, HOTFINISHPLAN, HOTSUMANALYSIS, 
+      HOTONEANALYSIS, POWERPLAN, POWERFINISHPLAN, 
+      POWERSUMANALYSIS, POWERONEANALYSIS, WATERPLAN, 
+      WATERFINISHPLAN, WATERSUMANALYSIS, WATERONEANALYSIS, 
+      COMPREHENSIVECONSUMPTION, AVGTEAIRMPERATURE, 
+      AVGROOMTEMPERATURE, TYPE, BEFORHEAT, 
+      SCADATIME, ZSHOTONEANALYSIS, ZSPOWERONEANALYSIS, 
+      ZSWATERONEANALYSIS, HEATCONSUMPTION, COMID)
+    values (#{id,jdbcType=VARCHAR}, #{unitid,jdbcType=VARCHAR}, #{area,jdbcType=VARCHAR}, 
+      #{hotplan,jdbcType=VARCHAR}, #{hotfinishplan,jdbcType=VARCHAR}, #{hotsumanalysis,jdbcType=VARCHAR}, 
+      #{hotoneanalysis,jdbcType=VARCHAR}, #{powerplan,jdbcType=VARCHAR}, #{powerfinishplan,jdbcType=VARCHAR}, 
+      #{powersumanalysis,jdbcType=VARCHAR}, #{poweroneanalysis,jdbcType=VARCHAR}, #{waterplan,jdbcType=VARCHAR}, 
+      #{waterfinishplan,jdbcType=VARCHAR}, #{watersumanalysis,jdbcType=VARCHAR}, #{wateroneanalysis,jdbcType=VARCHAR}, 
+      #{comprehensiveconsumption,jdbcType=VARCHAR}, #{avgteairmperature,jdbcType=VARCHAR}, 
+      #{avgroomtemperature,jdbcType=VARCHAR}, #{type,jdbcType=VARCHAR}, #{beforheat,jdbcType=VARCHAR}, 
+      #{scadatime,jdbcType=VARCHAR}, #{zshotoneanalysis,jdbcType=VARCHAR}, #{zspoweroneanalysis,jdbcType=VARCHAR}, 
+      #{zswateroneanalysis,jdbcType=VARCHAR}, #{heatconsumption,jdbcType=VARCHAR},#{comId,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.huak.task.model.EnergyAnalySisdata">
+    insert into t_emc_energyanalysisdata_tj
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="unitid != null">
+        UNITID,
+      </if>
+      <if test="area != null">
+        AREA,
+      </if>
+      <if test="hotplan != null">
+        HOTPLAN,
+      </if>
+      <if test="hotfinishplan != null">
+        HOTFINISHPLAN,
+      </if>
+      <if test="hotsumanalysis != null">
+        HOTSUMANALYSIS,
+      </if>
+      <if test="hotoneanalysis != null">
+        HOTONEANALYSIS,
+      </if>
+      <if test="powerplan != null">
+        POWERPLAN,
+      </if>
+      <if test="powerfinishplan != null">
+        POWERFINISHPLAN,
+      </if>
+      <if test="powersumanalysis != null">
+        POWERSUMANALYSIS,
+      </if>
+      <if test="poweroneanalysis != null">
+        POWERONEANALYSIS,
+      </if>
+      <if test="waterplan != null">
+        WATERPLAN,
+      </if>
+      <if test="waterfinishplan != null">
+        WATERFINISHPLAN,
+      </if>
+      <if test="watersumanalysis != null">
+        WATERSUMANALYSIS,
+      </if>
+      <if test="wateroneanalysis != null">
+        WATERONEANALYSIS,
+      </if>
+      <if test="comprehensiveconsumption != null">
+        COMPREHENSIVECONSUMPTION,
+      </if>
+      <if test="avgteairmperature != null">
+        AVGTEAIRMPERATURE,
+      </if>
+      <if test="avgroomtemperature != null">
+        AVGROOMTEMPERATURE,
+      </if>
+      <if test="type != null">
+        TYPE,
+      </if>
+      <if test="beforheat != null">
+        BEFORHEAT,
+      </if>
+      <if test="scadatime != null">
+        SCADATIME,
+      </if>
+      <if test="zshotoneanalysis != null">
+        ZSHOTONEANALYSIS,
+      </if>
+      <if test="zspoweroneanalysis != null">
+        ZSPOWERONEANALYSIS,
+      </if>
+      <if test="zswateroneanalysis != null">
+        ZSWATERONEANALYSIS,
+      </if>
+      <if test="heatconsumption != null">
+        HEATCONSUMPTION,
+      </if>
+      <if test="comId != null">
+            COMID,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="unitid != null">
+        #{unitid,jdbcType=VARCHAR},
+      </if>
+      <if test="area != null">
+        #{area,jdbcType=VARCHAR},
+      </if>
+      <if test="hotplan != null">
+        #{hotplan,jdbcType=VARCHAR},
+      </if>
+      <if test="hotfinishplan != null">
+        #{hotfinishplan,jdbcType=VARCHAR},
+      </if>
+      <if test="hotsumanalysis != null">
+        #{hotsumanalysis,jdbcType=VARCHAR},
+      </if>
+      <if test="hotoneanalysis != null">
+        #{hotoneanalysis,jdbcType=VARCHAR},
+      </if>
+      <if test="powerplan != null">
+        #{powerplan,jdbcType=VARCHAR},
+      </if>
+      <if test="powerfinishplan != null">
+        #{powerfinishplan,jdbcType=VARCHAR},
+      </if>
+      <if test="powersumanalysis != null">
+        #{powersumanalysis,jdbcType=VARCHAR},
+      </if>
+      <if test="poweroneanalysis != null">
+        #{poweroneanalysis,jdbcType=VARCHAR},
+      </if>
+      <if test="waterplan != null">
+        #{waterplan,jdbcType=VARCHAR},
+      </if>
+      <if test="waterfinishplan != null">
+        #{waterfinishplan,jdbcType=VARCHAR},
+      </if>
+      <if test="watersumanalysis != null">
+        #{watersumanalysis,jdbcType=VARCHAR},
+      </if>
+      <if test="wateroneanalysis != null">
+        #{wateroneanalysis,jdbcType=VARCHAR},
+      </if>
+      <if test="comprehensiveconsumption != null">
+        #{comprehensiveconsumption,jdbcType=VARCHAR},
+      </if>
+      <if test="avgteairmperature != null">
+        #{avgteairmperature,jdbcType=VARCHAR},
+      </if>
+      <if test="avgroomtemperature != null">
+        #{avgroomtemperature,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="beforheat != null">
+        #{beforheat,jdbcType=VARCHAR},
+      </if>
+      <if test="scadatime != null">
+        #{scadatime,jdbcType=VARCHAR},
+      </if>
+      <if test="zshotoneanalysis != null">
+        #{zshotoneanalysis,jdbcType=VARCHAR},
+      </if>
+      <if test="zspoweroneanalysis != null">
+        #{zspoweroneanalysis,jdbcType=VARCHAR},
+      </if>
+      <if test="zswateroneanalysis != null">
+        #{zswateroneanalysis,jdbcType=VARCHAR},
+      </if>
+      <if test="heatconsumption != null">
+        #{heatconsumption,jdbcType=VARCHAR},
+      </if>
+        <if test="comId != null">
+            #{comId,jdbcType=VARCHAR},
+        </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.task.model.EnergyAnalySisdata">
+    update t_emc_energyanalysisdata_tj
+    <set>
+      <if test="unitid != null">
+        UNITID = #{unitid,jdbcType=VARCHAR},
+      </if>
+      <if test="area != null">
+        AREA = #{area,jdbcType=VARCHAR},
+      </if>
+      <if test="hotplan != null">
+        HOTPLAN = #{hotplan,jdbcType=VARCHAR},
+      </if>
+      <if test="hotfinishplan != null">
+        HOTFINISHPLAN = #{hotfinishplan,jdbcType=VARCHAR},
+      </if>
+      <if test="hotsumanalysis != null">
+        HOTSUMANALYSIS = #{hotsumanalysis,jdbcType=VARCHAR},
+      </if>
+      <if test="hotoneanalysis != null">
+        HOTONEANALYSIS = #{hotoneanalysis,jdbcType=VARCHAR},
+      </if>
+      <if test="powerplan != null">
+        POWERPLAN = #{powerplan,jdbcType=VARCHAR},
+      </if>
+      <if test="powerfinishplan != null">
+        POWERFINISHPLAN = #{powerfinishplan,jdbcType=VARCHAR},
+      </if>
+      <if test="powersumanalysis != null">
+        POWERSUMANALYSIS = #{powersumanalysis,jdbcType=VARCHAR},
+      </if>
+      <if test="poweroneanalysis != null">
+        POWERONEANALYSIS = #{poweroneanalysis,jdbcType=VARCHAR},
+      </if>
+      <if test="waterplan != null">
+        WATERPLAN = #{waterplan,jdbcType=VARCHAR},
+      </if>
+      <if test="waterfinishplan != null">
+        WATERFINISHPLAN = #{waterfinishplan,jdbcType=VARCHAR},
+      </if>
+      <if test="watersumanalysis != null">
+        WATERSUMANALYSIS = #{watersumanalysis,jdbcType=VARCHAR},
+      </if>
+      <if test="wateroneanalysis != null">
+        WATERONEANALYSIS = #{wateroneanalysis,jdbcType=VARCHAR},
+      </if>
+      <if test="comprehensiveconsumption != null">
+        COMPREHENSIVECONSUMPTION = #{comprehensiveconsumption,jdbcType=VARCHAR},
+      </if>
+      <if test="avgteairmperature != null">
+        AVGTEAIRMPERATURE = #{avgteairmperature,jdbcType=VARCHAR},
+      </if>
+      <if test="avgroomtemperature != null">
+        AVGROOMTEMPERATURE = #{avgroomtemperature,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        TYPE = #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="beforheat != null">
+        BEFORHEAT = #{beforheat,jdbcType=VARCHAR},
+      </if>
+      <if test="scadatime != null">
+        SCADATIME = #{scadatime,jdbcType=VARCHAR},
+      </if>
+      <if test="zshotoneanalysis != null">
+        ZSHOTONEANALYSIS = #{zshotoneanalysis,jdbcType=VARCHAR},
+      </if>
+      <if test="zspoweroneanalysis != null">
+        ZSPOWERONEANALYSIS = #{zspoweroneanalysis,jdbcType=VARCHAR},
+      </if>
+      <if test="zswateroneanalysis != null">
+        ZSWATERONEANALYSIS = #{zswateroneanalysis,jdbcType=VARCHAR},
+      </if>
+      <if test="heatconsumption != null">
+        HEATCONSUMPTION = #{heatconsumption,jdbcType=VARCHAR},
+      </if>
+        <if test="comId != null">
+            COMID = #{comId,jdbcType=VARCHAR},
+        </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.huak.task.model.EnergyAnalySisdata">
+    update t_emc_energyanalysisdata_tj
+    set UNITID = #{unitid,jdbcType=VARCHAR},
+      AREA = #{area,jdbcType=VARCHAR},
+      HOTPLAN = #{hotplan,jdbcType=VARCHAR},
+      HOTFINISHPLAN = #{hotfinishplan,jdbcType=VARCHAR},
+      HOTSUMANALYSIS = #{hotsumanalysis,jdbcType=VARCHAR},
+      HOTONEANALYSIS = #{hotoneanalysis,jdbcType=VARCHAR},
+      POWERPLAN = #{powerplan,jdbcType=VARCHAR},
+      POWERFINISHPLAN = #{powerfinishplan,jdbcType=VARCHAR},
+      POWERSUMANALYSIS = #{powersumanalysis,jdbcType=VARCHAR},
+      POWERONEANALYSIS = #{poweroneanalysis,jdbcType=VARCHAR},
+      WATERPLAN = #{waterplan,jdbcType=VARCHAR},
+      WATERFINISHPLAN = #{waterfinishplan,jdbcType=VARCHAR},
+      WATERSUMANALYSIS = #{watersumanalysis,jdbcType=VARCHAR},
+      WATERONEANALYSIS = #{wateroneanalysis,jdbcType=VARCHAR},
+      COMPREHENSIVECONSUMPTION = #{comprehensiveconsumption,jdbcType=VARCHAR},
+      AVGTEAIRMPERATURE = #{avgteairmperature,jdbcType=VARCHAR},
+      AVGROOMTEMPERATURE = #{avgroomtemperature,jdbcType=VARCHAR},
+      TYPE = #{type,jdbcType=VARCHAR},
+      BEFORHEAT = #{beforheat,jdbcType=VARCHAR},
+      SCADATIME = #{scadatime,jdbcType=VARCHAR},
+      ZSHOTONEANALYSIS = #{zshotoneanalysis,jdbcType=VARCHAR},
+      ZSPOWERONEANALYSIS = #{zspoweroneanalysis,jdbcType=VARCHAR},
+      ZSWATERONEANALYSIS = #{zswateroneanalysis,jdbcType=VARCHAR},
+      HEATCONSUMPTION = #{heatconsumption,jdbcType=VARCHAR},
+      COMID = #{comId,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+    <select id="selectEnergyAnalyByUnitid" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_energyanalysisdata_tj
+        where UNITID = #{unitid,jdbcType=VARCHAR}
+    </select>
+    <!--水的计算每小时能耗-->
+    <select id="selectFinalDataHourById" parameterType="java.util.Map" resultMap="BaseResultMap">
+
+        INSERT INTO ${tableName} (
+                                ID,
+                                COMID,
+                                UNITID,
+                                NODEID,
+                                TYPEID,
+                                DOSAGE_TIME,
+                                DOSAGE,
+                                AREA,
+                                PRICE,
+                                WTEMP,
+                                CWTEMP,
+                                COAL_COEF,
+                                C_COEF,
+                                ITEMP,
+                                CITEMP
+                            ) SELECT
+                                uuid() ID,
+                                t.comid COMID,
+                                i.EMC_ID UNITID,
+                                1 NODEID,
+                                2 TYPEID,
+                                date_format(CONCAT(
+                                    SUBSTRING(t.SCADATIME,1,11),
+                                    a.time,
+                                    ':00:00'
+                                ),'%Y-%m-%d %H:%i:%S') DOSAGE_TIME,
+                                ROUND(t.WATERSUMANALYSIS / 24, 2) DOSAGE,
+                                t.area AREA,
+                                0 PRICE,
+                                t.AVGTEAIRMPERATURE WTEMP,
+                                0 CWTEMP,
+                                #{coef,jdbcType=DOUBLE} COAL_COEF,
+                                0 C_COEF,
+                                t.AVGROOMTEMPERATURE ITEMP,
+                                0 CITEMP
+                            FROM
+                                t_emc_energyanalysisdata_tj t
+                            RIGHT JOIN t_aa a ON 1 = 1
+                            LEFT JOIN t_emc_org_inter i ON t.unitid = i.ORG_ID
+                            WHERE
+                                t.id =#{id,jdbcType=VARCHAR}
+    </select>
+    <!--电的计算每小时能耗-->
+    <select id="selectPowerById" parameterType="java.util.Map" resultMap="BaseResultMap">
+
+        INSERT INTO ${tableName} (
+                            ID,
+                            COMID,
+                            UNITID,
+                            NODEID,
+                            TYPEID,
+                            DOSAGE_TIME,
+                            DOSAGE,
+                            AREA,
+                            PRICE,
+                            WTEMP,
+                            CWTEMP,
+                            COAL_COEF,
+                            C_COEF,
+                            ITEMP,
+                            CITEMP
+                            ) SELECT
+                            uuid() ID,
+                            t.comid COMID,
+                            i.EMC_ID UNITID,
+                            1 NODEID,
+                            1 TYPEID,
+                            date_format(CONCAT(
+                            SUBSTRING(t.SCADATIME,1,11),
+                            a.time,
+                            ':00:00'
+                            ),'%Y-%m-%d %H:%i:%S') DOSAGE_TIME,
+                            ROUND(t.POWERSUMANALYSIS / 24, 2) DOSAGE,
+                            t.area AREA,
+                            0 PRICE,
+                            t.AVGTEAIRMPERATURE WTEMP,
+                            0 CWTEMP,
+                            #{coef,jdbcType=DOUBLE} COAL_COEF,
+                            0 C_COEF,
+                            t.AVGROOMTEMPERATURE ITEMP,
+                            0 CITEMP
+                            FROM
+                            t_emc_energyanalysisdata_tj t
+                            RIGHT JOIN t_aa a ON 1 = 1
+                            LEFT JOIN t_emc_org_inter i ON t.unitid = i.ORG_ID
+                            WHERE
+                  t.id =#{id,jdbcType=VARCHAR}
+    </select>
+    <!--热的计算每小时能耗-->
+    <select id="selectHeatById" parameterType="java.util.Map" resultMap="BaseResultMap">
+
+        INSERT INTO ${tableName} (
+                        ID,
+                        COMID,
+                        UNITID,
+                        NODEID,
+                        TYPEID,
+                        DOSAGE_TIME,
+                        DOSAGE,
+                        AREA,
+                        PRICE,
+                        WTEMP,
+                        CWTEMP,
+                        COAL_COEF,
+                        C_COEF,
+                        ITEMP,
+                        CITEMP
+                        ) SELECT
+                        uuid() ID,
+                        t.comid COMID,
+                        i.EMC_ID UNITID,
+                        1 NODEID,
+                        3 TYPEID,
+                        date_format(CONCAT(
+                        SUBSTRING(t.SCADATIME,1,11),
+                        a.time,
+                        ':00:00'
+                        ),'%Y-%m-%d %H:%i:%S') DOSAGE_TIME,
+                        ROUND(t.HOTSUMANALYSIS / 24, 2) DOSAGE,
+                        t.area AREA,
+                        0 PRICE,
+                        t.AVGTEAIRMPERATURE WTEMP,
+                        0 CWTEMP,
+                        #{coef,jdbcType=DOUBLE} COAL_COEF,
+                        0 C_COEF,
+                        t.AVGROOMTEMPERATURE ITEMP,
+                        0 CITEMP
+                        FROM
+                        t_emc_energyanalysisdata_tj t
+                        RIGHT JOIN t_aa a ON 1 = 1
+                        LEFT JOIN t_emc_org_inter i ON t.unitid = i.ORG_ID
+                        WHERE
+                  t.id =#{id,jdbcType=VARCHAR}
+    </select>
+    <!--气的计算每小时能耗-->
+    <select id="selectQiById" parameterType="java.util.Map" resultMap="BaseResultMap">
+
+        INSERT INTO ${tableName} (
+                    ID,
+                    COMID,
+                    UNITID,
+                    NODEID,
+                    TYPEID,
+                    DOSAGE_TIME,
+                    DOSAGE,
+                    AREA,
+                    PRICE,
+                    WTEMP,
+                    CWTEMP,
+                    COAL_COEF,
+                    C_COEF,
+                    ITEMP,
+                    CITEMP
+                    ) SELECT
+                    uuid() ID,
+                    t.comid COMID,
+                    i.EMC_ID UNITID,
+                    1 NODEID,
+                    4 TYPEID,
+                    date_format(CONCAT(
+                    SUBSTRING(t.SCADATIME,1,11),
+                    a.time,
+                    ':00:00'
+                    ),'%Y-%m-%d %H:%i:%S') DOSAGE_TIME,
+                    ROUND(t.HOTSUMANALYSIS / 24, 2) DOSAGE,
+                    t.area AREA,
+                    0 PRICE,
+                    t.AVGTEAIRMPERATURE WTEMP,
+                    0 CWTEMP,
+                    #{coef,jdbcType=DOUBLE} COAL_COEF,
+                    0 C_COEF,
+                    t.AVGROOMTEMPERATURE ITEMP,
+                    0 CITEMP
+                    FROM
+                    t_emc_energyanalysisdata_tj t
+                    RIGHT JOIN t_aa a ON 1 = 1
+                    LEFT JOIN t_emc_org_inter i ON t.unitid = i.ORG_ID
+                    WHERE
+                    t.id =#{id,jdbcType=VARCHAR}
+    </select>
+    <!--取标煤系数-->
+    <select id="selectCoal" parameterType="java.util.Map" resultType="java.lang.String">
+         SELECT
+        ef.COEF coef
+        FROM
+        t_emc_coal_coef ef
+        WHERE
+        ef.SDATE = (
+        SELECT
+        max(f.sdate)
+        FROM
+        t_emc_coal_coef f
+        WHERE f.sdate &lt;=#{sdate,jdbcType=VARCHAR}
+        AND f.TYPEID = #{typeId,jdbcType=VARCHAR}
+        and f.comid = #{comId,jdbcType=VARCHAR})
+
+    </select>
+</mapper>

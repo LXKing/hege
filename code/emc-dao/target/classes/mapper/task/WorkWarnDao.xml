@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.task.dao.DiacrisisDao">
+
+    <resultMap id="BaseResultMap" type="com.huak.health.vo.AlarmDataVo">
+        <constructor>
+            <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+
+            <arg column="TAG" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="COLLECT_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="COLLECT_VALUE" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="ALARM_TYPE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+            <arg column="ALARM_LEVEL" javaType="java.lang.Byte" jdbcType="TINYINT" />
+            <arg column="MODEL" javaType="java.lang.Byte" jdbcType="TINYINT" />
+            <arg column="NUM" javaType="java.lang.Double" jdbcType="DOUBLE" />
+        </constructor>
+    </resultMap>
+    <select id="getWorkWarnInfo" resultMap="BaseResultMap">
+
+            SELECT ea.ID,
+
+                    m.TAG,
+                    m.COLLECT_TIME ,
+                    m.COLLECT_VALUE ,
+                    ea.ALARM_LEVEL ,
+                    ea.ALARM_TYPE ,
+                    ea.MODEL,
+                    ea.NUM NUM from
+            (SELECT
+                        em.TAG,
+                        em.COLLECT_VALUE,
+                        em.COLLECT_TIME
+                    FROM
+                        t_emc_meta_data em
+                    WHERE
+                        em.READ_SATE = '0'  )m
+            LEFT JOIN
+                t_emc_alarm_config ea on m.TAG=ea.TAG and ea.ISENABLE='0'
+
+    </select>
+
+
+
+
+</mapper>

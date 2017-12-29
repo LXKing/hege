@@ -1,0 +1,1071 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.org.dao.TopAllDao">
+
+    <resultMap id="BaseResultMap" type="com.huak.org.model.vo.TopAllVo">
+        <constructor>
+            <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="Energy_Total" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="Carbon_Total" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="Cost_Total" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="Yardage" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="Convent_Yardage" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="Price_Area" javaType="java.lang.String" jdbcType="VARCHAR" />
+        </constructor>
+    </resultMap>
+    <resultMap id="CostResultMap" type="com.huak.org.model.vo.CostVo">
+        <constructor>
+            <arg column="MANAGE" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="OTHER" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="DEVICE" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="LABOR" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="ENERGY" javaType="java.lang.Double" jdbcType="DOUBLE" />
+        </constructor>
+    </resultMap>
+    <!--标煤总量-->
+    <select id="selectTopEtotalByMap" parameterType="java.util.Map" resultType="java.lang.String">
+        SELECT ROUND(SUM(a.BM),1) from (
+        SELECT  sum(h.BM) BM,h.TYPE,ou.UNITTYPE  from (
+        SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR})) and o.COM_ID=#{comId,jdbcType=VARCHAR}) c,v_emc_unit v
+
+        WHERE c.ID=v.ORGID
+        <if test="feedType != null and feedType !=''">
+        and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (SELECT fd.UNITID,SUM(fd.DOSAGE*fd.COAL_COEF) BM,et.TYPE
+        FROM ${tableName} fd LEFT JOIN t_emc_energy_type et on fd.TYPEID=et.ID
+        WHERE   1=1
+        <if test="startTime != null and startTime !=''">
+            AND fd.DOSAGE_TIME &gt;=  #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            AND fd.DOSAGE_TIME  &lt;= #{endTime,jdbcType=VARCHAR}
+        </if>
+            and et.TYPE!=4
+        GROUP BY fd.UNITID,et.TYPE) h on ou.UNITID=h.UNITID
+        GROUP BY h.TYPE,ou.UNITTYPE
+        ) a
+    </select>
+    <!--碳排放总量-->
+    <select id="selectCarbonTotalByMap" parameterType="java.util.Map" resultType="java.lang.String">
+        SELECT
+        ROUND(sum(t.DOSAGE*t.C_COEF),1) AS CarbonTotal
+
+        FROM
+        ${tableName} t , v_emc_unit v,
+        (SELECT id FROM t_emc_org where FIND_IN_SET(  id, emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR}))) a
+        WHERE
+        v.COMID=t.COMID AND
+        v.unitid=t.UNITID AND
+        v.orgid=a.id
+        <if test="comId != null and comId !=''">
+            and v.COMID=#{comId,jdbcType=VARCHAR}
+        </if>
+        <if test="feedType != null and feedType !=''">
+            and v.HEAT_TYPE = #{feedType,jdbcType=VARCHAR}
+        </if>
+        <if test="startTime != null and startTime !=''">
+            and t.DOSAGE_TIME &gt;= #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and t.DOSAGE_TIME &lt;= #{endTime,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+
+
+    <!--能源总成本-->
+    <select id="selectTopAllTotalByEnergy" parameterType="java.util.Map" resultType="java.lang.Double">
+        SELECT ROUND(SUM(a.BM),1) from (
+        SELECT  sum(h.sumtotal) BM,ou.UNITTYPE from (
+        SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds
+        (#{orgId,jdbcType=VARCHAR})) and o.COM_ID=#{comId,jdbcType=VARCHAR}) c,v_emc_unit v
+
+        WHERE c.ID=v.ORGID
+        <if test="feedType != null and feedType !=''">
+            and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (
+        select SUM(totalenergy*prices.PRICE)/10000 sumtotal,dataenergy.UNITID, dataenergy.dayDate from (
+        select dh.DOSAGE totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,
+        dh.TYPEID,dh.DOSAGE_TIME,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') dayDate
+        from  ${tableName}
+        dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+        )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+        where 1=1
+        <if test="startTime != null and startTime !=''">
+            and dataenergy.dayDate &gt;= #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and dataenergy.dayDate &lt;= #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY dataenergy.UNITID
+        ) h on ou.UNITID=h.UNITID
+        GROUP BY ou.UNITTYPE
+        ) a
+    </select>
+    <!--总成本-->
+    <select id="selectCostTotalByMap" parameterType="java.util.Map" resultType="java.util.Map">
+
+        select
+        ROUND(max(case when cc.TYPEID = '1' then cc.cost else 0 end),1) manage,
+        ROUND(max(case when cc.TYPEID = '2' then cc.cost else 0 end),1) other,
+        ROUND(max(case when cc.TYPEID = '3' then cc.cost else 0 end),1) device,
+        ROUND(max(case when cc.TYPEID = '4' then cc.cost else 0 end),1) labor,
+        (select sum(bb.ne) from (SELECT
+        a.typeid,
+        sum(a.DOSAGE*a.PRICE) ne
+        FROM
+        ${tableName} a
+        ,
+        (select v.COMID,v.UNITID from v_emc_unit v  where 1=1
+        <if test="feedType != null and feedType !=''">
+        and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        and v.ORGID in (select id from t_emc_org where FIND_IN_SET(id,emc_func_org_getchilds(#{orgId,jdbcType=VARCHAR}))) ) c
+        WHERE
+        a.COMID = c.COMID
+        AND a.UNITID = c.unitid
+
+        <if test="startTime != null and startTime !=''">
+            and a.DOSAGE_TIME &gt;= #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and a.DOSAGE_TIME &lt;= #{endTime,jdbcType=VARCHAR}
+        </if>
+        <if test="comId != null and comId !=''">
+            and c.COMID=#{comId,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        TYPEID)bb)energy
+
+        from (SELECT
+        b.TYPEID,
+        sum(b.COST) cost
+
+        FROM
+        t_emc_final_cost_day b,
+        (select v.COMID,v.UNITID from v_emc_unit v where 1=1
+        <if test="feedType != null and feedType !=''">
+        and  v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        and v.ORGID in (select id from t_emc_org where FIND_IN_SET(id,emc_func_org_getchilds(#{orgId,jdbcType=VARCHAR}))) )c
+        where b.COMID = c.comid and b.UNITID = c.unitid
+
+        <if test="startTime != null and startTime !=''">
+            and b.COST_DATE &gt;= #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and b.COST_DATE &lt;= #{endTime,jdbcType=VARCHAR}
+        </if>
+        <if test="comId != null and comId !=''">
+            and c.COMID=#{comId,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        b.TYPEID) cc
+    </select>
+    <!--单耗-->
+    <select id="selectYardageByMap" parameterType="java.util.Map" resultType="java.lang.String">
+
+        SELECT ROUND(z.zbm/z.area,2)  DH from (
+        SELECT  sum(b.area) area,
+        (SELECT SUM(a.bm) from (
+        SELECT  sum(h.BM) BM,sum(h.DOSAGE) DOSAGE,h.TYPE,ou.UNITTYPE,SUM(h.AREA) AREA  from (
+        SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR}))
+
+        <if test="comId != null and comId !=''">
+            and o.COM_ID=#{comId,jdbcType=VARCHAR}
+        </if>
+        ) c,v_emc_unit v
+
+        WHERE c.ID=v.ORGID
+        <if test="feedType != null and feedType !=''">
+        and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        <if test="orgType != null and orgType !=''">
+            and v.UNITTYPE = #{orgType,jdbcType=VARCHAR}
+        </if>
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (SELECT fd.UNITID,SUM(fd.DOSAGE) DOSAGE,SUM(fd.DOSAGE*fd.COAL_COEF) BM,et.TYPE,AVG(fd.AREA) AREA
+        FROM ${tableName} fd LEFT JOIN t_emc_energy_type et on fd.TYPEID=et.ID
+        WHERE 1=1
+        <if test="startTime != null and startTime !=''">
+            AND fd.DOSAGE_TIME &gt;= #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            AND fd.DOSAGE_TIME  &lt;= #{endTime,jdbcType=VARCHAR}
+        </if>
+        and et.TYPE!=4
+        GROUP BY fd.UNITID,et.TYPE) h on ou.UNITID=h.UNITID
+        GROUP BY h.TYPE,ou.UNITTYPE
+        )a) zbm from (
+        SELECT  a.UNITTYPE , avg(a.AREA) area from (
+        SELECT  sum(h.BM) BM,sum(h.DOSAGE) DOSAGE,h.TYPE,ou.UNITTYPE,SUM(h.AREA) AREA  from (
+        SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR}))
+
+        <if test="comId != null and comId !=''">
+            and o.COM_ID=#{comId,jdbcType=VARCHAR}
+        </if>
+
+        ) c,v_emc_unit v
+        WHERE c.ID=v.ORGID
+        <if test="feedType != null and feedType !=''">
+        and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        <if test="orgType != null and orgType !=''">
+            and v.UNITTYPE = #{orgType,jdbcType=VARCHAR}
+        </if>
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (SELECT fd.UNITID,SUM(fd.DOSAGE) DOSAGE,SUM(fd.DOSAGE*fd.COAL_COEF) BM,et.TYPE,AVG(fd.AREA) AREA
+        FROM ${tableName} fd LEFT JOIN t_emc_energy_type et on fd.TYPEID=et.ID
+        WHERE 1=1
+        <if test="startTime != null and startTime !=''">
+            AND fd.DOSAGE_TIME &gt;= #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            AND fd.DOSAGE_TIME  &lt;= #{endTime,jdbcType=VARCHAR}
+        </if>
+        and et.TYPE!=4
+        GROUP BY fd.UNITID,et.TYPE) h on ou.UNITID=h.UNITID
+        GROUP BY h.TYPE,ou.UNITTYPE
+        ) a GROUP BY a.UNITTYPE
+        )b
+        ) z
+
+    </select>
+    <!--折算单耗-->
+    <!--管理总成本-->
+    <select id="getEachManagerCost" parameterType="java.util.Map" resultType="java.lang.Double">
+        select
+        cost
+        from (SELECT
+        b.TYPEID,
+        sum(b.COST) cost
+        FROM
+        t_emc_final_cost_day b,
+        (select * from v_emc_unit where
+                 <if test="feedType != null and feedType !=''">
+                     and HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+                 </if>
+        ORGID in (select id
+        from t_emc_org where FIND_IN_SET(id,emc_func_org_getchilds(#{orgId}))) )c
+        where
+        b.TYPEID='1' and
+        b.COMID = c.comid
+        and b.UNITID = c.unitid
+                 <if test="comId != null and comId !=''">
+        and c.COMID=#{comId}
+                 </if>
+                 <if test="startTime != null and startTime !=''">
+                      and b.COST_DATE   <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+                 </if>
+                <if test="endTime != null and endTime !=''">
+                   and b.COST_DATE <![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+                </if>
+                 GROUP BY
+                 b.TYPEID
+        ) cc;
+    </select>
+     <!--设备总成本-->
+    <select id="getEachDeviceCost" parameterType="java.util.Map" resultType="java.lang.Double">
+        select
+        cost
+        from (SELECT
+        b.TYPEID,
+        sum(b.COST) cost
+        FROM
+        t_emc_final_cost_day b,
+        (select * from v_emc_unit where
+        <if test="feedType != null and feedType !=''">
+            and HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        ORGID in (select id
+        from t_emc_org where FIND_IN_SET(id,emc_func_org_getchilds(#{orgId}))) )c
+        where
+        b.TYPEID='3' and
+        b.COMID = c.comid
+        and b.UNITID = c.unitid
+        <if test="comId != null and comId !=''">
+            and c.COMID=#{comId}
+        </if>
+        <if test="startTime != null and startTime !=''">
+            and b.COST_DATE   <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and b.COST_DATE <![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        b.TYPEID
+        ) cc;
+
+    </select>
+    <!--人工总成本-->
+    <select id="getEachLaborCost" parameterType="java.util.Map" resultType="java.lang.Double">
+
+
+        select
+        cost
+        from (SELECT
+        b.TYPEID,
+        sum(b.COST) cost
+        FROM
+        t_emc_final_cost_day b,
+        (select * from v_emc_unit where
+        <if test="feedType != null and feedType !=''">
+            and HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        ORGID in (select id
+        from t_emc_org where FIND_IN_SET(id,emc_func_org_getchilds(#{orgId}))) )c
+        where
+        b.TYPEID='4' and
+        b.COMID = c.comid
+        and b.UNITID = c.unitid
+        <if test="comId != null and comId !=''">
+            and c.COMID=#{comId}
+        </if>
+        <if test="startTime != null and startTime !=''">
+            and b.COST_DATE   <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and b.COST_DATE <![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        b.TYPEID
+        ) cc;
+    </select>
+    <!--其他总成本-->
+    <select id="getEachOtherCost" parameterType="java.util.Map" resultType="java.lang.Double">
+        select
+        cost
+        from (SELECT
+        b.TYPEID,
+        sum(b.COST) cost
+        FROM
+        t_emc_final_cost_day b,
+        (select * from v_emc_unit where
+        <if test="feedType != null and feedType !=''">
+            and HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        ORGID in (select id
+        from t_emc_org where FIND_IN_SET(id,emc_func_org_getchilds(#{orgId}))) )c
+        where
+        b.TYPEID='2' and
+        b.COMID = c.comid
+        and b.UNITID = c.unitid
+        <if test="comId != null and comId !=''">
+            and c.COMID=#{comId}
+        </if>
+        <if test="startTime != null and startTime !=''">
+            and b.COST_DATE   <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and b.COST_DATE <![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        b.TYPEID
+        ) cc;
+    </select>
+
+    <!--能源总成本-->
+    <select id="getEachEnergyCost" parameterType="java.util.Map" resultType="java.lang.Double">
+        SELECT ROUND(SUM(a.BM),1) total from (
+        SELECT  sum(h.sumtotal) BM from (
+        SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds
+        (#{orgId})) and o.COM_ID=#{comId}) c,v_emc_unit v
+
+        WHERE c.ID=v.ORGID
+                 <if test="feedType != null and feedType !=''">
+                    and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+                 </if>
+
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (
+        select SUM(totalenergy*prices.PRICE) sumtotal,dataenergy.UNITID, dataenergy.dayDate from (
+        select dh.DOSAGE*dh.COAL_COEF totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,
+        dh.TYPEID,dh.DOSAGE_TIME,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') dayDate
+        from  t_emc_final_data_hour_tj
+        dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+        )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+        where 1=1
+                <if test="startTime != null and startTime !=''">
+        and dataenergy.dayDate<![CDATA[<=]]>#{startTime}
+                </if>
+               <if test="endTime != null and endTime !=''">
+        and dataenergy.dayDate <![CDATA[<=]]> #{endTime}
+               </if>
+        GROUP BY dataenergy.UNITID
+        ) h on ou.UNITID=h.UNITID
+        ) a
+
+    </select>
+
+    <!--管理+其他+设备+人工总成本  <![CDATA[<=]]>-->
+    <select id="selectTopAllTotal" parameterType="java.util.Map" resultType="java.lang.Double">
+        select
+        cost
+        from (SELECT
+        b.TYPEID,
+        sum(b.COST)/10000 cost
+        FROM
+        t_emc_final_cost_day b,
+        (select * from v_emc_unit where 1=1
+                <if test="feedType != null and feedType !=''">
+                     and HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+                </if>
+        and ORGID in (select id
+        from t_emc_org where FIND_IN_SET(id,emc_func_org_getchilds(#{orgId}))) )c
+        where
+        b.COMID = c.comid
+        and b.UNITID = c.unitid
+                 <if test="comId != null and comId !=''">
+                  and c.COMID=#{comId}
+                 </if>
+               <if test="startTime != null and startTime !=''">
+                   and b.COST_DATE  <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+                 </if>
+              <if test="endTime != null and endTime !=''">
+                  and b.COST_DATE<![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+                </if>
+        ) cc
+
+    </select>
+
+    <!--成本平方米-->
+    <select id="selectPriceAreaByMap" parameterType="java.util.Map" resultType="java.lang.String">
+
+        SELECT ROUND(sum(b.area),4) area from (
+            SELECT  a.UNITTYPE , avg(a.AREA) area from (
+            SELECT  sum(h.BM) BM,sum(h.DOSAGE) DOSAGE,h.TYPE,ou.UNITTYPE,SUM(h.AREA) AREA  from (
+            SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR}))
+
+        <if test="comId != null and comId !=''">
+            and o.COM_ID=#{comId,jdbcType=VARCHAR}
+        </if>
+
+        ) c,v_emc_unit v
+        WHERE c.ID=v.ORGID
+        <if test="feedType != null and feedType !=''">
+        and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        <if test="orgType != null and orgType !=''">
+            and v.UNITTYPE = #{orgType,jdbcType=VARCHAR}
+        </if>
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (SELECT fd.UNITID,SUM(fd.DOSAGE) DOSAGE,SUM(fd.DOSAGE*fd.COAL_COEF) BM,et.TYPE,AVG(fd.AREA) AREA
+        FROM ${tableName} fd LEFT JOIN t_emc_energy_type et on fd.TYPEID=et.ID
+        WHERE  1=1
+        <if test="startTime != null and startTime !=''">
+        AND fd.DOSAGE_TIME &gt;= #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            AND fd.DOSAGE_TIME  &lt;= #{endTime,jdbcType=VARCHAR}
+        </if>
+        and et.TYPE!=4
+        GROUP BY fd.UNITID,et.TYPE) h on ou.UNITID=h.UNITID
+        GROUP BY h.TYPE,ou.UNITTYPE
+        ) a GROUP BY a.UNITTYPE )b
+    </select>
+    <!--供热源总能耗-->
+    <select id="selectTopFeedTotalByMap" parameterType="java.util.Map" resultType="java.lang.String">
+
+        SELECT ROUND(SUM(a.BM),1) from (
+        SELECT  sum(h.BM) BM,h.TYPE,ou.UNITTYPE  from (
+        SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR})) and o.COM_ID=#{comId,jdbcType=VARCHAR}) c,v_emc_unit v
+
+        WHERE c.ID=v.ORGID
+        <if test="feedType != null and feedType !=''">
+        and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        and v.UNITTYPE='1'
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (SELECT fd.UNITID,SUM(fd.DOSAGE*fd.COAL_COEF) BM,et.TYPE
+        FROM ${tableName} fd LEFT JOIN t_emc_energy_type et on fd.TYPEID=et.ID
+        WHERE  fd.DOSAGE_TIME &gt;= #{startTime,jdbcType=VARCHAR} AND fd.DOSAGE_TIME &lt;= #{endTime,jdbcType=VARCHAR}
+        and et.TYPE!=4
+        GROUP BY fd.UNITID,et.TYPE) h on ou.UNITID=h.UNITID
+        GROUP BY h.TYPE,ou.UNITTYPE
+        ) a
+    </select>
+    <!--供热源碳排放总能耗-->
+    <select id="selectTopFeedCarbonTotalByMap" parameterType="java.util.Map" resultType="java.lang.String">
+
+        SELECT ROUND(sum(b.fe),1) from (
+        select sum(a.DOSAGE*a.C_COEF) as fe,a.typeid  from ${tableName} a ,
+        (select * from v_emc_unit  where UNITTYPE='1'
+        <if test="feedType != null and feedType !=''">
+        and HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        and ORGID in (select id from t_emc_org where FIND_IN_SET(id,emc_func_org_getchilds(#{orgId,jdbcType=VARCHAR}))) ) c,
+        t_emc_energy_type e
+        where
+        a.COMID = c.COMID
+        AND a.UNITID = c.unitid
+        and a.TYPEID = e.id
+        <if test="comId != null and comId !=''">
+            and c.COMID=#{comId,jdbcType=VARCHAR}
+        </if>
+        <if test="startTime != null and startTime !=''">
+            and a.DOSAGE_TIME &gt;= #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and a.DOSAGE_TIME &lt;= #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        a.TYPEID) b
+    </select>
+
+    <!--供热源能源总成本-->
+    <select id="selectTopFeedCarbonTotalByEnergy" parameterType="java.util.Map" resultType="java.lang.Double">
+        SELECT ROUND(SUM(a.BM),1) from (
+        SELECT  sum(h.sumtotal) BM,ou.UNITTYPE from (
+        SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds
+        (#{orgId,jdbcType=VARCHAR})) and o.COM_ID=#{comId,jdbcType=VARCHAR}) c,v_emc_unit v
+
+        WHERE c.ID=v.ORGID
+        <if test="feedType != null and feedType !=''">
+            and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        and v.UNITTYPE='1'
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (
+        select SUM(totalenergy*prices.PRICE)/10000 sumtotal,dataenergy.UNITID, dataenergy.dayDate from (
+        select dh.DOSAGE totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,
+        dh.TYPEID,dh.DOSAGE_TIME,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') dayDate
+        from  ${tableName}
+        dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+        )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+        where 1=1
+        <if test="startTime != null and startTime !=''">
+            and dataenergy.dayDate &gt;= #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and dataenergy.dayDate &lt;= #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY dataenergy.UNITID
+        ) h on ou.UNITID=h.UNITID
+        GROUP BY ou.UNITTYPE
+        ) a
+    </select>
+
+
+    <!--热源总成本-->
+    <select id="selectFeedCostTotalByMap" parameterType="java.util.Map" resultType="java.util.Map">
+        select
+        ROUND(sum(case when cc.TYPEID = '1' then cc.cost else 0 end),1) manage,
+        ROUND(sum(case when cc.TYPEID = '2' then cc.cost else 0 end),1) other,
+        ROUND(sum(case when cc.TYPEID = '3' then cc.cost else 0 end),1) device,
+        ROUND(sum(case when cc.TYPEID = '4' then cc.cost else 0 end),1) labor
+        from (SELECT
+        b.TYPEID,
+        sum(b.COST)/10000 cost
+        FROM
+        t_emc_final_cost_day b,
+        (select * from v_emc_unit where UNITTYPE='1'
+        <if test="feedType != null and feedType !=''">
+            and HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        and ORGID in (select id
+        from t_emc_org where FIND_IN_SET(id,emc_func_org_getchilds(#{orgId,jdbcType=VARCHAR}))) )c
+        where
+        b.COMID = c.comid
+        and b.UNITID = c.unitid
+        <if test="comId != null and comId !=''">
+            and c.COMID=#{comId}
+        </if>
+        <if test="startTime != null and startTime !=''">
+            and b.COST_DATE  <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and b.COST_DATE<![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        b.TYPEID) cc
+
+    </select>
+
+    <!--管网总长度-->
+    <select id="selectGetNetLengh" parameterType="java.util.Map" resultType="java.lang.String">
+       SELECT ROUND(sum(t.LENGTH),2) from t_emc_unit_net t where t.ORG_ID in (SELECT
+              id
+            FROM
+            t_emc_org
+            WHERE
+            FIND_IN_SET(
+            id,
+            emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR})
+            ))
+            <if test="comId != null and comId !=''">
+                and t.COM_ID=#{comId,jdbcType=VARCHAR}
+            </if>
+        <if test="feedType != null and feedType !=''">
+                and t.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+
+    <!--网能源总成本-->
+    <select id="selectTopNetCarbonTotalByEnergy" parameterType="java.util.Map" resultType="java.lang.Double">
+        SELECT ROUND(SUM(a.BM),1) from (
+        SELECT  sum(h.sumtotal) BM,ou.UNITTYPE from (
+        SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds
+        (#{orgId,jdbcType=VARCHAR})) and o.COM_ID=#{comId,jdbcType=VARCHAR}) c,v_emc_unit v
+
+        WHERE c.ID=v.ORGID
+        <if test="feedType != null and feedType !=''">
+            and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        and v.UNITTYPE='2'
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (
+        select SUM(totalenergy*prices.PRICE)/10000 sumtotal,dataenergy.UNITID, dataenergy.dayDate from (
+        select dh.DOSAGE totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,
+        dh.TYPEID,dh.DOSAGE_TIME,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') dayDate
+        from  ${tableName}
+        dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+        )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+        where 1=1
+        <if test="startTime != null and startTime !=''">
+            and dataenergy.dayDate &gt;= #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and dataenergy.dayDate &lt;= #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY dataenergy.UNITID
+        ) h on ou.UNITID=h.UNITID
+        GROUP BY ou.UNITTYPE
+        ) a
+    </select>
+
+
+    <!--管网总成本-->
+    <select id="selectGetNetCost" parameterType="java.util.Map" resultType="java.util.Map">
+        select
+        ROUND(sum(case when cc.TYPEID = '1' then cc.cost else 0 end),1) manage,
+        ROUND(sum(case when cc.TYPEID = '2' then cc.cost else 0 end),1) other,
+        ROUND(sum(case when cc.TYPEID = '3' then cc.cost else 0 end),1) device,
+        ROUND(sum(case when cc.TYPEID = '4' then cc.cost else 0 end),1) labor
+        from (SELECT
+        b.TYPEID,
+        sum(b.COST)/10000 cost
+        FROM
+        t_emc_final_cost_day b,
+        (select * from v_emc_unit where UNITTYPE='2'
+        <if test="feedType != null and feedType !=''">
+            and HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        and ORGID in (select id
+        from t_emc_org where FIND_IN_SET(id,emc_func_org_getchilds(#{orgId,jdbcType=VARCHAR}))) )c
+        where
+        b.COMID = c.comid
+        and b.UNITID = c.unitid
+        <if test="comId != null and comId !=''">
+            and c.COMID=#{comId}
+        </if>
+        <if test="startTime != null and startTime !=''">
+            and b.COST_DATE  <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and b.COST_DATE<![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        b.TYPEID) cc
+
+    </select>
+    <!--热力站能源总成本-->
+    <select id="selectTopStationCarbonTotalByEnergy" parameterType="java.util.Map" resultType="java.lang.Double">
+        SELECT ROUND(SUM(a.BM),1) from (
+        SELECT  sum(h.sumtotal) BM,ou.UNITTYPE from (
+        SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds
+        (#{orgId,jdbcType=VARCHAR})) and o.COM_ID=#{comId,jdbcType=VARCHAR}) c,v_emc_unit v
+
+        WHERE c.ID=v.ORGID
+                 <if test="feedType != null and feedType !=''">
+                 and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+                 </if>
+        and v.UNITTYPE='3'
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (
+        select SUM(totalenergy*prices.PRICE)/10000 sumtotal,dataenergy.UNITID, dataenergy.dayDate from (
+        select dh.DOSAGE totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,
+        dh.TYPEID,dh.DOSAGE_TIME,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') dayDate
+        from  ${tableName}
+        dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+        )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+          where 1=1
+        <if test="startTime != null and startTime !=''">
+            and dataenergy.dayDate &gt;= #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and dataenergy.dayDate &lt;= #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY dataenergy.UNITID
+        ) h on ou.UNITID=h.UNITID
+        GROUP BY ou.UNITTYPE
+        ) a
+    </select>
+    <!--热力站总能耗-->
+    <select id="selectTopStationTotalByMap" parameterType="java.util.Map" resultType="java.lang.String">
+
+        SELECT ROUND(SUM(a.BM),1) from (
+        SELECT  sum(h.BM) BM,h.TYPE,ou.UNITTYPE from (
+        SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR})) and o.COM_ID=#{comId,jdbcType=VARCHAR}) c,v_emc_unit v
+
+        WHERE c.ID=v.ORGID
+        <if test="feedType != null and feedType !=''">
+        and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        and v.UNITTYPE='3'
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (SELECT fd.UNITID,SUM(fd.DOSAGE*fd.COAL_COEF) BM,et.TYPE
+        FROM ${tableName} fd LEFT JOIN t_emc_energy_type et on fd.TYPEID=et.ID
+        WHERE  fd.DOSAGE_TIME &gt;= #{startTime,jdbcType=VARCHAR} AND fd.DOSAGE_TIME &lt;= #{endTime,jdbcType=VARCHAR}
+        and et.TYPE!=4
+        GROUP BY fd.UNITID,et.TYPE) h on ou.UNITID=h.UNITID
+        GROUP BY h.TYPE,ou.UNITTYPE
+        ) a
+    </select>
+    <!--热力站碳排放总能耗-->
+    <select id="selectTopStationCarbonTotalByMap" parameterType="java.util.Map" resultType="java.lang.String">
+
+        SELECT ROUND(sum(b.fe),1) from (
+        select sum(a.DOSAGE*a.C_COEF) as fe,a.typeid  from ${tableName} a ,
+        (select * from v_emc_unit  where UNITTYPE='3'
+        <if test="feedType != null and feedType !=''">
+        and HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        and ORGID in (select id from t_emc_org where FIND_IN_SET(id,emc_func_org_getchilds(#{orgId,jdbcType=VARCHAR}))) ) c,
+        t_emc_energy_type e
+        where
+        a.COMID = c.COMID
+        AND a.UNITID = c.unitid
+        and a.TYPEID = e.id
+        <if test="comId != null and comId !=''">
+            and c.COMID=#{comId,jdbcType=VARCHAR}
+        </if>
+        <if test="startTime != null and startTime !=''">
+            and a.DOSAGE_TIME &gt;= #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and a.DOSAGE_TIME &lt;= #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        a.TYPEID) b
+    </select>
+    <!--热力站总成本-->
+    <select id="selectStationCostTotalByMap" parameterType="java.util.Map" resultType="java.util.Map">
+        select
+        ROUND(sum(case when cc.TYPEID = '1' then cc.cost else 0 end),1) manage,
+        ROUND(sum(case when cc.TYPEID = '2' then cc.cost else 0 end),1) other,
+        ROUND(sum(case when cc.TYPEID = '3' then cc.cost else 0 end),1) device,
+        ROUND(sum(case when cc.TYPEID = '4' then cc.cost else 0 end),1) labor
+        from (SELECT
+        b.TYPEID,
+        sum(b.COST)/10000 cost
+        FROM
+        t_emc_final_cost_day b,
+        (select * from v_emc_unit where UNITTYPE='3'
+                <if test="feedType != null and feedType !=''">
+                 and HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+                 </if>
+        and ORGID in (select id
+        from t_emc_org where FIND_IN_SET(id,emc_func_org_getchilds(#{orgId,jdbcType=VARCHAR}))) )c
+        where
+        b.COMID = c.comid
+        and b.UNITID = c.unitid
+                <if test="comId != null and comId !=''">
+                   and c.COMID=#{comId}
+                </if>
+                 <if test="startTime != null and startTime !=''">
+                     and b.COST_DATE  <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+                </if>
+                <if test="endTime != null and endTime !=''">
+                     and b.COST_DATE<![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+                 </if>
+        GROUP BY
+        b.TYPEID) cc
+
+    </select>
+    <!--管线总长度-->
+    <select id="selectGetLineLengh" parameterType="java.util.Map" resultType="java.lang.String">
+      SELECT sum(n.LENGTH) from  t_emc_unit_line n where n.ORG_ID in (SELECT
+            id
+            FROM
+            t_emc_org
+            WHERE
+            FIND_IN_SET(
+            id,
+            emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR})
+            ))
+            <if test="comId != null and comId !=''">
+                and n.COM_ID=#{comId,jdbcType=VARCHAR}
+            </if>
+        <if test="feedType != null and feedType !=''">
+                and n.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+
+
+    </select>
+
+
+
+    <!--线能源总成本-->
+    <select id="selectTopLineCarbonTotalByEnergy" parameterType="java.util.Map" resultType="java.lang.Double">
+        SELECT ROUND(SUM(a.BM),1) from (
+        SELECT  sum(h.sumtotal) BM,ou.UNITTYPE from (
+        SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds
+        (#{orgId,jdbcType=VARCHAR})) and o.COM_ID=#{comId,jdbcType=VARCHAR}) c,v_emc_unit v
+
+        WHERE c.ID=v.ORGID
+        <if test="feedType != null and feedType !=''">
+            and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        and v.UNITTYPE='4'
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (
+        select SUM(totalenergy*prices.PRICE)/10000 sumtotal,dataenergy.UNITID, dataenergy.dayDate from (
+        select dh.DOSAGE totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,
+        dh.TYPEID,dh.DOSAGE_TIME,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') dayDate
+        from  ${tableName}
+        dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+        )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+        where 1=1
+        <if test="startTime != null and startTime !=''">
+            and dataenergy.dayDate &gt;= #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and dataenergy.dayDate &lt;= #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY dataenergy.UNITID
+        ) h on ou.UNITID=h.UNITID
+        GROUP BY ou.UNITTYPE
+        ) a
+    </select>
+
+    <!--管线总成本-->
+    <select id="selectGetLineCost" parameterType="java.util.Map" resultType="java.util.Map">
+        select
+        ROUND(sum(case when cc.TYPEID = '1' then cc.cost else 0 end),1) manage,
+        ROUND(sum(case when cc.TYPEID = '2' then cc.cost else 0 end),1) other,
+        ROUND(sum(case when cc.TYPEID = '3' then cc.cost else 0 end),1) device,
+        ROUND(sum(case when cc.TYPEID = '4' then cc.cost else 0 end),1) labor
+        from (SELECT
+        b.TYPEID,
+        sum(b.COST)/10000 cost
+        FROM
+        t_emc_final_cost_day b,
+        (select * from v_emc_unit where UNITTYPE='4'
+        <if test="feedType != null and feedType !=''">
+            and HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        and ORGID in (select id
+        from t_emc_org where FIND_IN_SET(id,emc_func_org_getchilds(#{orgId,jdbcType=VARCHAR}))) )c
+        where
+        b.COMID = c.comid
+        and b.UNITID = c.unitid
+        <if test="comId != null and comId !=''">
+            and c.COMID=#{comId}
+        </if>
+        <if test="startTime != null and startTime !=''">
+            and b.COST_DATE  <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and b.COST_DATE<![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        b.TYPEID) cc
+
+    </select>
+
+    <!--民户总能耗-->
+    <select id="selectTopRoomTotalByMap" parameterType="java.util.Map" resultType="java.lang.String">
+
+        SELECT ROUND(sum(b.fe),1) from (
+        select sum(a.DOSAGE*a.COAL_COEF) as fe,a.typeid  from ${tableName} a ,
+        (select * from v_emc_unit v where v.UNITTYPE='5'
+        <if test="feedType != null and feedType !=''">
+        and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        and ORGID in (select id from t_emc_org where FIND_IN_SET(id,emc_func_org_getchilds(#{orgId,jdbcType=VARCHAR}))) ) c,
+        t_emc_energy_type e
+
+        where
+        a.COMID = c.COMID
+        AND a.UNITID = c.unitid
+        and a.TYPEID = e.id
+        <if test="comId != null and comId !=''">
+            and c.COMID=#{comId,jdbcType=VARCHAR}
+        </if>
+        <if test="startTime != null and startTime !=''">
+            and a.DOSAGE_TIME &gt;= #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and a.DOSAGE_TIME &lt;= #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        a.TYPEID) b
+    </select>
+    <!--民户合格率（大于18摄氏度的民户）-->
+    <select id="selectTopRoomNum1HglByMap" parameterType="java.util.Map" resultType="java.lang.String">
+
+        select COUNT(a.ITEMP) num1 from ${tableName} a ,
+        (select * from v_emc_unit v where v.UNITTYPE='5'
+        <if test="feedType != null and feedType !=''">
+        and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        and ORGID in (select id from t_emc_org where FIND_IN_SET(id,emc_func_org_getchilds(#{orgId,jdbcType=VARCHAR}))) ) c,
+        t_emc_unit_room r
+
+        where
+        a.COMID = c.COMID
+        AND a.UNITID = c.unitid
+        and a.UNITID = r.ID
+        and a.ITEMP>=18
+        <if test="comId != null and comId !=''">
+            and c.COMID=#{comId,jdbcType=VARCHAR}
+        </if>
+        <if test="startTime != null and startTime !=''">
+            and a.DOSAGE_TIME &gt;= #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and a.DOSAGE_TIME &lt;= #{endTime,jdbcType=VARCHAR}
+        </if>
+
+    </select>
+    <!--民户合格率 （所有民户）-->
+    <select id="selectTopRoomTotalHglByMap" parameterType="java.util.Map" resultType="java.lang.String">
+
+        select COUNT(a.ITEMP) total from ${tableName} a ,
+        (select * from v_emc_unit v where v.UNITTYPE='5'
+        <if test="feedType != null and feedType !=''">
+        and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        and ORGID in (select id from t_emc_org where FIND_IN_SET(id,emc_func_org_getchilds(#{orgId,jdbcType=VARCHAR}))) ) c,
+        t_emc_unit_room r
+
+        where
+        a.COMID = c.COMID
+        AND a.UNITID = c.unitid
+        and a.UNITID = r.ID
+        <if test="comId != null and comId !=''">
+            and c.COMID=#{comId,jdbcType=VARCHAR}
+        </if>
+        <if test="startTime != null and startTime !=''">
+            and a.DOSAGE_TIME &gt;= #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and a.DOSAGE_TIME &lt;= #{endTime,jdbcType=VARCHAR}
+        </if>
+
+    </select>
+
+
+    <!--民户能源总成本-->
+    <select id="selectTopRoomCarbonTotalByEnergy" parameterType="java.util.Map" resultType="java.lang.Double">
+        SELECT ROUND(SUM(a.BM),1) from (
+        SELECT  sum(h.sumtotal) BM,ou.UNITTYPE from (
+        SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds
+        (#{orgId,jdbcType=VARCHAR})) and o.COM_ID=#{comId,jdbcType=VARCHAR}) c,v_emc_unit v
+
+        WHERE c.ID=v.ORGID
+        <if test="feedType != null and feedType !=''">
+            and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        and v.UNITTYPE='5'
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (
+        select SUM(totalenergy*prices.PRICE)/10000 sumtotal,dataenergy.UNITID, dataenergy.dayDate from (
+        select dh.DOSAGE totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,
+        dh.TYPEID,dh.DOSAGE_TIME,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') dayDate
+        from  ${tableName}
+        dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+        )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+        where 1=1
+        <if test="startTime != null and startTime !=''">
+            and dataenergy.dayDate &gt;= #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and dataenergy.dayDate &lt;= #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY dataenergy.UNITID
+        ) h on ou.UNITID=h.UNITID
+        GROUP BY ou.UNITTYPE
+        ) a
+    </select>
+
+
+    <!--民户总成本-->
+    <select id="selectTopRoomCostByMap" parameterType="java.util.Map" resultType="java.util.Map">
+        select
+        ROUND(sum(case when cc.TYPEID = '1' then cc.cost else 0 end),1) manage,
+        ROUND(sum(case when cc.TYPEID = '2' then cc.cost else 0 end),1) other,
+        ROUND(sum(case when cc.TYPEID = '3' then cc.cost else 0 end),1) device,
+        ROUND(sum(case when cc.TYPEID = '4' then cc.cost else 0 end),1) labor
+        from (SELECT
+        b.TYPEID,
+        sum(b.COST) cost
+        FROM
+        t_emc_final_cost_day b,
+        (select * from v_emc_unit where UNITTYPE='5'
+        <if test="feedType != null and feedType !=''">
+            and HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        and ORGID in (select id
+        from t_emc_org where FIND_IN_SET(id,emc_func_org_getchilds(#{orgId,jdbcType=VARCHAR}))) )c
+        where
+        b.COMID = c.comid
+        and b.UNITID = c.unitid
+        <if test="comId != null and comId !=''">
+            and c.COMID=#{comId}
+        </if>
+        <if test="startTime != null and startTime !=''">
+            and b.COST_DATE  <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and b.COST_DATE<![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        b.TYPEID) cc
+    </select>
+</mapper>

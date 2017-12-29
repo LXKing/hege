@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="zh-CN">
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="renderer" content="webkit">
+		<title>预测与分析</title>
+		<meta name="description" content="">
+		<meta name="keywords" content="">
+
+		<!-- bootstrap & fontawesome -->
+		<link rel="stylesheet" href="assets/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="assets/css/font-awesome.css" />
+
+		<!-- text fonts -->
+		<link rel="stylesheet" href="assets/css/ace-fonts.css" />
+
+		<!-- ace styles -->
+		<link rel="stylesheet" href="assets/css/ace.css" class="ace-main-stylesheet" id="main-ace-style" />
+
+		<!-- page specific plugin styles -->
+		<link rel="stylesheet" href="css/huarestyle.css" />
+		<link rel="stylesheet" href="css/homemian.css" />
+		<link rel="stylesheet" href="css/dark.css" />
+		<!--[if lte IE 9]>
+		<link rel="stylesheet" href="assets/css/ace-part2.css" class="ace-main-stylesheet" />
+	<![endif]-->
+
+		<!--[if lte IE 9]>
+	  <link rel="stylesheet" href="assets/css/ace-ie.css" />
+	<![endif]-->
+
+		<!-- ace settings handler -->
+		<script src="assets/js/ace-extra.js"></script>
+
+		<!-- HTML5shiv and Respond.js for IE8 to support HTML5 elements and media queries -->
+		<!--[if lte IE 8]>
+		<script src="assets/js/html5shiv.js"></script>
+		<script src="assets/js/respond.js"></script>
+	<![endif]-->
+		<!--[if lt IE 9]>
+		<script src="js/Bsie/selectivizr.js"></script>
+	<![endif]-->
+
+	</head>
+
+	<body>
+		<div id="header">
+			<!--顶部导航条-->
+			<div id="navbar" class="navbar navbar-default">
+				<script type="text/javascript">
+					try {
+						ace.settings.check('navbar', 'fixed')
+					} catch(e) {}
+				</script>
+				<div class="navbar-container" id="navbar-container">
+					<!--<button type="button" class="navbar-toggle menu-toggler pull-left" id="menu-toggler" data-target="#sidebar">
+					<span class="sr-only">Toggle sidebar</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>-->
+					<div class="navbar-header pull-left">
+						<a href="index.html" class="navbar-brand">
+							<img src="img/logo.png" width="296" height="31" alt="华热能源管控" />
+						</a>
+					</div>
+					<div class="navbar-buttons navbar-header pull-right" role="navigation">
+						<ul class="nav ace-nav" id="ace-nav">
+							<li class="navlh">
+								<a href="index.html">
+									<div class="icon-hm"></div>
+									<p>首页</p>
+								</a>
+							</li>
+							<li class="navlh ">
+								<a href="energy_analysis.html">
+									<div class="icon-nh"></div>
+									<p>能耗分析</p>
+								</a>
+							</li>
+							<li class="navlh">
+								<a href="#">
+									<div class="icon-cb"></div>
+									<p>成本管控</p>
+								</a>
+							</li>
+							<li class="navlh">
+								<a href="#">
+									<div class="icon-tp"></div>
+									<p>碳排管理</p>
+								</a>
+							</li>
+							<li class="navlh">
+								<a href="alarm_mgr.html">
+									<div class="icon-bj"></div>
+									<p>报警管理</p>
+								</a>
+							</li>
+							<li class="navlh">
+								<a href="project_assess.html">
+									<div class="icon-pg"></div>
+									<p>项目后评估</p>
+								</a>
+							</li>
+							<li class="navlh">
+								<a href="#">
+									<div class="icon-aq"></div>
+									<p>安全与后台</p>
+								</a>
+							</li>
+
+							<li class="tijian bordertopnone">
+								<a href="#">
+									<img src="img/tijian.png" alt="" />
+								</a>
+							</li>
+
+							<li class="tianqi clearfix bordertopnone">
+								<div class="right-tianqi">
+									<span id="date_today" class="date_today"></span>
+									<iframe name="tianqiiframe" id="tianqiiframe" src="http://i.tianqi.com/index.php?c=code&id=99&color=%23a3abb8&icon=3&num=1" width="120" height="32" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"></iframe>
+								</div>
+
+							</li>
+							<li class="light-blue bordertopnone">
+								<a data-toggle="dropdown" href="#" class="dropdown-toggle">
+									<span class="navline-left"></span>
+									<img class="nav-user-photo" src="img/manager.png" alt="管理员" />
+									<span class="user-info">管理员
+								</span>
+									<i class="ace-icon fa fa-caret-down"></i>
+								</a>
+
+								<!--<ul class="user-menu dropdown-menu-right dropdown-menu dropdown-yellow dropdown-caret dropdown-close">
+								<li>
+									<a href="#">
+										<i class="ace-icon fa fa-cog"></i>
+										Settings
+									</a>
+								</li>
+	
+								<li>
+									<a href="profile.html">
+										<i class="ace-icon fa fa-user"></i>
+										Profile
+									</a>
+								</li>
+	
+								<li class="divider"></li>
+	
+								<li>
+									<a href="#">
+										<i class="ace-icon fa fa-power-off"></i>
+										Logout
+									</a>
+								</li>
+							</ul>-->
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="main-container">
+
+			<!--面包屑导航-->
+			<div class="bread-crumb row no-margin">
+				当前位置：
+				<a href="javascript:;">[预测与分析]</a>
+			</div>
+			<!--标题-->
+			<div class="titbox clearfix">
+				<div class="pull-left yuce-tit">预测与分析<small class="font-sm">POST PROJECT EVALUATION</small></div>
+				<a href="javascript:;" id="btnExport" class="pull-right exportlist">导出列表</a>
+			</div>
+			<div class="main-box" id="Forecast">
+				<input type="hidden" value="1" name="pageNow" id="pageNow" />
+				<input type="hidden" value="10" name="limit" id="limit" />
+				<div class="selectbg clearfix row no-margin">
+					<div class="select-box col-xs-12 col-sm-6 col-md-2 no-padding">
+						<label for="">预测日期：</label>
+						<input id="forecastDate" class="Wdate time-input" type="text" placeholder="选择时间" onfocus="WdatePicker({isShowClear:false,qsEnabled:true,isShowOthers:false})" />
+						<span class="line-gray-sm">|</span>
+					</div>
+					<div class="select-box col-xs-12 col-sm-6 col-md-2 no-padding">
+						<div class="clearfix h-selectbox">
+							<label for="">天气状况：</label>
+							<div class="x-selectfree fl">
+								<div class="x-sfbgbox">
+									<div class="x-sfleft1 x-sfw1 x-sfw-md">
+										<input type="text" value="请选择" readonly="readonly">
+									</div>
+									<div class="x-sfright1"></div>
+								</div>
+								<div class="x-sfoption x-sfoption1">
+									<p value="1">大雨 →雷阵雨</p>
+									<p value="2">大雨 →晴</p>
+									<p value="3">大雨 →多云</p>
+								</div>
+								<input type="hidden" id="weather" value="" />
+							</div>
+						</div>
+					</div>
+					<div class="select-box col-xs-12 col-sm-6 col-md-2 no-padding">
+						<div class="clearfix h-selectbox">
+							<label for="">最低温度：</label>
+							<div class="x-selectfree fl">
+								<div class="x-sfbgbox">
+									<div class="x-sfleft1 x-sfw1 x-sfw-sm">
+										<input type="text" value="请选择" readonly="readonly">
+									</div>
+									<div class="x-sfright1"></div>
+								</div>
+								<div class="x-sfoption x-sfoption1">
+									<p value="10">10</p>
+									<p value="20">20</p>
+									<p value="30">30</p>
+								</div>
+								<input type="hidden" id="lowTemp" value="" />
+							</div>
+						</div>
+					</div>
+					<div class="select-box col-xs-12 col-sm-6 col-md-2 no-padding">
+						<div class="clearfix h-selectbox">
+							<label for="">最高温度：</label>
+							<div class="x-selectfree fl">
+								<div class="x-sfbgbox">
+									<div class="x-sfleft1 x-sfw1 x-sfw-sm">
+										<input type="text" value="请选择" readonly="readonly">
+									</div>
+									<div class="x-sfright1"></div>
+								</div>
+								<div class="x-sfoption x-sfoption1">
+									<p value="40">40</p>
+									<p value="50">50</p>
+									<p value="60">60</p>
+								</div>
+								<input type="hidden" id="highTemp" value="" />
+							</div>
+						</div>
+					</div>
+					<div class="select-box col-xs-12 col-sm-6 col-md-2 no-padding">
+						<div class="clearfix h-selectbox">
+							<label for="">平均温度：</label>
+							<div class="x-selectfree fl">
+								<div class="x-sfbgbox">
+									<div class="x-sfleft1 x-sfw1 x-sfw-sm">
+										<input type="text" value="请选择" readonly="readonly">
+									</div>
+									<div class="x-sfright1"></div>
+								</div>
+								<div class="x-sfoption x-sfoption1">
+									<p value="20">20</p>
+									<p value="21">21</p>
+									<p value="25">25</p>
+								</div>
+								<input type="hidden" id="averageTemp" value="" />
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-12 col-sm-6 col-md-2 no-padding">
+						<a class="btns btnsfl" href="javascipt:;">预测</a>
+					</div>
+				</div>
+				<div class="main-table col-xs-12 no-padding">
+					<table class="table table-striped table-bordered table-hover" id="CheckResultTable">
+						<thead>
+							<tr>
+								<td rowspan="2">热力站名称</td>
+								<td colspan="2">供暖面积</td>
+								<td colspan="3">热力站负荷</td>
+								<td rowspan="2">供热负荷预测<br />(GJ)</td>
+								<td rowspan="2">阴天<br />(GJ)</td>
+								<td rowspan="2">雪天<br />(GJ)</td>
+								<td rowspan="2">大风天<br />(GJ)</td>
+								<td rowspan="2">成本预测<br />(万元)</td>
+								<td rowspan="2">碳排放预测<br />(万元)</td>
+								<td rowspan="2">能耗预测<br />(万元)</td>
+							</tr>
+							<tr>
+								<td>供暖类型</td>
+								<td>面积(万m2)</td>
+								<td>负荷(mw)</td>
+								<td>总负荷(mw)</td>
+								<td>总负荷(GJ/mw)</td>
+							</tr>
+						</thead>
+						<tbody id="projectTbody">
+							<!--<tr v-for="tabledata in tableLists">
+							<td><a href="javascript:;">{{tabledata.thermalName}}</a></td>
+							<td>{{tabledata.thermalType}}</td>
+							<td>{{tabledata.thermalArea}}</td>
+							<td>{{tabledata.thermalLoad}}</td>
+							<td>{{tabledata.thermalTotalload}}</td>
+							<td>{{tabledata.thermalTotalloadGJ}}</td>
+							<td>{{tabledata.thermalForecast}}</td>
+							<td>{{tabledata.thermalOvercast}}</td>
+							<td>{{tabledata.thermalSnowy}}</td>
+							<td>{{tabledata.thermalGale}}</td>
+							<td>{{tabledata.thermalCost}}</td>
+							<td>{{tabledata.thermalCarbon}}</td>
+							<td>{{tabledata.thermalEnergy}}</td>
+						</tr>-->
+
+						</tbody>
+					</table>
+				</div>
+				<div class="mainpage clearfix">
+					<div class="mianpageCount pull-left">
+						共<span class="redtips redtipspad" id="redtipspad"></span>条报警信息
+					</div>
+					<div class="mainpageNow  pull-right text-right" id="paging">
+						<!--<a href="javasctipt:;" class="hide pagebtn">上一页</a>
+					<a href="javasctipt:;" class="pagebtn pageon">1</a>
+					<a href="javasctipt:;" class="pagebtn">2</a>
+					<a href="javasctipt:;" class="pagebtn">3</a>
+					<a href="javasctipt:;" class="pagebtn">下一页</a>-->
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div id="footer">
+			<!--footerload加载-->
+		</div>
+
+		<script src="js/jquery/jquery.min.js"></script>
+		<script src="assets/js/bootstrap.min.js"></script>
+		<script src="js/My97DatePicker/WdatePicker.js"></script>
+		<script src="js/jquery.page.js"></script>
+		<script src="js/public.js"></script>
+		<script src="js/navscript.js"></script>
+		<script>
+			startTime("#date_today");
+		</script>
+		<!-- inline scripts related to this page -->
+		<script>
+			$(function() {
+				//$("#header").load("header.html",function(){});
+				$("#footer").load("footer.html", function() {});
+			});
+			var pageSize;
+			var tabledata = {
+				forecastDate: $("#forecastDate").val(),
+				weather: $("#weather").val(),
+				lowTemp: $("#lowTemp").val(),
+				highTemp: $("#highTemp").val(),
+				averageTemp: $("#averageTemp").val(),
+				pageNow: $("#pageNow").val(),
+				limit: $("#limit").val()
+			};
+			$.ajax({
+				url: "json/1-1.json",
+				type: "GET",
+				dataType: "json",
+				data: tabledata,
+				error: function(request) {
+					alert("Connection error");
+				},
+				success: function(data) {
+					var tbodyHtml = "";
+					$.each(data.data.forecastTable, function(index, forecastTable) {
+
+						tbodyHtml += "<tr><td>" + "<a href='javascript:;'>" + forecastTable.thermalName + "</a>" + "</td>";
+						tbodyHtml += "<td>" + forecastTable.thermalType + "</td>";
+						tbodyHtml += "<td>" + forecastTable.thermalArea + "</td>";
+						tbodyHtml += "<td>" + forecastTable.thermalLoad + "</td>";
+						tbodyHtml += "<td>" + forecastTable.thermalTotalload + "</td>";
+						tbodyHtml += "<td>" + forecastTable.thermalTotalloadGJ + "</td>";
+						tbodyHtml += "<td>" + forecastTable.thermalForecast + "</td>";
+						tbodyHtml += "<td>" + forecastTable.thermalOvercast + "</td>";
+						tbodyHtml += "<td>" + forecastTable.thermalSnowy + "</td>";
+						tbodyHtml += "<td>" + forecastTable.thermalGale + "</td>";
+						tbodyHtml += "<td>" + forecastTable.thermalCost + "</td>";
+						tbodyHtml += "<td>" + forecastTable.thermalCarbon + "</td>";
+						tbodyHtml += "<td>" + forecastTable.thermalEnergy + "</td>";
+						tbodyHtml += "</tr>";
+					});
+					$("#projectTbody").append(tbodyHtml);
+
+					$("#redtipspad").text(data.data.pageCount);
+
+					pageSize = Math.ceil(parseInt(data.data.pageCount) / 10);
+
+					/*分页效果*/
+					$("#paging").createPage({
+						pageCount: pageSize, //总页数
+						current: 1, //当前页数
+						backFn: function(p) { //单击回调方法，p是当前页码
+							console.log(p);
+						}
+					})
+
+				}
+			});
+		</script>
+
+	</body>
+
+</html>

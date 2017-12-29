@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.workorder.dao.WorkOrderInfoDao">
+  <resultMap id="BaseResultMap" type="com.huak.workorder.model.WorkOrderInfo">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="CODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="TYPE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="CONTENT" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="START_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="FINISH_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="CREATE_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="CREATOR" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="STATUS" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="FINISH" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ACTUAL_FINISH_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="COMID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="REASON" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="MONITOR" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="TAKOR" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <arg column="FINISH_REASON" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <arg column="READ_STAUTS" javaType="java.lang.Integer" jdbcType="INTEGER" />
+    </constructor>
+  </resultMap>
+    <resultMap id="BaseResultMapDetail" type="com.huak.workorder.vo.WorkOrderInfoDetail">
+        <constructor>
+            <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="CODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="TYPE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+            <arg column="NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="CONTENT" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="START_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="FINISH_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="CREATE_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="CREATOR" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="STATUS" javaType="java.lang.Integer" jdbcType="INTEGER" />
+            <arg column="FINISH" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="ACTUAL_FINISH_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="COMID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="REASON" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="MONITOR" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="TAKOR" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="FINISH_REASON" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="READ_STAUTS" javaType="java.lang.Integer" jdbcType="INTEGER" />
+            <arg column="CREATORNAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="MONITORNAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="TAKORNAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="FINISHNAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+
+        </constructor>
+    </resultMap>
+    <resultMap id="BaseResultMapRel" type="com.huak.workorder.vo.WorkOrderInfoRel">
+        <constructor>
+            <arg column="CODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="STATUS" javaType="java.lang.Integer" jdbcType="INTEGER" />
+            <arg column="PARENTCODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="RESETNUM" javaType="java.lang.String" jdbcType="VARCHAR" />
+        </constructor>
+    </resultMap>
+  <sql id="Base_Column_List">
+    ID, CODE, TYPE, NAME, CONTENT, START_TIME, FINISH_TIME, CREATE_TIME, CREATOR, STATUS, 
+    FINISH, ACTUAL_FINISH_TIME, COMID, REASON, MONITOR, TAKOR,FINISH_REASON,READ_STAUTS
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_work_order_info
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_work_order_info
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.huak.workorder.model.WorkOrderInfo">
+    insert into t_emc_work_order_info (ID, CODE, TYPE, 
+      NAME, CONTENT, START_TIME, 
+      FINISH_TIME, CREATE_TIME, CREATOR, 
+      STATUS, FINISH, ACTUAL_FINISH_TIME, 
+      COMID, REASON, MONITOR, 
+      TAKOR,FINISH_REASON,READ_STAUTS)
+    values (#{id,jdbcType=VARCHAR}, #{code,jdbcType=VARCHAR}, #{type,jdbcType=TINYINT}, 
+      #{name,jdbcType=VARCHAR}, #{content,jdbcType=VARCHAR}, #{startTime,jdbcType=VARCHAR}, 
+      #{finishTime,jdbcType=VARCHAR}, #{createTime,jdbcType=VARCHAR}, #{creator,jdbcType=VARCHAR}, 
+      #{status,jdbcType=INTEGER}, #{finish,jdbcType=VARCHAR}, #{actualFinishTime,jdbcType=VARCHAR}, 
+      #{comid,jdbcType=VARCHAR}, #{reason,jdbcType=VARCHAR}, #{monitor,jdbcType=VARCHAR}, 
+      #{takor,jdbcType=VARCHAR},#{finishReason,jdbcType=VARCHAR},#{readStauts,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" parameterType="com.huak.workorder.model.WorkOrderInfo">
+    insert into t_emc_work_order_info
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="code != null">
+        CODE,
+      </if>
+      <if test="type != null">
+        TYPE,
+      </if>
+      <if test="name != null">
+        NAME,
+      </if>
+      <if test="content != null">
+        CONTENT,
+      </if>
+      <if test="startTime != null">
+        START_TIME,
+      </if>
+      <if test="finishTime != null">
+        FINISH_TIME,
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME,
+      </if>
+      <if test="creator != null">
+        CREATOR,
+      </if>
+      <if test="status != null">
+        STATUS,
+      </if>
+      <if test="finish != null">
+        FINISH,
+      </if>
+      <if test="actualFinishTime != null">
+        ACTUAL_FINISH_TIME,
+      </if>
+      <if test="comid != null">
+        COMID,
+      </if>
+      <if test="reason != null">
+        REASON,
+      </if>
+      <if test="monitor != null">
+        MONITOR,
+      </if>
+      <if test="takor != null">
+        TAKOR,
+      </if>
+        <if test="finishReason != null">
+            FINISH_REASON,
+        </if>
+        <if test="readStauts != null">
+            READ_STAUTS,
+        </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="code != null">
+        #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        #{type,jdbcType=TINYINT},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="content != null">
+        #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="startTime != null">
+        #{startTime,jdbcType=VARCHAR},
+      </if>
+      <if test="finishTime != null">
+        #{finishTime,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=VARCHAR},
+      </if>
+      <if test="creator != null">
+        #{creator,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="finish != null">
+        #{finish,jdbcType=VARCHAR},
+      </if>
+      <if test="actualFinishTime != null">
+        #{actualFinishTime,jdbcType=VARCHAR},
+      </if>
+      <if test="comid != null">
+        #{comid,jdbcType=VARCHAR},
+      </if>
+      <if test="reason != null">
+        #{reason,jdbcType=VARCHAR},
+      </if>
+      <if test="monitor != null">
+        #{monitor,jdbcType=VARCHAR},
+      </if>
+      <if test="takor != null">
+        #{takor,jdbcType=VARCHAR},
+      </if>
+        <if test="finishReason != null">
+            #{finishReason,jdbcType=VARCHAR},
+        </if>
+        <if test="readStauts != null">
+            #{readStauts,jdbcType=VARCHAR},
+        </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.workorder.model.WorkOrderInfo">
+    update t_emc_work_order_info
+    <set>
+      <if test="code != null">
+        CODE = #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        TYPE = #{type,jdbcType=TINYINT},
+      </if>
+      <if test="name != null">
+        NAME = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="content != null">
+        CONTENT = #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="startTime != null">
+        START_TIME = #{startTime,jdbcType=VARCHAR},
+      </if>
+      <if test="finishTime != null">
+        FINISH_TIME = #{finishTime,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME = #{createTime,jdbcType=VARCHAR},
+      </if>
+      <if test="creator != null">
+        CREATOR = #{creator,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null">
+        STATUS = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="finish != null">
+        FINISH = #{finish,jdbcType=VARCHAR},
+      </if>
+      <if test="actualFinishTime != null">
+        ACTUAL_FINISH_TIME = #{actualFinishTime,jdbcType=VARCHAR},
+      </if>
+      <if test="comid != null">
+        COMID = #{comid,jdbcType=VARCHAR},
+      </if>
+      <if test="reason != null">
+        REASON = #{reason,jdbcType=VARCHAR},
+      </if>
+      <if test="monitor != null">
+        MONITOR = #{monitor,jdbcType=VARCHAR},
+      </if>
+      <if test="takor != null">
+        TAKOR = #{takor,jdbcType=VARCHAR},
+      </if>
+        <if test="finishReason != null">
+            FINISH_REASON = #{finishReason,jdbcType=VARCHAR},
+        </if>
+        <if test="readStauts != null">
+            READ_STAUTS = #{readStauts,jdbcType=VARCHAR},
+        </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.huak.workorder.model.WorkOrderInfo">
+    update t_emc_work_order_info
+    set CODE = #{code,jdbcType=VARCHAR},
+      TYPE = #{type,jdbcType=TINYINT},
+      NAME = #{name,jdbcType=VARCHAR},
+      CONTENT = #{content,jdbcType=VARCHAR},
+      START_TIME = #{startTime,jdbcType=VARCHAR},
+      FINISH_TIME = #{finishTime,jdbcType=VARCHAR},
+      CREATE_TIME = #{createTime,jdbcType=VARCHAR},
+      CREATOR = #{creator,jdbcType=VARCHAR},
+      STATUS = #{status,jdbcType=INTEGER},
+      FINISH = #{finish,jdbcType=VARCHAR},
+      ACTUAL_FINISH_TIME = #{actualFinishTime,jdbcType=VARCHAR},
+      COMID = #{comid,jdbcType=VARCHAR},
+      REASON = #{reason,jdbcType=VARCHAR},
+      MONITOR = #{monitor,jdbcType=VARCHAR},
+      TAKOR = #{takor,jdbcType=VARCHAR},
+      FINISH_REASON = #{finishReason,jdbcType=VARCHAR},
+       READ_STAUTS = #{readStauts,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+    <select id="getToDayNum" parameterType="java.util.Map" resultType="java.lang.Integer">
+        select
+        COUNT(id)+1 num
+        from t_emc_work_order_info
+        where DATE_FORMAT(CREATE_TIME,'%Y-%m-%d') = #{date,jdbcType=VARCHAR}
+        and COMID = #{comId,jdbcType=VARCHAR}
+    </select>
+    <select id="selectWorkOrderInfoByCreator" parameterType="java.util.Map" resultMap="BaseResultMapDetail">
+        SELECT
+        woi.*, e1.EMP_NAME CREATORNAME,
+        e2.EMP_NAME MONITORNAME,
+        e3.EMP_NAME TAKORNAME,
+        e4.EMP_NAME FINISHNAME
+        FROM
+        t_emc_work_order_info woi
+        LEFT JOIN t_emc_auth_employee e1 ON e1.ID = woi.CREATOR
+        LEFT JOIN t_emc_auth_employee e2 ON e2.ID = woi.MONITOR
+        LEFT JOIN t_emc_auth_employee e3 ON e3.ID = woi.TAKOR
+        LEFT JOIN t_emc_auth_employee e4 ON e4.ID = woi.FINISH
+        WHERE 1=1
+        <if test="type != null and type !=''">
+            AND woi.TYPE=#{type}
+        </if>
+        <if test="name != null and name !=''">
+            AND woi.NAME = #{name}
+        </if>
+    </select>
+
+    <select id="selectWorkOrderInfoByMonitor" parameterType="java.util.Map" resultMap="BaseResultMapDetail">
+        SELECT
+        woi.*, e1.EMP_NAME CREATORNAME,
+        e2.EMP_NAME MONITORNAME,
+        e3.EMP_NAME TAKORNAME,
+        e4.EMP_NAME FINISHNAME
+        FROM
+        t_emc_work_order_info woi
+        LEFT JOIN t_emc_auth_employee e1 ON e1.ID = woi.CREATOR
+        LEFT JOIN t_emc_auth_employee e2 ON e2.ID = woi.MONITOR
+        LEFT JOIN t_emc_auth_employee e3 ON e3.ID = woi.TAKOR
+        LEFT JOIN t_emc_auth_employee e4 ON e4.ID = woi.FINISH
+        where woi.CREATOR=#{employee_id,jdbcType=VARCHAR}
+        or e1.pid = #{employee_id,jdbcType=VARCHAR}
+        AND woi.STATUS != 111
+        <if test="type != null and type !=''">
+            AND woi.TYPE=#{type}
+        </if>
+        <if test="name != null and name !=''">
+            AND woi.NAME = #{name}
+        </if>
+    </select>
+
+
+
+    <select id="selectWorkOrderInfoByTakor" parameterType="java.util.Map" resultMap="BaseResultMapDetail">
+        SELECT
+        woi.*, e1.EMP_NAME CREATORNAME,
+        e2.EMP_NAME MONITORNAME,
+        e3.EMP_NAME TAKORNAME,
+        e4.EMP_NAME FINISHNAME
+        FROM
+        t_emc_work_order_info woi
+        LEFT JOIN t_emc_auth_employee e1 ON e1.ID = woi.CREATOR
+        LEFT JOIN t_emc_auth_employee e2 ON e2.ID = woi.MONITOR
+        LEFT JOIN t_emc_auth_employee e3 ON e3.ID = woi.TAKOR
+        LEFT JOIN t_emc_auth_employee e4 ON e4.ID = woi.FINISH
+        WHERE woi.TAKOR=#{employee_id,jdbcType=VARCHAR}
+        AND woi.STATUS != 111
+        <if test="type != null and type !=''">
+            AND woi.TYPE=#{type}
+        </if>
+        <if test="name != null and name !=''">
+            AND woi.NAME = #{name}
+        </if>
+    </select>
+
+    <select id="getWorkInfoByCode" parameterType="java.lang.String" resultMap="BaseResultMapDetail">
+        SELECT
+        woi.*, e1.EMP_NAME CREATORNAME,
+        e2.EMP_NAME MONITORNAME,
+        e3.EMP_NAME TAKORNAME,
+        e4.EMP_NAME FINISHNAME
+        FROM
+            t_emc_work_order_info woi
+        LEFT JOIN t_emc_auth_employee e1 ON e1.ID = woi.CREATOR
+        LEFT JOIN t_emc_auth_employee e2 ON e2.ID = woi.MONITOR
+        LEFT JOIN t_emc_auth_employee e3 ON e3.ID = woi.TAKOR
+        LEFT JOIN t_emc_auth_employee e4 ON e4.ID = woi.FINISH
+        WHERE
+        woi. CODE = #{code,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectWorkRelByCode" parameterType="java.lang.String" resultMap="BaseResultMapRel">
+        SELECT woi.CODE,woi.NAME,woi.STATUS,wor.PARENT_CODE PARENTCODE,wor.RESET_NUM RESETNUM
+    FROM t_emc_work_order_info woi
+    LEFT JOIN t_emc_work_order_reset wor ON woi.CODE = wor. ORDER_CODE
+    WHERE woi.code =  #{code,jdbcType=VARCHAR}
+    OR woi.code in ( SELECT ORDER_CODE FROM t_emc_work_order_reset WHERE PARENT_CODE= #{code,jdbcType=VARCHAR})
+    </select>
+    <select id="getEmployee" parameterType="java.util.Map" resultType="java.util.Map">
+
+       SELECT CONCAT(e.ID,',',r.ID) id,CONCAT(e.EMP_NAME,'(',r.ROLE_NAME,')') name
+       FROM  t_emc_auth_employee e,
+                    t_emc_auth_user u,
+                    t_emc_auth_role_user_rel ru,
+                    t_emc_auth_role r,
+                    t_emc_org o
+                WHERE
+                    e.ID = u.EMP_ID
+                AND ru.USER_ID = u.ID
+                AND r.ID = ru.ROLE_ID
+                AND e.ORG_ID = o.ID
+                AND e. STATUS = 0
+                AND u.USE_STATUS = 0
+                AND r.ID in (#{monitor,jdbcType=VARCHAR}
+			,#{receiver,jdbcType=VARCHAR})
+                AND o.COM_ID = #{comId}
+                ORDER BY r.ID ASC,e.EMP_NAME DESC
+
+    </select>
+
+    <select id="getEmployeeAndRole" parameterType="java.util.Map" resultType="java.util.Map">
+	SELECT e.ID empId,r.ID roleId,e.EMP_NAME empName,r.ROLE_NAME roleName
+FROM
+	t_emc_auth_employee e,
+	t_emc_auth_user u,
+	t_emc_auth_role_user_rel ru,
+	t_emc_auth_role r,
+	t_emc_org o
+WHERE
+	e.ID = u.EMP_ID
+AND ru.USER_ID = u.ID
+AND r.ID = ru.ROLE_ID
+AND e.ORG_ID = o.ID
+AND e. STATUS = 0
+AND u.USE_STATUS = 0
+AND (r.ID =#{monitor,jdbcType=VARCHAR} OR r.ID = #{receiver,jdbcType=VARCHAR})
+AND o.COM_ID = #{comId}
+ORDER BY r.ID ASC,e.EMP_NAME DESC
+    </select>
+    <select id="getEmployeeById" parameterType="java.util.Map" resultType="java.lang.String">
+
+        SELECT CONCAT(e.ID,',',r.ID) id
+FROM  t_emc_auth_employee e,
+                    t_emc_auth_user u,
+                    t_emc_auth_role_user_rel ru,
+                    t_emc_auth_role r,
+                    t_emc_org o
+                WHERE
+                    e.ID = u.EMP_ID
+                AND ru.USER_ID = u.ID
+                AND r.ID = ru.ROLE_ID
+                AND e.ORG_ID = o.ID
+                AND e. STATUS = 0
+                AND u.USE_STATUS = 0
+                AND r.ID in (#{monitor,jdbcType=VARCHAR}
+			,#{receiver,jdbcType=VARCHAR})
+                AND o.COM_ID = #{comId}
+                and e.id=#{id,jdbcType=VARCHAR}
+                ORDER BY r.ID ASC,e.EMP_NAME DESC
+
+
+    </select>
+    <select id="selectOneByCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        from t_emc_work_order_info i where i.code=#{code,jdbcType=VARCHAR}
+
+    </select>
+
+
+</mapper>

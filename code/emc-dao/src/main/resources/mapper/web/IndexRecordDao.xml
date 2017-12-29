@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.health.dao.IndexRecordDao">
+  <resultMap id="BaseResultMap" type="com.huak.health.model.IndexRecord">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="TYPE_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="COM_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="UNIT_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ENTERPRISE" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="LOCAL" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="INDUSTRY" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="INDEX_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="CREATE_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="CREATOR" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+    <resultMap id="BaseResultMapA" type="com.huak.health.vo.IndexRecordA">
+        <constructor>
+            <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="UNITNAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="UNIT_METER" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="ENTERPRISE" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="LOCAL" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="INDUSTRY" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="INDEX_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="CREATE_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="USER_NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+        </constructor>
+    </resultMap>
+  <sql id="Base_Column_List">
+    ID, TYPE_ID, COM_ID, UNIT_ID, ENTERPRISE, LOCAL, INDUSTRY, INDEX_TIME, CREATE_TIME, 
+    CREATOR
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_index_record
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_index_record
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.huak.health.model.IndexRecord">
+    insert into t_emc_index_record (ID, TYPE_ID, COM_ID, 
+      UNIT_ID, ENTERPRISE, LOCAL, 
+      INDUSTRY, INDEX_TIME, CREATE_TIME, 
+      CREATOR)
+    values (#{id,jdbcType=VARCHAR}, #{typeId,jdbcType=VARCHAR}, #{comId,jdbcType=VARCHAR}, 
+      #{unitId,jdbcType=VARCHAR}, #{enterprise,jdbcType=DOUBLE}, #{local,jdbcType=DOUBLE}, 
+      #{industry,jdbcType=DOUBLE}, #{indexTime,jdbcType=VARCHAR}, #{createTime,jdbcType=VARCHAR},
+      #{creator,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.huak.health.model.IndexRecord">
+    insert into t_emc_index_record
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="typeId != null">
+        TYPE_ID,
+      </if>
+      <if test="comId != null">
+        COM_ID,
+      </if>
+      <if test="unitId != null">
+        UNIT_ID,
+      </if>
+      <if test="enterprise != null">
+        ENTERPRISE,
+      </if>
+      <if test="local != null">
+        LOCAL,
+      </if>
+      <if test="industry != null">
+        INDUSTRY,
+      </if>
+      <if test="indexTime != null">
+        INDEX_TIME,
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME,
+      </if>
+      <if test="creator != null">
+        CREATOR,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="typeId != null">
+        #{typeId,jdbcType=VARCHAR},
+      </if>
+      <if test="comId != null">
+        #{comId,jdbcType=VARCHAR},
+      </if>
+      <if test="unitId != null">
+        #{unitId,jdbcType=VARCHAR},
+      </if>
+      <if test="enterprise != null">
+        #{enterprise,jdbcType=DOUBLE},
+      </if>
+      <if test="local != null">
+        #{local,jdbcType=DOUBLE},
+      </if>
+      <if test="industry != null">
+        #{industry,jdbcType=DOUBLE},
+      </if>
+      <if test="indexTime != null">
+        #{indexTime,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=VARCHAR},
+      </if>
+      <if test="creator != null">
+        #{creator,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.health.model.IndexRecord">
+    update t_emc_index_record
+    <set>
+      <if test="typeId != null">
+        TYPE_ID = #{typeId,jdbcType=VARCHAR},
+      </if>
+      <if test="comId != null">
+        COM_ID = #{comId,jdbcType=VARCHAR},
+      </if>
+      <if test="unitId != null">
+        UNIT_ID = #{unitId,jdbcType=VARCHAR},
+      </if>
+      <if test="enterprise != null">
+        ENTERPRISE = #{enterprise,jdbcType=DOUBLE},
+      </if>
+      <if test="local != null">
+        LOCAL = #{local,jdbcType=DOUBLE},
+      </if>
+      <if test="industry != null">
+        INDUSTRY = #{industry,jdbcType=DOUBLE},
+      </if>
+      <if test="indexTime != null">
+        INDEX_TIME = #{indexTime,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME = #{createTime,jdbcType=VARCHAR},
+      </if>
+      <if test="creator != null">
+        CREATOR = #{creator,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.huak.health.model.IndexRecord">
+    update t_emc_index_record
+    set TYPE_ID = #{typeId,jdbcType=VARCHAR},
+      COM_ID = #{comId,jdbcType=VARCHAR},
+      UNIT_ID = #{unitId,jdbcType=VARCHAR},
+      ENTERPRISE = #{enterprise,jdbcType=DOUBLE},
+      LOCAL = #{local,jdbcType=DOUBLE},
+      INDUSTRY = #{industry,jdbcType=DOUBLE},
+      INDEX_TIME = #{indexTime,jdbcType=VARCHAR},
+      CREATE_TIME = #{createTime,jdbcType=VARCHAR},
+      CREATOR = #{creator,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+
+    <select id="selectPageByMap" parameterType="java.util.HashMap" resultMap="BaseResultMapA">
+        SELECT
+        r.ID,
+        v.UNITNAME,
+        t. NAME,
+        t.UNIT_METER,
+        r.ENTERPRISE,
+        r.LOCAL,
+        r.INDUSTRY,
+        r.INDEX_TIME,
+        r.CREATE_TIME,
+        u.USER_NAME
+        FROM
+        t_emc_index_record r,
+        t_emc_index_type t,
+        v_emc_unit v,
+        t_emc_auth_user u
+        WHERE
+        r.COM_ID = v.COMID
+        AND r.TYPE_ID = t.ID
+        AND r.UNIT_ID = v.UNITID
+        AND r.CREATOR = u.ID
+        <if test="unitType != null and unitType !=''">
+            AND v.UNITTYPE=#{unitType}
+        </if>
+        <if test="typeId != null and typeId !=''">
+            and  r.TYPE_ID =#{typeId}
+        </if>
+        <if test="comId != null and comId !=''">
+            and  r.COM_ID = #{comId}
+        </if>
+        <if test="unitId != null and unitId !=''">
+            and  r.UNIT_ID = #{unitId}
+        </if>
+        <if test="orgId != null and orgId !=''">
+            and  v.ORGID IN (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId})))
+        </if>
+        <if test="unitName != null and unitName !=''">
+            and  v.UNITNAME like CONCAT('%',#{unitName},'%')
+        </if>
+        order by r.UNIT_ID,r.TYPE_ID ASC,INDEX_TIME DESC
+    </select>
+
+    <select id="checkType" parameterType="java.util.HashMap" resultType="java.lang.Long">
+        select count(ID) FROM t_emc_index_record where UNIT_ID = #{unitId} AND TYPE_ID=#{typeId}  AND COM_ID=#{comId}
+    </select>
+
+    <select id="selectUpdateMap" parameterType="java.lang.String" resultType="java.util.Map">
+        SELECT
+        r.ID,
+        r.UNIT_ID,
+        r.TYPE_ID,
+        t. NAME,
+        t.UNIT_METER,
+        u.UNITNAME,
+        u.UNITTYPE,
+        r.ENTERPRISE,
+        r.INDEX_TIME,
+        r.INDUSTRY,
+        r. LOCAL
+        FROM
+        t_emc_index_record r,
+        v_emc_unit u,
+        t_emc_index_type t
+        WHERE
+        u.UNITID = r.UNIT_ID
+        AND u.COMID = r.COM_ID
+        AND t.ID = r.TYPE_ID
+        AND r.ID=#{id}
+    </select>
+</mapper>

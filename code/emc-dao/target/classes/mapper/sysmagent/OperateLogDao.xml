@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huak.log.dao.OperateLogDao" >
+  <resultMap id="BaseResultMap" type="com.huak.log.model.OperateLog" >
+    <result column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="OPT_NAME" property="optName" jdbcType="VARCHAR" />
+    <result column="OPT_TYPE" property="optType" jdbcType="VARCHAR" />
+    <result column="OPT_KEY" property="optKey" jdbcType="VARCHAR" />
+    <result column="CLASS_NAME" property="className" jdbcType="VARCHAR" />
+    <result column="METHOD_NAME" property="methodName" jdbcType="VARCHAR" />
+    <result column="REMOTE_IP" property="remoteIp" jdbcType="VARCHAR" />
+    <result column="REMOTE_NAME" property="remoteName" jdbcType="VARCHAR" />
+    <result column="REMOTE_PORT" property="remotePort" jdbcType="VARCHAR" />
+    <result column="REQ_URI" property="reqUri" jdbcType="VARCHAR" />
+    <result column="REQ_URL" property="reqUrl" jdbcType="VARCHAR" />
+    <result column="CREATE_TIME" property="createTime" jdbcType="VARCHAR" />
+    <result column="CREATOR" property="creator" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    ID,OPT_NAME,OPT_TYPE,OPT_KEY,CLASS_NAME,METHOD_NAME,REMOTE_IP,REMOTE_NAME,REMOTE_PORT,REQ_URI,REQ_URL,CREATE_TIME,CREATOR
+  </sql>
+  
+  <!-- 查询日志列表信息 -->
+  <select id="selectPageByMap" parameterType="java.util.Map" resultMap="BaseResultMap" >
+  	select 
+  	 <include refid="Base_Column_List" />
+    from t_emc_operatelog
+    where 1=1 
+    <if test="optName!=null and optName!=''"> and OPT_NAME LIKE CONCAT('%',#{optName,jdbcType=VARCHAR},'%')</if>
+    <if test="optType!=null and optType!=''"> and OPT_TYPE = #{optType,jdbcType=VARCHAR}</if>
+    <if test="optKey!=null and optKey!=''">and OPT_KEY LIKE CONCAT('%',#{optKey,jdbcType=VARCHAR},'%')</if>
+    <if test="cStartTime!=null and cStartTime!=''"> and CREATE_TIME >= #{cStartTime,jdbcType=VARCHAR}</if>
+    <if test="cEndTime!=null and cEndTime!=''"> and CREATE_TIME &lt;= #{cEndTime,jdbcType=VARCHAR}</if>
+  </select>
+  
+  <!-- selectLog2Excel 导出符合条件的日志信息到excel -->
+  <select id="selectLog2Excel" parameterType="java.util.Map" resultType="java.util.Map" >
+  	select 
+  	 <include refid="Base_Column_List" />
+    from t_emc_operatelog
+    where 1=1 
+    <if test="optName!=null and optName!=''"> and OPT_NAME LIKE CONCAT('%',#{optName,jdbcType=VARCHAR},'%')</if>
+    <if test="optType!=null and optType!=''"> and OPT_TYPE = #{optType,jdbcType=VARCHAR}</if>
+    <if test="optKey!=null and optKey!=''">and OPT_KEY LIKE CONCAT('%',#{optKey,jdbcType=VARCHAR},'%')</if>
+    <if test="cStartTime!=null and cStartTime!=''"> and CREATE_TIME >= #{cStartTime,jdbcType=VARCHAR}</if>
+    <if test="cEndTime!=null and cEndTime!=''"> and CREATE_TIME &lt;= #{cEndTime,jdbcType=VARCHAR}</if>
+  </select>
+  
+  <insert id="insertByPrimaryKeySelective" parameterType="com.huak.log.model.OperateLog" >
+    insert into t_emc_operatelog (ID, OPT_NAME, OPT_TYPE, 
+      OPT_KEY, CLASS_NAME, METHOD_NAME, 
+      REMOTE_IP, REMOTE_NAME, REMOTE_PORT, 
+      REQ_URI, REQ_URL, CREATE_TIME, 
+      CREATOR)
+    values (#{id,jdbcType=VARCHAR}, #{optName,jdbcType=VARCHAR}, #{optType,jdbcType=VARCHAR}, 
+      #{optKey,jdbcType=VARCHAR}, #{className,jdbcType=VARCHAR}, #{methodName,jdbcType=VARCHAR}, 
+      #{remoteIp,jdbcType=VARCHAR}, #{remoteName,jdbcType=VARCHAR}, #{remotePort,jdbcType=VARCHAR}, 
+      #{reqUri,jdbcType=VARCHAR}, #{reqUrl,jdbcType=VARCHAR}, #{createTime,jdbcType=VARCHAR}, 
+      #{creator,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertOperateLog" parameterType="com.huak.log.model.OperateLog" >
+    insert into t_emc_operatelog
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="optName != null" >
+        OPT_NAME,
+      </if>
+      <if test="optType != null" >
+        OPT_TYPE,
+      </if>
+      <if test="optKey != null" >
+        OPT_KEY,
+      </if>
+      <if test="className != null" >
+        CLASS_NAME,
+      </if>
+      <if test="methodName != null" >
+        METHOD_NAME,
+      </if>
+      <if test="remoteIp != null" >
+        REMOTE_IP,
+      </if>
+      <if test="remoteName != null" >
+        REMOTE_NAME,
+      </if>
+      <if test="remotePort != null" >
+        REMOTE_PORT,
+      </if>
+      <if test="reqUri != null" >
+        REQ_URI,
+      </if>
+      <if test="reqUrl != null" >
+        REQ_URL,
+      </if>
+      <if test="createTime != null" >
+        CREATE_TIME,
+      </if>
+      <if test="creator != null" >
+        CREATOR,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="optName != null" >
+        #{optName,jdbcType=VARCHAR},
+      </if>
+      <if test="optType != null" >
+        #{optType,jdbcType=VARCHAR},
+      </if>
+      <if test="optKey != null" >
+        #{optKey,jdbcType=VARCHAR},
+      </if>
+      <if test="className != null" >
+        #{className,jdbcType=VARCHAR},
+      </if>
+      <if test="methodName != null" >
+        #{methodName,jdbcType=VARCHAR},
+      </if>
+      <if test="remoteIp != null" >
+        #{remoteIp,jdbcType=VARCHAR},
+      </if>
+      <if test="remoteName != null" >
+        #{remoteName,jdbcType=VARCHAR},
+      </if>
+      <if test="remotePort != null" >
+        #{remotePort,jdbcType=VARCHAR},
+      </if>
+      <if test="reqUri != null" >
+        #{reqUri,jdbcType=VARCHAR},
+      </if>
+      <if test="reqUrl != null" >
+        #{reqUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=VARCHAR},
+      </if>
+      <if test="creator != null" >
+        #{creator,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+</mapper>

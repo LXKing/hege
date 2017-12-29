@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.weather.dao.WeatherAqiDao">
+  <resultMap id="BaseResultMap" type="com.huak.weather.model.WeatherAQI">
+    <constructor>
+      <arg column="CODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="REPORT_DATE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="AQI" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="AQI_LEVEL" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="AQI_SCOPE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="AQI_REMARK" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="STATUS" javaType="java.lang.Byte" jdbcType="TINYINT" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+     CODE, REPORT_DATE, AQI, AQI_LEVEL, AQI_SCOPE, AQI_REMARK, STATUS
+  </sql>
+
+  <select id="selectAqis" parameterType="java.util.Map" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_weather_aqi
+        where 1=1
+        <if test="status != null and status != ''">
+            and  STATUS = #{status,jdbcType=TINYINT}
+        </if>
+        <if test="code != null and code != ''">
+            and  CODE = #{code,jdbcType=VARCHAR}
+        </if>
+
+        <if test="reportDate != null and reportDate != ''">
+            and REPORT_DATE = #{reportDate,jdbcType=VARCHAR}
+        </if>
+  </select>
+
+  <delete id="deletebyParmas" parameterType="java.util.Map">
+        delete from t_emc_weather_aqi where  STATUS = #{status,jdbcType=TINYINT} AND CODE = #{code,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.huak.weather.model.WeatherAQI">
+    insert into t_emc_weather_aqi ( CODE, REPORT_DATE, AQI, AQI_LEVEL, AQI_SCOPE, AQI_REMARK, STATUS)
+    values (#{code,jdbcType=VARCHAR}, #{reportDate,jdbcType=VARCHAR}, #{aqi,jdbcType=VARCHAR}, #{aqiLevel,jdbcType=VARCHAR},
+     #{aqiScope,jdbcType=VARCHAR}, #{aqiRemark,jdbcType=VARCHAR}, #{status,jdbcType=TINYINT})
+  </insert>
+  <update id="update" parameterType="com.huak.weather.model.WeatherAQI">
+    update t_emc_weather_aqi
+    set CODE = #{code,jdbcType=VARCHAR},
+      REPORT_DATE = #{reportDate,jdbcType=VARCHAR},
+      AQI = #{aqi,jdbcType=VARCHAR},
+      AQI_LEVEL = #{aqiLevel,jdbcType=VARCHAR},
+      AQI_SCOPE = #{aqiScope,jdbcType=VARCHAR},
+      AQI_REMARK = #{aqiRemark,jdbcType=VARCHAR},
+      STATUS = #{status,jdbcType=TINYINT}
+    where  CODE = #{code,jdbcType=VARCHAR} AND REPORT_DATE = #{reportDate,jdbcType=VARCHAR}
+  </update>
+  <select id="selectById" parameterType="java.util.Map" resultMap="BaseResultMap">
+      select   <include refid="Base_Column_List" /> from t_emc_weather_aqi where (code,REPORT_DATE) = (
+      select code,max(report_date) from t_emc_weather_aqi where code =#{code,jdbcType=VARCHAR} group by code) LIMIT 0,1
+  </select>
+
+</mapper>

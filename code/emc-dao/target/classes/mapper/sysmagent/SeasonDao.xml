@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.season.dao.SeasonDao">
+  <resultMap id="BaseResultMap" type="com.huak.season.model.Season">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="COMID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="SDATE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="EDATE" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    ID, COMID, NAME, SDATE, EDATE
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from t_emc_heat_season
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_heat_season
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.huak.season.model.Season">
+    insert into t_emc_heat_season (ID, COMID, NAME, 
+      SDATE, EDATE)
+    values (#{id,jdbcType=VARCHAR}, #{comid,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, 
+      #{sdate,jdbcType=VARCHAR}, #{edate,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.huak.season.model.Season">
+    insert into t_emc_heat_season
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="comid != null">
+        COMID,
+      </if>
+      <if test="name != null">
+        NAME,
+      </if>
+      <if test="sdate != null">
+        SDATE,
+      </if>
+      <if test="edate != null">
+        EDATE,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="comid != null">
+        #{comid,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="sdate != null">
+        #{sdate,jdbcType=DATE},
+          </if>
+          <if test="edate != null">
+            #{edate,jdbcType=DATE},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.season.model.Season">
+    update t_emc_heat_season
+    <set>
+      <if test="comid != null">
+        COMID = #{comid,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        NAME = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="sdate != null">
+        SDATE = #{sdate,jdbcType=VARCHAR},
+      </if>
+      <if test="edate != null">
+        EDATE = #{edate,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.huak.season.model.Season">
+    update t_emc_heat_season
+    set COMID = #{comid,jdbcType=VARCHAR},
+      NAME = #{name,jdbcType=VARCHAR},
+      SDATE = #{sdate,jdbcType=VARCHAR},
+      EDATE = #{edate,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+
+    <select id="selectPageByName" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_heat_season
+        where 1=1
+        <if test="name != null and name !=''">
+            and  NAME like CONCAT('%',#{name},'%')
+        </if>
+        order by id
+    </select>
+    <select id="selectPageByMap" parameterType="java.util.HashMap" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_heat_season
+        where 1=1
+        <if test="name != null and name !=''">
+            and  NAME  like CONCAT('%',#{name},'%')
+        </if>
+        <if test="sdate != null and sdate !=''">
+            and  SDATE &gt;= #{sdate,jdbcType=VARCHAR}
+        </if>
+        <if test="edate != null and edate !=''">
+            and  EDATE &lt;= #{edate,jdbcType=VARCHAR}
+        </if>
+        <if test="comId != null and comId !=''">
+            and  COMID= #{comId,jdbcType=VARCHAR}
+        </if>
+        order by NAME DESC
+    </select>
+    <select id="checkName" parameterType="java.util.HashMap" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_heat_season
+        where NAME = #{name,jdbcType=VARCHAR} and COMID = #{comId,jdbcType=VARCHAR}
+    </select>
+
+    <!--
+        /*a1=2016-11-15 b1=2017-03-15 入参  a2=开始时间 b2结束时间 数据库里的*/
+            1:a1b1 包含 a2b2
+            a1<=a2 & b2<=b1
+            2:a2b2  包含 a1b1
+            a1>=a2 & b2>=b1
+            3:交叉
+            b2<=a1 & b1<=a2
+            b2>=a1 & b1>=a2
+
+    -->
+    <select id="checkTime" parameterType="java.util.HashMap" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        t_emc_heat_season s
+        WHERE
+        (((s.SDATE &lt;= #{sdate,jdbcType=VARCHAR}
+        AND s.EDATE  &gt;=#{edate,jdbcType=VARCHAR})
+        OR (s.SDATE  &gt;= #{sdate,jdbcType=VARCHAR}
+        AND s.EDATE  &lt;= #{edate,jdbcType=VARCHAR})
+        )
+        or (s.EDATE &lt;= #{sdate,jdbcType=VARCHAR} and #{edate,jdbcType=VARCHAR} &lt;=s.SDATE)
+        or (s.EDATE &gt;= #{sdate,jdbcType=VARCHAR} and #{edate,jdbcType=VARCHAR} &gt;=s.SDATE))
+        and s.COMID =#{comId,jdbcType=VARCHAR}
+    </select>
+    <select id="getNowTime" parameterType="java.util.HashMap" resultType="java.lang.String">
+
+        select date_format(now(),'%Y-%m-%d');
+    </select>
+
+    <select id="exportSeason" parameterType="java.util.HashMap" resultType="java.util.Map">
+
+        SELECT
+        c.CNAME CNAME,
+        s.NAME NAME,
+        s.SDATE SDATE,
+        s.EDATE EDATE
+        FROM
+        t_emc_heat_season s,t_emc_company c where s.COMID = c.ID
+        <if test="name != null and name !=''">
+            and  s.NAME =#{name,jdbcType=VARCHAR}
+        </if>
+        <if test="start != null and start !=''">
+            and  s.SDATE &gt;= #{start,jdbcType=VARCHAR}
+        </if>
+        <if test="end != null and end !=''">
+            and  s.EDATE &lt;= #{end,jdbcType=VARCHAR}
+        </if>
+        order by NAME DESC
+    </select>
+</mapper>

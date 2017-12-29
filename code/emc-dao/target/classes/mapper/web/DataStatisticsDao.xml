@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.data.dao.DataStatisticsDao">
+    <resultMap id="BaseResultMap" type="com.huak.weather.model.HTSYWeather">
+        <constructor>
+            <arg column="cdate" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="maxTemp" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="minTemp" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="avgTemp" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="tempDetail" javaType="java.lang.String" jdbcType="VARCHAR" />
+        </constructor>
+    </resultMap>
+
+
+    <select id="selectTableTimeByMap" parameterType="java.util.Map" resultType="com.huak.data.vo.LookupTableTime">
+        SELECT  t.thisTime thisTime,
+                 t.lastTime lastTime,
+                 TIMESTAMPDIFF(Day,t.lastTime,t.thisTime) timeDifference
+        FROM(
+          SELECT  date_format(th.COLLECT_TIME,'%Y-%m-%d %H') thisTime,
+                 (SELECT date_format(th1.COLLECT_TIME,'%Y-%m-%d %H')
+                  FROM t_emc_energy_data_his th1,t_emc_meter_collect tc1
+                  WHERE th1.COLLECT_ID=tc1.ID
+                  AND th1.COLLECT_TIME <![CDATA[ <= ]]> #{time}
+                  AND tc1.COM_ID=#{comId}
+                  ORDER BY collect_time desc
+                  LIMIT 1) lastTime
+        FROM t_emc_energy_data_his th,t_emc_meter_collect tc
+        WHERE th.COLLECT_ID=tc.ID
+        AND th.COLLECT_TIME <![CDATA[ <= ]]> date_sub(#{time},interval -1 day)
+        AND tc.COM_ID=#{comId}
+        ORDER BY collect_time desc
+        LIMIT 1
+        ) t
+    </select>
+    <select id="getSecondTime" parameterType="java.util.Map" resultType="com.huak.data.vo.LookupTableTime">
+
+            SELECT a.thisTime,b.lastTime,TIMESTAMPDIFF(Day,b.lastTime,a.thisTime) timeDifference
+            from (
+            SELECT
+                date_format(dh1.COLLECT_TIME,'%Y-%m-%d %H:%i') thisTime
+            FROM
+                t_emc_energy_data_his dh1
+            WHERE
+                date_format(
+                    dh1.COLLECT_TIME,
+                    '%Y-%m-%d'
+                ) = #{endTime}
+            ORDER BY
+                dh1.COLLECT_TIME desc LIMIT 1) a LEFT JOIN
+            (SELECT
+                date_format(dh2.COLLECT_TIME,'%Y-%m-%d %H:%i') lastTime
+            FROM
+                t_emc_energy_data_his dh2
+            WHERE
+                date_format(
+                    dh2.COLLECT_TIME,
+                    '%Y-%m-%d'
+                ) = #{startTime}
+            ORDER BY
+                dh2.COLLECT_TIME desc LIMIT 1) b on 1=1
+
+    </select>
+    <select id="getSanWestLine" parameterType="java.util.Map" resultType="java.util.Map">
+         				SELECT
+             IFNULL(a.bc,0) as bc,IFNULL(b.sc,0) as sc,IFNULL((a.bc-b.sc),0) as nh
+             from(
+							SELECT  ROUND(sum(md.COLLECT_VALUE),0) bc from t_emc_meta_data md  where md.TAG like '%电厂计量.AI_rb%'
+																	and md.COLLECT_TIME = #{bcTime}
+																	and md.COLLECT_TYPE='累计热量')a
+            LEFT JOIN
+								 (SELECT  ROUND(sum(md.COLLECT_VALUE),0) sc from t_emc_meta_data md  where
+												md.TAG like '%电厂计量.AI_rb%'
+																	and md.COLLECT_TIME = #{scTime}
+																	and md.COLLECT_TYPE='累计热量')b on 1=1
+
+
+    </select>
+    <select id="getTotal" parameterType="java.util.Map" resultType="java.util.Map">
+            SELECT
+             IFNULL(a.bc,0) as bc,IFNULL(b.sc,0) as sc,IFNULL((a.bc-b.sc),0) as nh
+             from(
+             SELECT  ROUND(sum(md.COLLECT_VALUE),0) bc from t_emc_meta_data md  where md.TAG not like '%电厂计量.AI_rb%'
+																	and md.COLLECT_TIME =#{bcTime}
+																	and md.COLLECT_TYPE='累计热量')a
+            LEFT JOIN
+								 (SELECT  ROUND(sum(md.COLLECT_VALUE),0) sc from t_emc_meta_data md  where
+												md.TAG not like '%电厂计量.AI_rb%'
+																	and md.COLLECT_TIME = #{scTime}
+																	and md.COLLECT_TYPE='累计热量')b on 1=1;
+
+    </select>
+    <select id="selectHistoryDataByMap" parameterType="java.util.Map" resultType="com.huak.data.vo.HistoryData">
+        SELECT T.*
+        FROM(
+        SELECT  COLLECT_TIME collect_Time,
+        MAX(CASE COLLECT_TYPE WHEN '6区03号站累计流量' THEN COLLECT_VALUE ELSE 0 END ) aI_03pri_rb_Fl,
+        MAX(CASE COLLECT_TYPE WHEN '6区03号站累计热量' THEN COLLECT_VALUE ELSE 0 END ) aI_03pri_rb_Hl,
+        MAX(CASE COLLECT_TYPE WHEN '中支回温' THEN COLLECT_VALUE ELSE 0 END ) aI_n_c_T,
+        MAX(CASE COLLECT_TYPE WHEN '供水压力' THEN COLLECT_VALUE ELSE 0 END ) aI_E_rb_g_P,
+        MAX(CASE COLLECT_TYPE WHEN '供水温度' THEN COLLECT_VALUE ELSE 0 END ) aI_E_rb_g_T,
+        MAX(CASE COLLECT_TYPE WHEN '供水瞬时流量' THEN COLLECT_VALUE ELSE 0 END ) aI_E_rb_g_Ft,
+        MAX(CASE COLLECT_TYPE WHEN '供水瞬时热量' THEN COLLECT_VALUE ELSE 0 END ) aI_E_rb_g_Ht,
+        MAX(CASE COLLECT_TYPE WHEN '供水累计流量' THEN COLLECT_VALUE ELSE 0 END ) aI_E_rb_g_Fl,
+        MAX(CASE COLLECT_TYPE WHEN '供水累计热量' THEN COLLECT_VALUE ELSE 0 END ) aI_E_rb_g_Hl,
+        MAX(CASE COLLECT_TYPE WHEN '回水压力' THEN COLLECT_VALUE ELSE 0 END ) aI_E_rb_h_P,
+        MAX(CASE COLLECT_TYPE WHEN '回水温度' THEN COLLECT_VALUE ELSE 0 END ) aI_E_rb_h_T,
+        MAX(CASE COLLECT_TYPE WHEN '回水瞬时流量 ' THEN COLLECT_VALUE ELSE 0 END ) aI_E_rb_h_Ft ,
+        MAX(CASE COLLECT_TYPE WHEN '回水瞬时热量 ' THEN COLLECT_VALUE ELSE 0 END ) aI_E_rb_h_Ht ,
+        MAX(CASE COLLECT_TYPE WHEN '回水累计流量 ' THEN COLLECT_VALUE ELSE 0 END ) aI_E_rb_h_Fl ,
+        MAX(CASE COLLECT_TYPE WHEN '回水累计热量 ' THEN COLLECT_VALUE ELSE 0 END ) aI_E_rb_h_Hl ,
+        MAX(CASE COLLECT_TYPE WHEN '室外温度' THEN COLLECT_VALUE ELSE 0 END ) aI_out_T,
+        MAX(CASE COLLECT_TYPE WHEN '有功电能' THEN COLLECT_VALUE ELSE 0 END ) aI_E_KWH,
+        MAX(CASE COLLECT_TYPE WHEN '瞬时热量' THEN COLLECT_VALUE ELSE 0 END ) aI_E_rb_Ht,
+        MAX(CASE COLLECT_TYPE WHEN '累计流量' THEN COLLECT_VALUE ELSE 0 END ) aI_pri_rb_Fl,
+        MAX(CASE COLLECT_TYPE WHEN '累计热量' THEN COLLECT_VALUE ELSE 0 END ) aI_pri_rb_Hl,
+        MAX(CASE COLLECT_TYPE WHEN '补水表量' THEN COLLECT_VALUE ELSE 0 END ) aI_add_Fl
+        FROM t_emc_meta_data
+        GROUP BY COLLECT_TIME
+        ) T
+        WHERE DATE_FORMAT(T.COLLECT_TIME,'%H:%i:%S')='09:00:00'
+        <if test="collectTime != null and collectTime !=''">
+          AND T.COLLECT_TIME <![CDATA[ <= ]]> date_sub(#{collectTime},interval -1 day)
+          AND T.COLLECT_TIME <![CDATA[ >= ]]> date_format(#{collectTime},'%Y-%m-%%01')
+        </if>
+    </select>
+
+
+    <select id="selectTempHTSY" parameterType="java.util.Map" resultMap="BaseResultMap">
+        SELECT
+        s.cdate cdate,
+        s.minTemp minTemp,
+        s.maxTemp maxTemp,
+        s.avgTemp avgTemp,
+        d.detail tempDetail
+        FROM
+        (
+        SELECT
+        a.cdate cdate,
+        MIN(a.COLLECT_VALUE) minTemp,
+        MAX(a.COLLECT_VALUE) maxTemp,
+        ROUND(AVG(a.COLLECT_VALUE), 1) avgTemp
+        FROM
+        (
+        SELECT
+        DATE_FORMAT(COLLECT_TIME, '%Y-%m-%d') cdate,
+        COLLECT_VALUE
+        FROM
+        t_emc_meta_data
+        WHERE
+        TAG = #{tag}
+        AND COLLECT_TIME <![CDATA[ >= ]]> #{startTime}
+        AND COLLECT_TIME <![CDATA[ <= ]]> #{endTime}
+        ) a
+        GROUP BY
+        a.cdate
+        ) s
+        LEFT JOIN t_emc_weather_detail d ON d.W_DATE = s.cdate
+        AND d.COM_ID = #{comId}
+        ORDER BY
+        s.cdate ASC
+    </select>
+</mapper>

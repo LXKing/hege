@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" build-on-make="true" name="emc-platform:war">
+    <output-path>$PROJECT_DIR$/emc-platform/target</output-path>
+    <root id="archive" name="emc-platform.war">
+      <element id="artifact" artifact-name="emc-platform:war exploded" />
+    </root>
+  </artifact>
+</component>

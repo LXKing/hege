@@ -1,0 +1,1533 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.home.dao.cost.TwoLevelMenuCostDao">
+   <!--查询今年的能源费-->
+   <select id="TwoEnergyCost" parameterType="java.util.Map"  resultType="java.util.Map">
+      select bb.datas dataenger,SUM(bb.sumprice) totalengerprice from (
+      select SUM(totalprice) sumprice,e.datas,e.UNITID from(
+      SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+      FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (  #{pOrgId}))) o,v_emc_unit v
+      WHERE o.ID=v.ORGID AND COMID=#{comId} )a inner join (
+      select  totaltype.datas,totaltype.total,totaltype.ID,totaltype.UNITID,energyprice.PRICE,
+      totaltype.TYPEID,ROUND(totaltype.total*energyprice.PRICE,2 ) totalprice
+      from (
+      select dh.ID,dh.COMID,dh.UNITID,(dh.DOSAGE*dh.COAL_COEF) total ,dh.TYPEID, DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') datas  from t_emc_final_data_hour_tj dh
+      inner join t_emc_energy_type type
+      on type.ID=dh.TYPEID
+
+      where dh.DOSAGE_TIME<![CDATA[ >= ]]>str_to_date(#{startTime},'%Y-%m-%d') and dh.DOSAGE_TIME <![CDATA[<= ]]>str_to_date(#{endTime},'%Y-%m-%d')
+      )
+      totaltype inner join t_emc_energy_price energyprice on totaltype.TYPEID=energyprice.TYPEID
+
+      group by totaltype.UNITID,energyprice.TYPEID
+      , totaltype.datas
+      ) e
+      on e.UNITID=a.UNITID
+      group by e.datas,e.UNITID
+      )bb
+      group by bb.datas;
+
+   </select>
+   <!--查询去年的能源费-->
+   <select id="TwoEnergyCostLastYear" parameterType="java.util.Map"  resultType="java.util.Map">
+    select bb.datas dataenger,SUM(bb.sumprice) totalengerprice from (
+      select SUM(totalprice) sumprice,e.datas,e.UNITID from(
+      SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+      FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (  #{pOrgId}))) o,v_emc_unit v
+      WHERE o.ID=v.ORGID AND COMID=#{comId} )a inner join (
+      select  totaltype.datas,totaltype.total,totaltype.ID,totaltype.UNITID,energyprice.PRICE,
+      totaltype.TYPEID,ROUND(totaltype.total*energyprice.PRICE,2 ) totalprice
+      from (
+      select dh.ID,dh.COMID,dh.UNITID,(dh.DOSAGE*dh.COAL_COEF) total ,dh.TYPEID, DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') datas  from t_emc_final_data_hour_tj dh
+      inner join t_emc_energy_type type
+      on type.ID=dh.TYPEID
+
+    where dh.DOSAGE_TIME<![CDATA[ >= ]]>str_to_date(#{startTimeTq},'%Y-%m-%d') and dh.DOSAGE_TIME<![CDATA[ <= ]]>str_to_date(#{endTimeTq},'%Y-%m-%d')
+      )
+      totaltype inner join t_emc_energy_price energyprice on totaltype.TYPEID=energyprice.TYPEID
+
+      group by totaltype.UNITID,energyprice.TYPEID
+      , totaltype.datas
+      ) e
+      on e.UNITID=a.UNITID
+      group by e.datas,e.UNITID
+      )bb
+      group by bb.datas;
+
+   </select>
+
+
+
+
+
+
+
+   <!-- 查询能源流成本占比分布图 toolEndDate toolStartDate-->
+   <select id="TwoEnergyFlowPie" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT(CASE type.unittype when '1' then '供热源' when '2' then '一次网' when '3' then '换热站'
+      when '4' then '二次线' when '5' then '民户' end) name, round(IFNULL(C.total,0),2) value
+      FROM ( SELECT '1' unittype FROM DUAL UNION SELECT '2' unittype FROM DUAL UNION SELECT '3' unittype
+      FROM DUAL UNION SELECT '4' unittype FROM DUAL UNION SELECT '5' unittype FROM DUAL
+      ) type LEFT JOIN(
+      SELECT A.UNITTYPE, SUM(B.sumtotal)/10000 total
+      FROM(
+      SELECT vu.UNITID, vu.UNITTYPE
+      FROM ( t_emc_org LEFT JOIN v_emc_unit vu ON ID = vu.ORGID
+      )
+      WHERE FIND_IN_SET(
+      ID, emc_func_org_getchilds (#{pOrgId})  )
+      AND P_ORG_ID != '0' AND UNITID IS NOT NULL and vu.COMID=#{comId}) A
+      LEFT JOIN (
+      select SUM(totalenergy*prices.PRICE) sumtotal,dataenergy.UNITID from (
+      select dh.DOSAGE totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,dh.TYPEID,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m') dayDate from t_emc_final_data_hour_tj  dh
+      inner join t_emc_energy_type type on dh.TYPEID=type.ID
+      )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+      <!--where dataenergy.dayDate <![CDATA[ >= ]]>str_to_date(#{startTime},'%Y-%m-%d') and dataenergy.dayDate<![CDATA[ <= ]]> str_to_date(#{endTime},'%Y-%m-%d')-->
+      GROUP BY dataenergy.UNITID
+      ) B ON A.UNITID = B.unitid
+      WHERE B.sumtotal IS NOT NULL
+      GROUP BY A.UNITTYPE
+      )C on  type.unittype = C.UNITTYPE ;
+   </select>
+   <!-- 查询能耗流成本同比 toolEndDate toolStartDate-->
+   <select id="TwoEnergyFlowPieAn" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT(CASE type.unittype when '1' then '供热源' when '2' then '一次网' when '3' then '换热站'
+      when '4' then '二次线' when '5' then '民户' end) name, round(IFNULL(C.total,0),2) value
+      FROM ( SELECT '1' unittype FROM DUAL UNION SELECT '2' unittype FROM DUAL UNION SELECT '3' unittype
+      FROM DUAL UNION SELECT '4' unittype FROM DUAL UNION SELECT '5' unittype FROM DUAL
+      ) type LEFT JOIN(
+      SELECT A.UNITTYPE, sum(B.sumtotal) total
+      FROM(
+      SELECT vu.UNITID, vu.UNITTYPE
+      FROM ( t_emc_org LEFT JOIN v_emc_unit vu ON ID = vu.ORGID
+      )
+      WHERE FIND_IN_SET(
+      ID, emc_func_org_getchilds (<if test="pOrgId!=null and pOrgId!=''">#{pOrgId,jdbcType=VARCHAR}</if>)  )
+      AND P_ORG_ID != '0' AND UNITID IS NOT NULL and vu.COMID=#{comId}) A
+      LEFT JOIN (
+      select SUM(totalenergy*prices.PRICE)/10000 sumtotal,dataenergy.UNITID from (
+      select dh.DOSAGE totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,dh.TYPEID,dh.DOSAGE_TIME from ${tableName}  dh
+      inner join t_emc_energy_type type on dh.TYPEID=type.ID
+      )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+
+      where dataenergy.DOSAGE_TIME <![CDATA[ >= ]]>str_to_date(#{startTimeTq},'%Y-%m-%d') and dataenergy.DOSAGE_TIME<![CDATA[ <= ]]> str_to_date(#{endTimeTq},'%Y-%m-%d')
+      GROUP BY dataenergy.UNITID
+      ) B ON A.UNITID = B.unitid
+      WHERE B.sumtotal IS NOT NULL
+
+      GROUP BY A.UNITTYPE
+      )C on  type.unittype = C.UNITTYPE ;
+   </select>
+
+
+   <!-- 查询分公司成本排名 toolEndDate toolStartDate     BranchEnergyConsqn-->
+   <select id="BranchEnergyCons" parameterType="java.util.Map"  resultType="java.util.Map">
+     SELECT v.fgsid ID,v.ORG_NAME NAME,   IFNULL(v.BQBM,0)VALUE FROM
+        (
+            SELECT f.fgsid,f.ORG_NAME,f.BQBM,f.UNITID FROM
+               (
+                 SELECT a.fgsid,a.ORG_NAME,SUM(hd.totalprice) BQBM,vu.UNITID FROM (
+                 SELECT t.fgsid,tmo.ORG_NAME,t.ID orgid FROM (
+                 SELECT
+        ( SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID =
+        (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = 0) )
+        fgsid,
+        o.*
+        FROM
+        t_emc_org o
+        WHERE o.COM_ID = #{comId}) t,
+        (SELECT * FROM t_emc_org WHERE 1=1
+            AND P_ORG_ID =#{pOrgId}
+
+        ) tmo
+        WHERE tmo.ID = t.fgsid) a
+        LEFT JOIN v_emc_unit vu ON vu.ORGID = a.orgid
+
+        LEFT JOIN  (
+select ROUND(SUM(IFNULL(A1.total,0)+IFNULL(A2.sumtotal,0)),2) AS totalprice,A1.UNITID from (
+select a.UNITID,SUM(a.total) total from (
+								select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+												INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+							 )a
+ GROUP BY a.UNITID ) AS A1 LEFT JOIN(
+						select SUM(totalenergy*prices.PRICE) sumtotal,dataenergy.UNITID from (
+											select dh.DOSAGE*dh.COAL_COEF totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,dh.TYPEID,dh.DOSAGE_TIME from ${tableName}
+								dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+										 )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+	where dataenergy.DOSAGE_TIME <![CDATA[ >= ]]>str_to_date(#{startTime},'%Y-%m-%d') and dataenergy.DOSAGE_TIME<![CDATA[ <= ]]> str_to_date(#{endTime},'%Y-%m-%d')
+											GROUP BY dataenergy.UNITID )AS A2 ON A1.UNITID=A2.UNITID
+GROUP BY A1.UNITID
+
+        ) hd ON hd.UNITID = vu.unitid
+        GROUP BY a.fgsid,a.ORG_NAME
+            ) f
+        GROUP BY f.fgsid,f.ORG_NAME
+         ) v
+        GROUP BY v.fgsid,v.ORG_NAME
+        ORDER BY IFNULL(v.BQBM,0) DESC
+   </select>
+
+
+
+
+   <!-- 查询分公司成本排名 toolEndDate toolStartDate     -->
+   <select id="BranchEnergyConsqn" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT v.fgsid ID,v.ORG_NAME NAME,   IFNULL(v.BQBM,0)VALUE FROM
+      (
+      SELECT f.fgsid,f.ORG_NAME,f.BQBM,f.UNITID FROM
+      (
+      SELECT a.fgsid,a.ORG_NAME,SUM(hd.totalprice) BQBM,vu.UNITID FROM (
+      SELECT t.fgsid,tmo.ORG_NAME,t.ID orgid FROM (
+      SELECT
+      ( SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID =
+      (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = 0) )
+      fgsid,
+      o.*
+      FROM
+      t_emc_org o
+      WHERE o.COM_ID = #{comId}) t,
+      (SELECT * FROM t_emc_org WHERE 1=1
+      AND P_ORG_ID =#{pOrgId}
+
+      ) tmo
+      WHERE tmo.ID = t.fgsid) a
+      LEFT JOIN v_emc_unit vu ON vu.ORGID = a.orgid
+
+      LEFT JOIN  (
+      select ROUND(SUM(IFNULL(A1.total,0)+IFNULL(A2.sumtotal,0)),2) AS totalprice,A1.UNITID from (
+      select a.UNITID,SUM(a.total) total from (
+      select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+      INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+      )a
+      GROUP BY a.UNITID ) AS A1 LEFT JOIN(
+      select SUM(totalenergy*prices.PRICE) sumtotal,dataenergy.UNITID from (
+      select dh.DOSAGE*dh.COAL_COEF totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,dh.TYPEID,dh.DOSAGE_TIME from ${tableName}
+      dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+      )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+      where dataenergy.DOSAGE_TIME <![CDATA[ >= ]]>str_to_date(#{startTimeTq},'%Y-%m-%d') and dataenergy.DOSAGE_TIME<![CDATA[ <= ]]> str_to_date(#{endTimeTq},'%Y-%m-%d')
+      GROUP BY dataenergy.UNITID )AS A2 ON A1.UNITID=A2.UNITID
+      GROUP BY A1.UNITID
+
+      ) hd ON hd.UNITID = vu.unitid
+      GROUP BY a.fgsid,a.ORG_NAME
+      ) f
+      GROUP BY f.fgsid,f.ORG_NAME
+      ) v
+      GROUP BY v.fgsid,v.ORG_NAME
+   </select>
+
+
+   <!-- 能源流成本趋势对比分析TwoEnergyCostTrend      -->
+
+   <select id="TwoEnergyCostTrend" parameterType="java.util.Map"  resultType="java.util.Map">
+      select DATE_FORMAT(c.DOSAGE_TIME,'%Y-%m-%d') DATE,sum(c.num) VALUE ,
+      CASE b.UNITTYPE WHEN '1' THEN '供热源'
+      WHEN '2' THEN '一次网'
+      WHEN '3' THEN '换热站'
+      WHEN '4' THEN '二次线'
+      WHEN '5' THEN '用户'
+      END AS NAME
+
+      from (select b.UNITID,b.DOSAGE_TIME,  ROUND(SUM(b.num)/10000,2) num from (
+      SELECT
+      DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d') DOSAGE_TIME,
+      a.TYPEID,
+      a.UNITID,
+      sum(a.DOSAGE * price.PRICE) as num,a.DOSAGE,price.PRICE
+      FROM
+      t_emc_final_data_hour_tj  a inner join t_emc_energy_type type on type.ID=a.TYPEID INNER JOIN
+      t_emc_energy_price price on price.TYPEID=a.TYPEID
+               where 1= 1
+               and a.DOSAGE_TIME &gt;=#{startTime,jdbcType=VARCHAR}
+              and a.DOSAGE_TIME &lt;= #{endTime,jdbcType=VARCHAR}
+      GROUP BY
+      DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d'),
+      a.TYPEID,
+      a.UNITID) b group by b.UNITID,b.DOSAGE_TIME) c,	(select * from v_emc_unit where 1=1
+              <if test="feedType != null and feedType !=''"> and HEAT_TYPE =#{feedType,jdbcType=VARCHAR} </if>
+              <if test="orgType != null and orgType !=''">
+                   AND UNITTYPE=#{orgType}
+               </if>
+      AND ORGID in (SELECT id FROM t_emc_org where FIND_IN_SET( id,emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR})))) b
+      WHERE
+      c.UNITID = b.UNITID
+      GROUP BY b.UNITTYPE, DATE_FORMAT(c.DOSAGE_TIME,'%Y-%m-%d') order by DATE_FORMAT(c.DOSAGE_TIME,'%Y-%m-%d')asc
+      ;
+   </select>
+   <!-- 集团总成本数据线性图  groubCost      -->
+
+   <select id="groubCost" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT ROUND(SUM(b.totalprice),2) dayValue,b.dayDate dayDate FROM (
+      SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+      FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{pOrgId}))) o,v_emc_unit v
+      WHERE o.ID=v.ORGID AND COMID=#{comId}
+           <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+            <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+      ) a,
+      (   select ROUND(SUM(IFNULL(A1.total,0)+IFNULL(A2.sumtotal,0)),2) AS totalprice,A1.UNITID,A2.dayDate from (
+      select a.UNITID,SUM(a.total) total from (
+      select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+      INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+      )a
+      GROUP BY a.UNITID ) AS A1 LEFT JOIN(
+      select SUM(totalenergy*prices.PRICE) sumtotal,dataenergy.UNITID, dataenergy.dayDate from (
+      select dh.DOSAGE*dh.COAL_COEF totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,dh.TYPEID,dh.DOSAGE_TIME,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') dayDate
+      from ${tableName}
+      dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+      )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+       where dataenergy.dayDate <![CDATA[ >= ]]>str_to_date(#{startTime},'%Y-%m-%d') and dataenergy.dayDate<![CDATA[ <= ]]> str_to_date(#{endTime},'%Y-%m-%d')
+      GROUP BY dataenergy.UNITID ,dataenergy.dayDate)AS A2 ON A1.UNITID=A2.UNITID
+      GROUP BY A1.UNITID,A2.dayDate) b
+      WHERE a.UNITID = b.UNITID
+      GROUP BY b.dayDate
+      ORDER BY b.dayDate
+
+
+   </select>
+
+
+
+   <!-- 集团总成本数据线性图  groubCost -->
+   <select id="groubCostqn" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT ROUND(SUM(b.totalprice),2) dayValue,b.dayDate dayDate FROM (
+      SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+      FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{pOrgId}))) o,v_emc_unit v
+      WHERE o.ID=v.ORGID AND COMID=#{comId}
+      <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+      <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+      ) a,
+      (   select ROUND(SUM(IFNULL(A1.total,0)+IFNULL(A2.sumtotal,0)),2) AS totalprice,A1.UNITID,A2.dayDate from (
+      select a.UNITID,SUM(a.total) total from (
+      select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+      INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+      )a
+      GROUP BY a.UNITID ) AS A1 LEFT JOIN(
+      select SUM(totalenergy*prices.PRICE) sumtotal,dataenergy.UNITID, dataenergy.dayDate from (
+      select dh.DOSAGE*dh.COAL_COEF totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,dh.TYPEID,dh.DOSAGE_TIME,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') dayDate
+      from ${tableName}
+      dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+      )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+      where dataenergy.dayDate <![CDATA[ >= ]]>str_to_date(#{startTimeTq},'%Y-%m-%d') and dataenergy.dayDate<![CDATA[ <= ]]> str_to_date(#{endTimeTq},'%Y-%m-%d')
+      GROUP BY dataenergy.UNITID ,dataenergy.dayDate)AS A2 ON A1.UNITID=A2.UNITID
+      GROUP BY A1.UNITID,A2.dayDate) b
+      WHERE a.UNITID = b.UNITID
+      GROUP BY b.dayDate
+      ORDER BY b.dayDate
+   </select>
+
+
+
+   <!-- 集团总成本数据线性图  同比 -->
+   <select id="groubCostAn" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT ROUND(SUM(b.totalprice),2) dayValue,b.dayDate dayDate FROM (
+      SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+      FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{pOrgId}))) o,v_emc_unit v
+      WHERE o.ID=v.ORGID AND COMID=#{comId}
+      <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+      <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+      ) a,
+      (   select ROUND(SUM(IFNULL(A1.total,0)+IFNULL(A2.sumtotal,0)),2) AS totalprice,A1.UNITID,A2.dayDate from (
+      select a.UNITID,SUM(a.total) total from (
+      select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+      INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+      )a
+      GROUP BY a.UNITID ) AS A1 INNER JOIN(
+      select SUM(totalenergy*prices.PRICE) sumtotal,dataenergy.UNITID, dataenergy.dayDate from (
+      select dh.DOSAGE*dh.COAL_COEF totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,dh.TYPEID,dh.DOSAGE_TIME,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m') dayDate
+      from ${tableName}
+      dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+      )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+      where dataenergy.dayDate  =#{currMonth}
+      GROUP BY dataenergy.UNITID ,dataenergy.dayDate)AS A2 ON A1.UNITID=A2.UNITID
+      GROUP BY A1.UNITID,A2.dayDate) b
+      WHERE a.UNITID = b.UNITID
+      GROUP BY b.dayDate
+      ORDER BY b.dayDate
+   </select>
+
+
+
+
+   <!-- 集团总成本数据线性图  上一个月 -->
+   <select id="groubCostLastAn" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT ROUND(SUM(b.totalprice),2) dayValue,b.dayDate dayDate FROM (
+      SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+      FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{pOrgId}))) o,v_emc_unit v
+      WHERE o.ID=v.ORGID AND COMID=#{comId}
+      <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+      <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+      ) a,
+      (   select ROUND(SUM(IFNULL(A1.total,0)+IFNULL(A2.sumtotal,0)),2) AS totalprice,A1.UNITID,A2.dayDate from (
+      select a.UNITID,SUM(a.total) total from (
+      select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+      INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+      )a
+      GROUP BY a.UNITID ) AS A1 INNER JOIN(
+      select SUM(totalenergy*prices.PRICE) sumtotal,dataenergy.UNITID, dataenergy.dayDate from (
+      select dh.DOSAGE*dh.COAL_COEF totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,dh.TYPEID,dh.DOSAGE_TIME,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m') dayDate
+      from ${tableName}
+      dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+      )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+      where dataenergy.dayDate  =#{yearLastmonth}
+      GROUP BY dataenergy.UNITID ,dataenergy.dayDate)AS A2 ON A1.UNITID=A2.UNITID
+      GROUP BY A1.UNITID,A2.dayDate) b
+      WHERE a.UNITID = b.UNITID
+      GROUP BY b.dayDate
+      ORDER BY b.dayDate
+   </select>
+
+
+
+   <!-- 集团总成本数据线性图  去年同期 -->
+   <select id="groubCostLastCorrespondingPeriod" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT ROUND(SUM(b.totalprice),2) dayValue,b.dayDate dayDate FROM (
+      SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+      FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{pOrgId}))) o,v_emc_unit v
+      WHERE o.ID=v.ORGID AND COMID=#{comId}
+      <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+      <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+      ) a,
+      (   select ROUND(SUM(IFNULL(A1.total,0)+IFNULL(A2.sumtotal,0)),2) AS totalprice,A1.UNITID,A2.dayDate from (
+      select a.UNITID,SUM(a.total) total from (
+      select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+      INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+      )a
+      GROUP BY a.UNITID ) AS A1 INNER JOIN(
+      select SUM(totalenergy*prices.PRICE)/10000 sumtotal,dataenergy.UNITID, dataenergy.dayDate from (
+      select dh.DOSAGE totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,dh.TYPEID,dh.DOSAGE_TIME,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m') dayDate
+      from ${tableName}
+      dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+      )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+      where dataenergy.dayDate  =#{AnTime}
+      GROUP BY dataenergy.UNITID ,dataenergy.dayDate)AS A2 ON A1.UNITID=A2.UNITID
+      GROUP BY A1.UNITID,A2.dayDate) b
+      WHERE a.UNITID = b.UNITID
+      GROUP BY b.dayDate
+      ORDER BY b.dayDate
+   </select>
+
+
+
+
+
+
+
+
+
+
+   <!-- ............................................................................................................................. -->
+
+   <!-- 分公司成本占比图   -->
+   <select id="BranchCostProportion" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT f.fgsid id,f.ORG_NAME name,
+      ROUND(IFNULL(SUM(f.BQBM),0),2) value
+      FROM
+      (SELECT a.fgsid,a.ORG_NAME,SUM(d1.totalprice) BQBM FROM (SELECT t.fgsid,tmo.ORG_NAME,t.ID orgid FROM (
+      SELECT
+      ( SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = 0) ) fgsid,
+      o.*
+      FROM
+      t_emc_org o
+      WHERE o.COM_ID =#{comId}) t,
+      (SELECT * FROM t_emc_org WHERE 1=1
+                    <if test="pOrgId != null and pOrgId !=''">
+                         AND P_ORG_ID = #{pOrgId}
+                    </if>
+                     <if test="orgId != null and orgId !=''">
+                        AND ID = #{orgId}
+                     </if>
+      ) tmo
+      WHERE tmo.ID = t.fgsid) a
+      LEFT JOIN v_emc_unit vu ON vu.ORGID = a.orgid
+                      <if test="feedType != null and feedType !=''"> AND vu.HEAT_TYPE=#{feedType} </if>
+                       <if test="orgType != null and orgType !=''">
+                           AND vu.UNITTYPE=#{orgTyp
+                      </if>
+      LEFT JOIN  (select ROUND(SUM(IFNULL(A1.total,0)+IFNULL(A2.sumtotal,0)),2) AS totalprice,A1.UNITID from (
+      select a.UNITID,SUM(a.total) total from (
+      select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+      INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+      )a
+      GROUP BY a.UNITID ) AS A1 LEFT JOIN(
+      select SUM(totalenergy*prices.PRICE)/10000 sumtotal,dataenergy.UNITID from (
+      select dh.DOSAGE totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,dh.TYPEID,dh.DOSAGE_TIME from ${tableName}
+      dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+      )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+
+
+      where dataenergy.DOSAGE_TIME <![CDATA[ >= ]]>str_to_date(#{startTime},'%Y-%m-%d') and dataenergy.DOSAGE_TIME<![CDATA[ <= ]]> str_to_date(#{endTime},'%Y-%m-%d')
+      GROUP BY dataenergy.UNITID )AS A2 ON A1.UNITID=A2.UNITID
+      GROUP BY A1.UNITID) d1 ON d1.UNITID = vu.unitid
+      GROUP BY a.fgsid,a.ORG_NAME) f
+      GROUP BY f.fgsid,f.ORG_NAME
+   </select>
+
+   <!-- 分公司成本趋势对比   -->
+   <select id="BranchCostTrend" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT a.FGSID id,a.ORG_NAME NAME,ROUND(IFNULL(SUM(hd.BQBM),0),2) BQBM,dt.DOSAGE_TIME DATE FROM (SELECT t.fgsid,tmo.ORG_NAME,t.ID orgid FROM (
+      SELECT
+      ( SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = 0) ) fgsid,
+      o.*
+      FROM
+      t_emc_org o
+      WHERE o.COM_ID =#{comId}) t,
+      (SELECT * FROM t_emc_org WHERE 1=1
+              <if test="pOrgId != null and pOrgId !=''">
+      AND P_ORG_ID =  #{pOrgId}
+               </if>
+               <if test="orgId != null and orgId !=''">
+                   AND ID = #{orgId}
+              </if>
+      ) tmo
+      WHERE tmo.ID = t.fgsid) a
+      RIGHT JOIN (SELECT DATE_FORMAT(DOSAGE_TIME,'%Y-%m-%d') DOSAGE_TIME FROM  ${tableName}
+               WHERE DOSAGE_TIME<![CDATA[ >= ]]> #{startTime} AND DOSAGE_TIME<![CDATA[ <= ]]> #{endTime}
+      GROUP BY DATE_FORMAT(DOSAGE_TIME,'%y-%m-%d') ORDER BY DOSAGE_TIME) dt ON 1=1
+      LEFT JOIN v_emc_unit vu ON vu.ORGID = a.orgid
+               <if test="feedType != null and feedType !=''"> AND vu.HEAT_TYPE=#{feedType} </if>
+               <if test="orgType != null and orgType !=''">
+                   AND vu.UNITTYPE=#{orgType}
+              </if>
+      LEFT JOIN  (
+      SELECT d1.UNITID,SUM(d1.BM) BQBM,d1.DOSAGE_TIME FROM
+      (SELECT fdh.UNITID,SUM(fdh.DOSAGE*eep.PRICE)/10000 BM,DATE_FORMAT(fdh.DOSAGE_TIME,'%Y-%m-%d') DOSAGE_TIME
+      FROM  ${tableName} fdh ,(SELECT * from t_emc_energy_type where TYPE!=4) eet,t_emc_energy_price eep
+      WHERE
+              fdh.DOSAGE_TIME<![CDATA[ >= ]]> #{startTime} AND fdh.DOSAGE_TIME<![CDATA[ <= ]]> #{endTime}
+      AND fdh.TYPEID = eet.ID and eep.TYPEID=fdh.TYPEID
+      GROUP BY fdh.UNITID,DATE_FORMAT(fdh.DOSAGE_TIME,'%Y-%m-%d')) d1
+      GROUP BY d1.UNITID,d1.DOSAGE_TIME ORDER BY DOSAGE_TIME
+      ) hd ON hd.UNITID = vu.unitid AND hd.DOSAGE_TIME = dt.DOSAGE_TIME
+      GROUP BY a.fgsid,a.ORG_NAME,dt.DOSAGE_TIME
+      ORDER BY a.fgsid,dt.DOSAGE_TIME
+
+   </select>
+
+
+   <!-- 查询该分公司（包含下面所有子公司的）今年所有成本总和-->
+   <select id="selectBmBqTotal" parameterType="java.util.Map" resultType="java.lang.Double">
+      SELECT ROUND(SUM(b.BM),2) BM FROM (
+      SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+      FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+      WHERE o.ID=v.ORGID AND COMID=#{comId}
+      <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+      ) a,
+      (SELECT SUM(d.BM) BM,d.UNITID FROM
+      (SELECT et.ID FROM t_emc_energy_type et
+      ) t ,
+      (
+      SELECT SUM(dh.DOSAGE*eep.PRICE) BM,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') DOSAGE_TIME,dh.UNITID,dh.TYPEID,dh.DOSAGE,eep.PRICE FROM
+      ${tableName} dh,t_emc_energy_type  eet,t_emc_energy_price eep
+      WHERE dh.COMID=#{comId}   and  dh.TYPEID = eet.ID and eep.TYPEID=dh.TYPEID
+      AND dh.DOSAGE_TIME<![CDATA[ >= ]]>#{startTime} AND dh.DOSAGE_TIME<![CDATA[ <= ]]>#{endTime}
+      GROUP BY DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d'),dh.UNITID,dh.TYPEID
+      ) d
+      WHERE t.ID = d.TYPEID
+      GROUP BY d.UNITID) b
+      WHERE a.UNITID = b.UNITID
+   </select>
+
+
+
+   <!-- 查询该分公司（包含下面所有子公司的）去年所有成本总和-->
+   <select id="selectBmTqTotal" parameterType="java.util.Map"  resultType="java.lang.Double">
+      SELECT ROUND(SUM(b.BM),2) BM FROM (
+      SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+      FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+      WHERE o.ID=v.ORGID AND COMID=#{comId}
+      <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+      ) a,
+      (SELECT SUM(d.BM) BM,d.UNITID FROM
+      (SELECT et.ID FROM t_emc_energy_type et
+      ) t ,
+      (
+      SELECT SUM(dh.DOSAGE*eep.PRICE) BM,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') DOSAGE_TIME,dh.UNITID,dh.TYPEID,dh.DOSAGE,eep.PRICE FROM
+      ${tableName} dh,t_emc_energy_type  eet,t_emc_energy_price eep
+      WHERE dh.COMID=#{comId}   and  dh.TYPEID = eet.ID and eep.TYPEID=dh.TYPEID
+      AND dh.DOSAGE_TIME<![CDATA[ >= ]]>#{startTimeTq} AND dh.DOSAGE_TIME<![CDATA[ <= ]]>#{endTimeTq}
+      GROUP BY DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d'),dh.UNITID,dh.TYPEID
+
+      ) d
+      WHERE t.ID = d.TYPEID
+      GROUP BY d.UNITID) b
+      WHERE a.UNITID = b.UNITID
+
+   </select>
+
+   <!-- 查询该分公司（包含下面所有子公司的）今年所有成本趋势图-->
+   <select id="selectBmBqLine" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT ROUND(SUM(b.BM),2)/10000 dayValue,b.DOSAGE_TIME dayDate FROM (
+      SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+      FROM (
+      SELECT ID FROM t_emc_org WHERE FIND_IN_SET(
+      ID, emc_func_org_getchilds (#{orgId}))
+      ) o,v_emc_unit v
+      WHERE o.ID=v.ORGID AND COMID=#{comId}
+      <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+      ) a,
+      ( SELECT SUM(d.BM) BM,d.UNITID,d.DOSAGE_TIME FROM
+      (SELECT et.ID FROM t_emc_energy_type et
+      ) t ,
+      (
+      SELECT SUM(dh.DOSAGE*eep.PRICE) BM,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') DOSAGE_TIME,dh.UNITID,dh.TYPEID,dh.DOSAGE,eep.PRICE FROM
+      t_emc_final_data_hour_tj dh,t_emc_energy_type  eet,t_emc_energy_price eep
+      WHERE dh.COMID=#{comId}  and  dh.TYPEID = eet.ID and eep.TYPEID=dh.TYPEID
+      AND dh.DOSAGE_TIME<![CDATA[ >= ]]>#{startTime} AND dh.DOSAGE_TIME<![CDATA[ <= ]]>#{endTime}
+      GROUP BY DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d'),dh.UNITID,dh.TYPEID
+      ) d
+      WHERE t.ID = d.TYPEID
+      GROUP BY d.UNITID,d.DOSAGE_TIME
+      ) b
+      WHERE a.UNITID = b.UNITID
+      GROUP BY b.DOSAGE_TIME
+      ORDER BY b.DOSAGE_TIME
+   </select>
+
+   <!-- 查询该分公司（包含下面所有子公司的）去年所有成本趋势图-->
+   <select id="selectBmTqLine" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT ROUND(SUM(b.BM),2)/10000 dayValue,b.DOSAGE_TIME dayDate FROM (
+      SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+      FROM (
+      SELECT ID FROM t_emc_org WHERE FIND_IN_SET(
+      ID, emc_func_org_getchilds (#{orgId}))
+      ) o,v_emc_unit v
+      WHERE o.ID=v.ORGID AND COMID=#{comId}
+      <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+      ) a,
+      ( SELECT SUM(d.BM) BM,d.UNITID,d.DOSAGE_TIME FROM
+      (SELECT et.ID FROM t_emc_energy_type et
+      ) t ,
+      (
+      SELECT SUM(dh.DOSAGE*eep.PRICE) BM,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') DOSAGE_TIME,dh.UNITID,dh.TYPEID,dh.DOSAGE,eep.PRICE FROM
+      t_emc_final_data_hour_tj dh,t_emc_energy_type  eet,t_emc_energy_price eep
+      WHERE dh.COMID=#{comId}  and  dh.TYPEID = eet.ID and eep.TYPEID=dh.TYPEID
+      AND dh.DOSAGE_TIME<![CDATA[ >= ]]>#{startTimeTq} AND dh.DOSAGE_TIME<![CDATA[ <= ]]>#{endTimeTq}
+      GROUP BY DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d'),dh.UNITID,dh.TYPEID
+      ) d
+      WHERE t.ID = d.TYPEID
+      GROUP BY d.UNITID,d.DOSAGE_TIME
+      ) b
+      WHERE a.UNITID = b.UNITID
+      GROUP BY b.DOSAGE_TIME
+      ORDER BY b.DOSAGE_TIME
+   </select>
+
+   <!-- 今年各个子成本的各自总成本 -->
+   <select id="selectSubcostTotal" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT
+      ROUND(SUM( CASE b.TYPEID WHEN '1' THEN b.cost ELSE 0 END ),2)  AS manage,
+      ROUND(SUM( CASE b.TYPEID WHEN '2' THEN b.cost ELSE 0 END ),2)  AS other,
+      ROUND( SUM( CASE b.TYPEID WHEN '3' THEN b.cost ELSE 0 END ),2)  AS device,
+      ROUND( SUM( CASE b.TYPEID WHEN '4' THEN b.cost ELSE 0 END ),2)  AS labor
+      FROM(
+      SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+      FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+      WHERE o.ID=v.ORGID AND COMID=#{comId}
+      <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+      <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+      ) a,
+      (
+      select SUM(costday.COST)/10000 cost,costday.COST_DATE,costday.TYPEID,costday.UNITID,costday.COMID  from t_emc_cost_type type
+      INNER JOIN t_emc_final_cost_day costday on type.ID=costday.TYPEID
+      WHERE costday.COMID=#{comId} AND   costday.COST_DATE <![CDATA[ >= ]]>str_to_date(#{startTime},'%Y-%m-%d') and costday.COST_DATE<![CDATA[ <= ]]> str_to_date(#{endTime},'%Y-%m-%d')
+      GROUP BY costday.TYPEID,costday.UNITID
+      ) b
+      WHERE a.UNITID = b.UNITID
+   </select>
+
+
+   <!-- 去年各个子成本的各自总成本 -->
+   <select id="selectSubcostTotalLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT
+      ROUND( SUM( CASE b.TYPEID WHEN '1' THEN b.cost ELSE 0 END ),2) AS manage,
+      ROUND(SUM( CASE b.TYPEID WHEN '2' THEN b.cost ELSE 0 END ),2) AS other,
+      ROUND( SUM( CASE b.TYPEID WHEN '3' THEN b.cost ELSE 0 END ),2) AS device,
+      ROUND( SUM( CASE b.TYPEID WHEN '4' THEN b.cost ELSE 0 END ),2) AS labor
+      FROM(
+      SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+      FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+      WHERE o.ID=v.ORGID AND COMID=#{comId}
+      <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+      <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+      ) a,
+      (
+      select SUM(costday.COST)/10000 cost,costday.COST_DATE,costday.TYPEID,costday.UNITID,costday.COMID  from t_emc_cost_type type
+      INNER JOIN t_emc_final_cost_day costday on type.ID=costday.TYPEID
+      WHERE costday.COMID=#{comId} AND   costday.COST_DATE <![CDATA[ >= ]]>str_to_date(#{startTimeTq},'%Y-%m-%d') and costday.COST_DATE<![CDATA[ <= ]]> str_to_date(#{endTimeTq},'%Y-%m-%d')
+      GROUP BY costday.TYPEID,costday.UNITID
+      ) b
+      WHERE a.UNITID = b.UNITID
+   </select>
+   <!-- 各个子成本今年成本趋势图  Subcost-->
+   <select id="selectSubcostLine" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT
+
+      ROUND(SUM( CASE b.TYPEID WHEN '1' THEN b.cost ELSE 0 END ),2) AS manage,
+      ROUND(SUM( CASE b.TYPEID WHEN '2' THEN b.cost ELSE 0 END ),2) AS other,
+      ROUND(SUM( CASE b.TYPEID WHEN '3' THEN b.cost ELSE 0 END ),2) AS device,
+      ROUND( SUM( CASE b.TYPEID WHEN '4' THEN b.cost ELSE 0 END ),2) AS labor,
+      b.COST_DATE dayDate FROM (
+      SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+      FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+      WHERE o.ID=v.ORGID AND COMID=#{comId}
+      <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+      <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+      ) a,
+      (
+      select SUM(costday.COST)/10000 cost,costday.COST_DATE,costday.TYPEID,costday.UNITID,costday.COMID  from t_emc_cost_type type
+      INNER JOIN t_emc_final_cost_day costday on type.ID=costday.TYPEID
+      WHERE costday.COMID=#{comId} AND   costday.COST_DATE <![CDATA[ >= ]]>str_to_date(#{startTime},'%Y-%m-%d') and costday.COST_DATE<![CDATA[ <= ]]> str_to_date(#{endTime},'%Y-%m-%d')
+      GROUP BY costday.TYPEID , DATE_FORMAT(costday.COST_DATE,'%Y-%m-%d'),costday.UNITID
+      ) b
+      WHERE a.UNITID = b.UNITID
+      GROUP BY b.COST_DATE
+      ORDER BY b.COST_DATE
+
+   </select>
+   <select id="selectSubcostLineLastYear" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT
+      ROUND(SUM( CASE b.TYPEID WHEN '1' THEN b.cost ELSE 0 END ),2) AS manage,
+      ROUND(SUM( CASE b.TYPEID WHEN '2' THEN b.cost ELSE 0 END ),2) AS other,
+      ROUND(SUM( CASE b.TYPEID WHEN '3' THEN b.cost ELSE 0 END ),2) AS device,
+      ROUND(SUM( CASE b.TYPEID WHEN '4' THEN b.cost ELSE 0 END ),2) AS labor,
+      b.COST_DATE dayDate FROM (
+      SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+      FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+      WHERE o.ID=v.ORGID AND COMID=#{comId}
+      <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+      <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+      ) a,
+      (
+      select SUM(costday.COST)/10000 cost,costday.COST_DATE,costday.TYPEID,costday.UNITID,costday.COMID  from t_emc_cost_type type
+      INNER JOIN t_emc_final_cost_day costday on type.ID=costday.TYPEID
+      WHERE costday.COMID=#{comId} AND   costday.COST_DATE <![CDATA[ >= ]]>str_to_date(#{startTimeTq},'%Y-%m-%d') and costday.COST_DATE<![CDATA[ <= ]]> str_to_date(#{endTimeTq},'%Y-%m-%d')
+      GROUP BY costday.TYPEID , DATE_FORMAT(costday.COST_DATE,'%Y-%m-%d'),costday.UNITID
+      ) b
+      WHERE a.UNITID = b.UNITID
+      GROUP BY b.COST_DATE
+      ORDER BY b.COST_DATE
+   </select>
+   <!-- 今年能源趋势图 -->
+   <select id="selectSubcostEnergyLine" parameterType="java.util.Map"  resultType="java.util.Map">
+
+      select  SUM(prices.PRICE*dataenergy.DOSAGE) total,dataenergy.DOSAGE,prices.PRICE,dataenergy.UNITID UNITID,dataenergy.dayDate dayDate from (
+      select dh.DOSAGE totalenergy ,dh.DOSAGE,dh.UNITID,type.ID,dh.TYPEID,dh.DOSAGE_TIME,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') dayDate
+      from t_emc_final_data_hour_tj   dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+      where dh.DOSAGE_TIME  <![CDATA[ >= ]]>str_to_date(#{startTime},'%Y-%m-%d')and dh.DOSAGE_TIME<![CDATA[ <= ]]> str_to_date(#{endTime},'%Y-%m-%d')
+      )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID INNER JOIN v_emc_unit unit on unit.UNITID=dataenergy.UNITID
+      GROUP BY dataenergy.UNITID
+   </select>
+   <!-- 今年能源组织机构图 -->
+   <select id="selectSubcostEnergyOrg" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT
+      a.UNITID UNITID FROM (
+      SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+      FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+      WHERE o.ID=v.ORGID AND COMID=#{comId}
+             <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+           <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+      ) a
+   </select>
+
+   <!-- 去年能源趋势图 -->
+   <select id="selectSubcostEnergyLineLastYear" parameterType="java.util.Map"  resultType="java.util.Map">
+       select  (dataenergy.DOSAGE*prices.PRICE)/10000 total,dataenergy.DOSAGE,prices.PRICE,dataenergy.UNITID UNITID,dataenergy.dayDate dayDate from (
+      select dh.DOSAGE totalenergy ,dh.DOSAGE,dh.UNITID,type.ID,dh.TYPEID,dh.DOSAGE_TIME,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') dayDate
+      from t_emc_final_data_hour_tj   dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+      where dh.DOSAGE_TIME  <![CDATA[ >= ]]>str_to_date(#{startTimeTq},'%Y-%m-%d')and dh.DOSAGE_TIME<![CDATA[ <= ]]> str_to_date(#{endTimeTq},'%Y-%m-%d')
+      )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID INNER JOIN v_emc_unit unit on unit.UNITID=dataenergy.UNITID
+      GROUP BY dataenergy.UNITID
+      ORDER BY dataenergy.dayDate
+   </select>
+   <!-- 去年能源总成本 -->
+   <select id="selectSubcostTotalEnergyLastYear" parameterType="java.util.Map"  resultType="java.lang.Double">
+      SELECT
+      SUM(  b.sumtotal) AS energy FROM (
+      SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+      FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+      WHERE o.ID=v.ORGID AND COMID=#{comId}
+      <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+      <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+      ) a,
+      (
+      select SUM(totalenergy*prices.PRICE) sumtotal,dataenergy.UNITID,DATE_FORMAT(dataenergy.DOSAGE_TIME,'%Y-%m-%d') date from (
+      select dh.DOSAGE totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,dh.TYPEID,dh.DOSAGE_TIME from ${tableName}
+      dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+      )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+      where dataenergy.DOSAGE_TIME  <![CDATA[ >= ]]>str_to_date(#{startTimeTq},'%Y-%m-%d') and dataenergy.DOSAGE_TIME<![CDATA[ <= ]]> str_to_date(#{endTimeTq},'%Y-%m-%d')
+      GROUP BY dataenergy.UNITID
+      ) b
+      WHERE a.UNITID = b.UNITID
+   </select>
+   <!-- 今年能源总成本 selectSubcostTotalEnergy-->
+   <select id="selectSubcostTotalEnergy" parameterType="java.util.Map"  resultType="java.lang.Double">
+      SELECT
+      SUM(  b.sumtotal) AS energy FROM (
+      SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+      FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+      WHERE o.ID=v.ORGID AND COMID=#{comId}
+      <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+      <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+      ) a,
+      (
+      select SUM(totalenergy*prices.PRICE) sumtotal,dataenergy.UNITID,DATE_FORMAT(dataenergy.DOSAGE_TIME,'%Y-%m-%d') date from (
+      select dh.DOSAGE*dh.COAL_COEF totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,dh.TYPEID,dh.DOSAGE_TIME from ${tableName}
+      dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+      )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+      where dataenergy.DOSAGE_TIME  <![CDATA[ >= ]]>str_to_date(#{startTime},'%Y-%m-%d') and dataenergy.DOSAGE_TIME<![CDATA[ <= ]]> str_to_date(#{endTime},'%Y-%m-%d')
+      GROUP BY dataenergy.UNITID
+      ) b
+      WHERE a.UNITID = b.UNITID
+   </select>
+
+   <!--分公司成本明细表  #{pOrgId}   #{comId}  #{startTime}-->
+   <select id="SubCostDetailed"  parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT AA.*,BB.SORT FROM (
+      SELECT v.fgsid id,v.ORG_NAME orgname,
+      ROUND(MAX(CASE v.ID WHEN '1' THEN v.BQBM ELSE 0 END),2) as 'managerExpenses',
+      ROUND(MAX(CASE v.ID WHEN '2' THEN v.BQBM ELSE 0 END),2)as  'otherExpenses',
+      ROUND(MAX(CASE v.ID WHEN '3' THEN v.BQBM ELSE 0 END),2) as 'deviceExpenses',
+      ROUND(MAX(CASE v.ID WHEN '4' THEN v.BQBM ELSE 0 END),2) as 'laborExpenses',
+
+      ROUND(MAX(CASE v1.ID WHEN '1' THEN v1.BQBM ELSE 0 END),2)as 'managerExpensesTq',
+      ROUND(MAX(CASE v1.ID WHEN '2' THEN v1.BQBM ELSE 0 END),2) as 'otherExpensesTq',
+      ROUND(MAX(CASE v1.ID WHEN '3' THEN v1.BQBM ELSE 0 END),2) as 'deviceExpensesTq',
+      ROUND(MAX(CASE v1.ID WHEN '4' THEN v1.BQBM ELSE 0 END),2) as 'laborExpensesTq'
+      FROM
+      (
+      SELECT f.fgsid,f.ORG_NAME,f.ID,f.BQBM
+      FROM
+      (
+      SELECT a.fgsid,a.ORG_NAME,SUM(d1.costtotal) BQBM,eet.ID FROM
+      (
+      SELECT t.fgsid,tmo.ORG_NAME,t.ID orgid FROM (
+      SELECT
+      (
+      SELECT ID FROM t_emc_org
+      WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) )
+      AND P_ORG_ID = (
+      SELECT ID FROM t_emc_org
+      WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = 0)
+      ) fgsid, o.ORG_NAME,o.ID  FROM t_emc_org o WHERE o.COM_ID =#{comId}
+      ) t,
+      (
+
+      SELECT * FROM t_emc_org WHERE P_ORG_ID =#{orgId}
+
+
+      ) tmo
+      WHERE tmo.ID = t.fgsid) a
+      LEFT JOIN v_emc_unit vu ON vu.ORGID = a.orgid
+
+      LEFT JOIN  (
+      select SUM(costday.COST)/10000 as costtotal ,costday.UNITID,costday.TYPEID,DATE_FORMAT(costday.COST_DATE,'%Y-%m') dayDate
+      from t_emc_final_cost_day costday
+
+      GROUP BY costday.TYPEID,costday.UNITID ) d1 on d1.UNITID=vu.UNITID LEFT JOIN t_emc_cost_type eet on eet.ID=d1.TYPEID
+       <!--  where d1.dayDate<![CDATA[ >= ]]>str_to_date(#{startTime},'%Y-%m-%d')    and d1.dayDate <![CDATA[ <= ]]>str_to_date(#{endTime},'%Y-%m-%d')-->
+      GROUP BY a.fgsid,a.ORG_NAME,eet.ID
+
+      ) f
+      GROUP BY f.fgsid,f.ORG_NAME,f.ID
+      ) v LEFT JOIN
+      (
+      SELECT f.fgsid,f.ORG_NAME,f.ID,f.BQBM
+      FROM
+      (
+      SELECT a.fgsid,a.ORG_NAME,SUM(d1.costtotal) BQBM,eet.ID FROM
+      (SELECT t.fgsid,tmo.ORG_NAME,t.ID orgid FROM (
+      SELECT
+      ( SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID =
+      (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = 0) ) fgsid,
+      o.*
+      FROM
+      t_emc_org o
+      WHERE o.COM_ID =#{comId}) t,
+      (
+      SELECT * FROM t_emc_org WHERE  P_ORG_ID =#{orgId}
+      ) tmo
+      WHERE tmo.ID = t.fgsid
+      ) a
+      LEFT JOIN v_emc_unit vu ON vu.ORGID = a.orgid
+
+      LEFT JOIN  (
+      select SUM(costday.COST)/10000 as costtotal ,costday.UNITID,costday.TYPEID ,DATE_FORMAT(costday.COST_DATE,'%Y-%m') dayDate
+      from t_emc_final_cost_day costday
+
+      GROUP BY costday.TYPEID,costday.UNITID ) d1 on d1.UNITID=vu.UNITID LEFT JOIN t_emc_cost_type eet on eet.ID=d1.TYPEID
+     <!-- where d1.dayDate<![CDATA[ >= ]]>str_to_date(#{startTimeTq},'%Y-%m-%d')    and d1.dayDate <![CDATA[ <= ]]>str_to_date(#{endTimeTq},'%Y-%m-%d')-->
+      GROUP BY a.fgsid,a.ORG_NAME,eet.ID
+      ) f
+      GROUP BY f.fgsid,f.ORG_NAME,f.ID
+      ) v1 ON v.fgsid = v1.fgsid AND v.ID = v1.ID
+      GROUP BY v.fgsid,v.ORG_NAME
+      ) AA LEFT JOIN t_emc_org BB ON AA.ID = BB.ID ORDER BY BB.SORT
+   </select>
+
+   <!---->
+   <select id="SubCostDetailedEnergy"  parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT f.fgsid id ,f.ORG_NAME ,  ROUND(SUM(IFNULL(f.total,0)),2)/10000 energyExpenses
+      FROM
+      (
+SELECT a.fgsid,a.ORG_NAME,aa.DOSAGE,aa.PRICE BQBM,aa.total FROM
+      (
+      SELECT t.fgsid,tmo.ORG_NAME,t.ID orgid FROM (
+      SELECT
+      (
+      SELECT ID FROM t_emc_org
+      WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) )
+      AND P_ORG_ID = (
+      SELECT ID FROM t_emc_org
+      WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = 0)
+      ) fgsid, o.ORG_NAME,o.ID  FROM t_emc_org o WHERE o.COM_ID =#{comId}
+      ) t,
+      (
+      SELECT * FROM t_emc_org WHERE P_ORG_ID =#{orgId}
+      ) tmo
+      WHERE tmo.ID = t.fgsid) a
+      LEFT JOIN v_emc_unit vu ON vu.ORGID = a.orgid
+
+      LEFT JOIN  (
+  select   SUM(prices.PRICE*dataenergy.DOSAGE) total,dataenergy.DOSAGE,prices.PRICE,dataenergy.UNITID from (
+      select dh.DOSAGE totalenergy ,dh.DOSAGE,dh.UNITID,type.ID,dh.TYPEID,dh.DOSAGE_TIME,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m') dayDate
+      from t_emc_final_data_hour_tj
+      dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+       where dh.DOSAGE_TIME <![CDATA[ >= ]]>str_to_date(#{startTime},'%Y-%m-%d') and dh.DOSAGE_TIME<![CDATA[ <= ]]> str_to_date(#{endTime},'%Y-%m-%d')
+      )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID INNER JOIN v_emc_unit unit on unit.UNITID=dataenergy.UNITID
+
+      GROUP BY dataenergy.UNITID
+
+     )aa on aa.UNITID=vu.UNITID
+      ) f
+      GROUP BY f.fgsid,f.ORG_NAME
+   </select>
+
+   <select id="selectOrg"  parameterType="java.util.Map"  resultType="java.util.Map">
+      select  ID, ORG_NAME from t_emc_org  where P_ORG_ID =0 and COM_ID='a3e5e868e7844c349e5cf51c5e6bc37d'
+   </select>
+
+
+
+   <select id="SubCostDetailedEnergyLastYear"  parameterType="java.util.Map"  resultType="java.util.Map">
+                    SELECT f.fgsid id ,f.ORG_NAME ,  ROUND(SUM(IFNULL(f.total,0)),2)/10000 energyExpensesTq
+      FROM
+      (
+SELECT a.fgsid,a.ORG_NAME,aa.DOSAGE,aa.PRICE BQBM,aa.total FROM
+      (
+      SELECT t.fgsid,tmo.ORG_NAME,t.ID orgid FROM (
+      SELECT
+      (
+      SELECT ID FROM t_emc_org
+      WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) )
+      AND P_ORG_ID = (
+      SELECT ID FROM t_emc_org
+      WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = 0)
+      ) fgsid, o.ORG_NAME,o.ID  FROM t_emc_org o WHERE o.COM_ID =#{comId}
+      ) t,
+      (
+      SELECT * FROM t_emc_org WHERE P_ORG_ID =#{orgId}
+      ) tmo
+      WHERE tmo.ID = t.fgsid) a
+      LEFT JOIN v_emc_unit vu ON vu.ORGID = a.orgid
+
+      LEFT JOIN  (
+  select  dataenergy.DOSAGE*prices.PRICE total,dataenergy.DOSAGE,prices.PRICE,dataenergy.UNITID from (
+      select dh.DOSAGE totalenergy ,dh.DOSAGE,dh.UNITID,type.ID,dh.TYPEID,dh.DOSAGE_TIME,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m') dayDate
+      from t_emc_final_data_hour_tj
+      dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+       where dh.DOSAGE_TIME <![CDATA[ >= ]]>str_to_date(#{startTimeTq},'%Y-%m-%d') and dh.DOSAGE_TIME<![CDATA[ <= ]]> str_to_date(#{endTimeTq},'%Y-%m-%d')
+      )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID INNER JOIN v_emc_unit unit on unit.UNITID=dataenergy.UNITID
+
+      GROUP BY dataenergy.UNITID
+
+     )aa on aa.UNITID=vu.UNITID
+      ) f
+      GROUP BY f.fgsid,f.ORG_NAME
+   </select>
+
+   <!-- 能源流明细 groupEnergyCost  -->
+   <select id="EnergyFlowDetail" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT
+      type.unittype,
+      (case type.unittype when '1' then '供热源' when '2' then '一次网' when '3' then '换热站' when '4' then '二次线' when '5' then '民户' end) unitname,
+      IFNULL(D.curGroupEnergy,0) groupE,
+      round(IFNULL(if(D.lastGroupEnergy=0,0,(D.curGroupEnergy-D.lastGroupEnergy)/D.lastGroupEnergy*100),0),2) groupS,
+      if(D.lastGroupEnergy>D.curGroupEnergy,'1','0') groupR,
+      IFNULL(D.curWaterEnergy,0) waterE,
+      round(IFNULL(if(D.lastWaterEnergy=0,0,(D.curWaterEnergy-D.lastWaterEnergy)/D.lastWaterEnergy*100),0),2) waterS,
+      if(D.lastWaterEnergy>D.curWaterEnergy,'1','0') waterR,
+      IFNULL(D.curElectricEnergy,0) elecE,
+      round(IFNULL(if(D.lastElectricEnergy=0,0,(D.curElectricEnergy-D.lastElectricEnergy)/D.lastElectricEnergy*100),0),2) elecS,
+      if(D.lastElectricEnergy>D.curElectricEnergy,'1','0') elecR,
+      IFNULL(D.curGasEnergy,0) gasE,
+      round(IFNULL(if(D.lastGasEnergy=0,0,(D.curGasEnergy-D.lastGasEnergy)/D.lastGasEnergy*100),0),2) gasS,
+      if(D.lastGasEnergy>D.curGasEnergy,'1','0') gasR,
+      IFNULL(D.curHotEnergy,0) hotE,
+      round(IFNULL(if(D.lastHotEnergy=0,0,(D.curHotEnergy-D.lastHotEnergy)/D.lastHotEnergy*100),0),2) hotS,
+      if(D.lastHotEnergy>D.curHotEnergy,'1','0') hotR,
+      IFNULL(D.curCoalEnergy,0) coalE,
+      round(IFNULL(if(D.lastCoalEnergy=0,0,(D.curCoalEnergy-D.lastCoalEnergy)/D.lastCoalEnergy*100),0),2) coalS,
+      if(D.lastCoalEnergy>D.curCoalEnergy,'1','0') coalR,
+      IFNULL(D.curOilEnergy,0) oilE,
+      round(IFNULL(if(D.lastOilEnergy=0,0,(D.curOilEnergy-D.lastOilEnergy)/D.lastOilEnergy*100),0),2) oilS,
+      if(D.lastOilEnergy>D.curOilEnergy,'1','0') oilR
+      FROM
+      (
+            SELECT '1' unittype FROM DUAL UNION SELECT '2' unittype FROM DUAL UNION SELECT '3' unittype FROM DUAL UNION
+            SELECT '4' unittype FROM DUAL UNION SELECT '5' unittype FROM DUAL
+      ) type
+      LEFT JOIN(
+            select (CC.curWater+CC.curElectric+CC.curGas+CC.curCoal+CC.curOil) curGroupEnergy,
+            (CC.lastWater+CC.lastElectric+CC.lastGas+CC.lastCoal+CC.lastOil) lastGroupEnergy,
+            CC.* from (
+                  SELECT C.UNITTYPE,
+                  SUM( CASE WHEN C.energyType = '1' AND C.season = '0' THEN C.dosage ELSE 0 END )/10000 AS lastWaterEnergy,
+                  SUM( CASE WHEN C.energyType = '1' AND C.season = '1' THEN C.dosage ELSE 0 END )/10000 AS curWaterEnergy,
+                  sum( CASE WHEN C.energyType = '2' AND C.season = '0' THEN C.dosage ELSE 0 END )/10000 AS lastElectricEnergy,
+                  sum( CASE WHEN C.energyType = '2' AND C.season = '1' THEN C.dosage ELSE 0 END )/10000 AS curElectricEnergy,
+                  SUM( CASE WHEN C.energyType = '3' AND C.season = '0' THEN C.dosage ELSE 0 END )/10000 AS lastGasEnergy,
+                  SUM( CASE WHEN C.energyType = '3' AND C.season = '1' THEN C.dosage ELSE 0 END )/10000 AS curGasEnergy,
+                  sum( CASE WHEN C.energyType = '4' AND C.season = '0' THEN C.dosage ELSE 0 END )/10000 AS lastHotEnergy,
+                  sum( CASE WHEN C.energyType = '4' AND C.season = '1' THEN C.dosage ELSE 0 END )/10000 AS curHotEnergy,
+                  SUM( CASE WHEN C.energyType = '5' AND C.season = '0' THEN C.dosage ELSE 0 END )/10000 AS lastCoalEnergy,
+                  SUM( CASE WHEN C.energyType = '5' AND C.season = '1' THEN C.dosage ELSE 0 END )/10000 AS curCoalEnergy,
+                  SUM( CASE WHEN C.energyType = '6' AND C.season = '0' THEN C.dosage ELSE 0 END )/10000 AS lastOilEnergy,
+                  SUM( CASE WHEN C.energyType = '6' AND C.season = '1' THEN C.dosage ELSE 0 END )/10000 AS curOilEnergy,
+                  SUM( CASE WHEN C.energyType = '1' AND C.season = '0' THEN C.total ELSE 0 END )/10000 AS lastWater,
+                  SUM( CASE WHEN C.energyType = '1' AND C.season = '1' THEN C.total ELSE 0 END )/10000 AS curWater,
+                  sum( CASE WHEN C.energyType = '2' AND C.season = '0' THEN C.total ELSE 0 END )/10000 AS lastElectric,
+                  sum( CASE WHEN C.energyType = '2' AND C.season = '1' THEN C.total ELSE 0 END )/10000 AS curElectric,
+                  SUM( CASE WHEN C.energyType = '3' AND C.season = '0' THEN C.total ELSE 0 END )/10000 AS lastGas,
+                  SUM( CASE WHEN C.energyType = '3' AND C.season = '1' THEN C.total ELSE 0 END )/10000 AS curGas,
+                  SUM( CASE WHEN C.energyType = '5' AND C.season = '0' THEN C.total ELSE 0 END )/10000 AS lastCoal,
+                  SUM( CASE WHEN C.energyType = '5' AND C.season = '1' THEN C.total ELSE 0 END )/10000 AS curCoal,
+                  SUM( CASE WHEN C.energyType = '6' AND C.season = '0' THEN C.total ELSE 0 END )/10000 AS lastOil,
+                  SUM( CASE WHEN C.energyType = '6' AND C.season = '1' THEN C.total ELSE 0 END )/10000 AS curOil
+                  FROM (
+                        SELECT A.UNITTYPE, SUM(B.dosage) dosage,SUM(B.total) total, B.energytype, B.season
+                        FROM (
+                              SELECT vu.UNITID, vu.UNITTYPE
+                              FROM ( t_emc_org LEFT JOIN v_emc_unit vu ON ID = vu.ORGID
+                              <if test="feedType!=null and feedType!=''"> AND vu.heat_type = #{feedType,jdbcType=VARCHAR} </if>  )
+                              WHERE FIND_IN_SET( ID, emc_func_org_getchilds ('74') )
+                              AND P_ORG_ID != '0' AND UNITID IS NOT NULL
+                        ) A
+                        LEFT JOIN (
+                              SELECT h.UNITID AS unitid,sum(h.DOSAGE) dosage,
+                              sum(h.DOSAGE *price.PRICE) AS total, et.type AS energytype,
+                              ( CASE WHEN DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') THEN '1' ELSE '0' END ) season
+                              FROM ( ${tableName} h LEFT JOIN t_emc_energy_type et ON h.TYPEID = et.id INNER JOIN t_emc_energy_price price on price.ID=et.ID )
+                              WHERE 1 = 1 <include refid="cur_last_time" />
+                              GROUP BY unitid, energytype,season
+                        ) B ON A.UNITID = B.unitid
+                        WHERE B.total IS NOT NULL
+                        GROUP BY A.UNITTYPE, B.energytype, B.season
+                  ) C
+                  GROUP BY C.UNITTYPE
+            ) CC
+      ) D ON D.UNITTYPE = type.unittype
+      where 1=1
+      <if test="orgType!=null and orgType!=''"> AND type.unittype = #{orgType,jdbcType=VARCHAR} </if>
+
+   </select>
+   <sql id="cur_last_time">
+      <choose>
+         <when test="startTime!=null and startTime!=''">
+            AND (DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') >= DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+         </when>
+         <otherwise>
+            AND (DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') >= SUBDATE(CURDATE(), INTERVAL 5 DAY)
+         </otherwise>
+      </choose>
+      <choose>
+         <when test="endTime!=null and endTime!=''">
+            AND DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d'))
+         </when>
+         <otherwise>
+            AND DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') &lt;= CURDATE())
+         </otherwise>
+      </choose>
+      <choose>
+         <when test="startTime!=null and startTime!=''">
+            OR (DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') >= SUBDATE(DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d'), INTERVAL 1 YEAR)
+         </when>
+         <otherwise>
+            OR (DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') >= SUBDATE(SUBDATE(CURDATE(), INTERVAL 5 DAY), INTERVAL 1 YEAR)
+         </otherwise>
+      </choose>
+      <choose>
+         <when test="endTime!=null and endTime!=''">
+            AND DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') &lt;= SUBDATE(DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d'), INTERVAL 1 YEAR))
+         </when>
+         <otherwise>
+            AND DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') &lt;= SUBDATE(CURDATE(), INTERVAL 1 YEAR))
+         </otherwise>
+      </choose>
+   </sql>
+   <!-- 能源流明细   -->
+
+
+   <!--集团能源费用 -->
+   <select id="groupEnergyCost" parameterType="java.util.Map"  resultType="java.util.Map">
+      select DISTINCT   ROUND(SUM(cost.suntotal)/10000,2)  total,cost.dayDate daydata,cost.UNITID unitid from (
+      select a.DOSAGE*a.PRICE  suntotal,a.UNITID,a.dayDate,a.DOSAGE,a.PRICE  from (
+      select  dh.UNITID,dh.DOSAGE,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') dayDate ,price.PRICE,type.ID from
+      ${tableName} dh inner join t_emc_energy_type type on type.ID=dh.TYPEID inner join
+      t_emc_energy_price price  on price.TYPEID=type.ID
+
+      ) a
+       where a.dayDate <![CDATA[ <= ]]>str_to_date(#{endTime},'%Y-%m-%d') and a.dayDate <![CDATA[ >= ]]>str_to_date(#{startTime},'%Y-%m-%d')
+      GROUP BY a.UNITID,a.dayDate
+      ORDER BY a.dayDate,a.UNITID
+      ) cost GROUP BY cost.dayDate,cost.UNITID
+   </select>
+   <!--集团 其他费用费用-->
+   <select id="groupCost" parameterType="java.util.Map"  resultType="java.util.Map">
+     	 select  ROUND(SUM(costday.COST)/10000,2) total,costday.UNITID unitid
+      ,DATE_FORMAT(costday.COST_DATE,'%Y-%m-%d') dayDateas
+      from t_emc_final_cost_day as costday INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+                   where costday.COST_DATE <![CDATA[ >= ]]>str_to_date(#{startTime},'%Y-%m-%d')  and costday.COST_DATE<![CDATA[ <= ]]>str_to_date(#{endTime},'%Y-%m-%d')
+      GROUP BY costday.COST_DATE,costday.UNITID
+   </select>
+
+   <!--集团 组织机构subOrg-->
+   <select id="groupOrg" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT v.UNITID unitid,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+      FROM (
+      SELECT ID FROM t_emc_org WHERE FIND_IN_SET(
+      ID, emc_func_org_getchilds (#{orgId}))
+      ) o,v_emc_unit v
+      WHERE o.ID=v.ORGID AND COMID=#{comId}
+          <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+             <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+   </select>
+
+
+
+
+   <!--集团能去年源费用 -->
+   <select id="groupEnergyCostLastYear" parameterType="java.util.Map"  resultType="java.util.Map">
+      select DISTINCT  SUM(cost.suntotal)/10000 total ,cost.dayDate daydata,cost.UNITID unitid from (
+      select a.DOSAGE*a.PRICE  suntotal,a.UNITID,a.dayDate,a.DOSAGE,a.PRICE  from (
+      select  dh.UNITID,dh.DOSAGE,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') dayDate ,price.PRICE,type.ID from
+      ${tableName} dh inner join t_emc_energy_type type on type.ID=dh.TYPEID inner join
+      t_emc_energy_price price  on price.TYPEID=type.ID
+      ) a
+      where a.dayDate <![CDATA[ <= ]]>str_to_date(#{endTimeTq},'%Y-%m-%d') and a.dayDate <![CDATA[ >= ]]>str_to_date(#{startTimeTq},'%Y-%m-%d')
+      GROUP BY a.UNITID,a.dayDate
+      ORDER BY a.dayDate,a.UNITID
+      ) cost GROUP BY cost.dayDate,cost.UNITID
+   </select>
+
+
+   <!--集团 去年其他费用费用-->
+   <select id="groupCostLastYear" parameterType="java.util.Map"  resultType="java.util.Map">
+      select  ROUND(SUM(costday.COST)/10000,2)  total,costday.UNITID unitid
+      ,DATE_FORMAT(costday.COST_DATE,'%Y-%m-%d') dayDateas
+      from t_emc_final_cost_day as costday INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+      where costday.COST_DATE <![CDATA[ >= ]]>str_to_date(#{startTimeTq},'%Y-%m-%d')  and costday.COST_DATE<![CDATA[ <= ]]>str_to_date(#{endTimeTq},'%Y-%m-%d')
+      GROUP BY costday.COST_DATE,costday.UNITID
+   </select>
+
+   <!--分公司组织机构-->
+   <select id="subOrg" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT a.fgsid fgsid,a.ORG_NAME BQBM,vu.UNITID unitid FROM (SELECT t.fgsid,tmo.ORG_NAME,t.ID orgid FROM (
+      SELECT
+      ( SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND
+      P_ORG_ID = (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = 0) ) fgsid,
+      o.*
+      FROM
+      t_emc_org o
+      WHERE o.COM_ID =#{comId}) t,
+      (SELECT * FROM t_emc_org WHERE 1=1
+                           <if test="pOrgId != null and pOrgId !=''">
+      AND P_ORG_ID =#{pOrgId}
+                         </if>
+                            <if test="orgId != null and orgId !=''">
+                               AND ID =#{orgId}
+                            </if>
+      ) tmo
+      WHERE tmo.ID = t.fgsid) a
+      LEFT JOIN v_emc_unit vu ON vu.ORGID = a.orgid
+                             <if test="feedType != null and feedType !=''"> AND vu.HEAT_TYPE=#{feedType} </if>
+                              <if test="orgType != null and orgType !=''">
+                                  AND vu.UNITTYPE=#{orgTyp}
+                            </if>
+   </select>
+
+
+
+   <!--分公司费用占比分布图里面的管理费用+设备费用+其他费用+人工费用-->
+   <select id="BranchCostProportionCost" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT v.fgsid id,v.ORG_NAME orgname,
+      ROUND(v.BQBM,2) as totalCost
+      FROM
+      (
+      SELECT f.fgsid,f.ORG_NAME,f.ID,f.BQBM
+      FROM
+      (
+      SELECT a.fgsid,a.ORG_NAME,SUM(d1.costtotal) BQBM,eet.ID FROM
+      (
+      SELECT t.fgsid,tmo.ORG_NAME,t.ID orgid FROM (
+      SELECT
+      (
+      SELECT ID FROM t_emc_org
+      WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) )
+      AND P_ORG_ID = (
+      SELECT ID FROM t_emc_org
+      WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = 0)
+      ) fgsid, o.ORG_NAME,o.ID  FROM t_emc_org o WHERE o.COM_ID =#{comId}
+      ) t,
+      (
+      SELECT * FROM t_emc_org WHERE 1=1
+      <if test="pOrgId != null and pOrgId !=''">
+         AND P_ORG_ID = #{pOrgId}
+      </if>
+      <if test="orgId != null and orgId !=''">
+         AND ID = #{orgId}
+      </if>
+      ) tmo
+      WHERE tmo.ID = t.fgsid) a
+      LEFT JOIN v_emc_unit vu ON vu.ORGID = a.orgid
+      LEFT JOIN  (
+      select SUM(costday.COST)/10000 as costtotal, DATE_FORMAT(costday.COST_DATE,'%Y-%m-%d') datas  ,costday.UNITID,costday.TYPEID  from t_emc_final_cost_day costday
+      GROUP BY costday.TYPEID,costday.UNITID
+
+      ) d1 on d1.UNITID=vu.UNITID LEFT JOIN t_emc_cost_type eet on eet.ID=d1.TYPEID
+
+      where d1.datas<![CDATA[ >= ]]>str_to_date(#{startTime},'%Y-%m-%d') and d1.datas<![CDATA[<= ]]>str_to_date(#{endTime},'%Y-%m-%d')
+      GROUP BY a.fgsid,a.ORG_NAME
+      ) f
+      GROUP BY f.fgsid,f.ORG_NAME,f.ID
+      ) v
+      GROUP BY v.fgsid,v.ORG_NAME
+
+   </select>
+
+
+   <!--分公司费用占比分布图里面的能源费用-->
+   <select id="BranchCostProportionCostEnergy" parameterType="java.util.Map"  resultType="java.util.Map">
+
+      SELECT f.fgsid id,f.ORG_NAME name,  ROUND(SUM(f.total),2) as value
+      FROM
+      (
+      SELECT a.fgsid,a.ORG_NAME,aa.DOSAGE,aa.PRICE BQBM,aa.total FROM
+      (
+      SELECT t.fgsid,tmo.ORG_NAME,t.ID orgid FROM (
+      SELECT
+      (
+      SELECT ID FROM t_emc_org
+      WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) )
+      AND P_ORG_ID = (
+      SELECT ID FROM t_emc_org
+      WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = 0)
+      ) fgsid, o.ORG_NAME,o.ID  FROM t_emc_org o WHERE o.COM_ID =#{comId}
+      ) t,
+      (
+      SELECT * FROM t_emc_org WHERE 1=1
+      <if test="pOrgId != null and pOrgId !=''">
+         AND P_ORG_ID = #{pOrgId}
+      </if>
+      <if test="orgId != null and orgId !=''">
+         AND ID = #{orgId}
+      </if>
+      ) tmo
+      WHERE tmo.ID = t.fgsid) a
+      LEFT JOIN v_emc_unit vu ON vu.ORGID = a.orgid
+
+      LEFT JOIN  (
+      select  SUM(prices.PRICE*dataenergy.DOSAGE)/10000 total,dataenergy.DOSAGE,prices.PRICE,dataenergy.UNITID from (
+      select dh.DOSAGE totalenergy ,dh.DOSAGE,dh.UNITID,type.ID,dh.TYPEID,dh.DOSAGE_TIME,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m') dayDate
+      from ${tableName} dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+      where dh.DOSAGE_TIME  <![CDATA[ >= ]]>str_to_date(#{startTime},'%Y-%m-%d') and dh.DOSAGE_TIME <![CDATA[<= ]]>str_to_date(#{endTime},'%Y-%m-%d')
+      )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID INNER JOIN v_emc_unit unit on unit.UNITID=dataenergy.UNITID
+      GROUP BY dataenergy.UNITID
+      )aa on aa.UNITID=vu.UNITID
+      ) f
+      GROUP BY f.fgsid,f.ORG_NAME
+
+   </select>
+
+
+
+
+
+
+
+   <!--分公司费用占比分布图里面的能源费用 BranchCostProportionCostTq-->
+   <select id="BranchCostProportionCostEnergyTq" parameterType="java.util.Map"  resultType="java.util.Map">
+
+      SELECT f.fgsid id,f.ORG_NAME orgname,  ROUND(SUM(f.total),2) as totalCost
+      FROM
+      (
+      SELECT a.fgsid,a.ORG_NAME,aa.DOSAGE,aa.PRICE BQBM,aa.total FROM
+      (
+      SELECT t.fgsid,tmo.ORG_NAME,t.ID orgid FROM (
+      SELECT
+      (
+      SELECT ID FROM t_emc_org
+      WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) )
+      AND P_ORG_ID = (
+      SELECT ID FROM t_emc_org
+      WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = 0)
+      ) fgsid, o.ORG_NAME,o.ID  FROM t_emc_org o WHERE o.COM_ID =#{comId}
+      ) t,
+      (
+      SELECT * FROM t_emc_org WHERE 1=1
+      <if test="pOrgId != null and pOrgId !=''">
+         AND P_ORG_ID = #{pOrgId}
+      </if>
+      <if test="orgId != null and orgId !=''">
+         AND ID = #{orgId}
+      </if>
+      ) tmo
+      WHERE tmo.ID = t.fgsid) a
+      LEFT JOIN v_emc_unit vu ON vu.ORGID = a.orgid
+
+      LEFT JOIN  (
+      select  (dataenergy.DOSAGE*prices.PRICE)/10000 total,dataenergy.DOSAGE,prices.PRICE,dataenergy.UNITID from (
+      select dh.DOSAGE totalenergy ,dh.DOSAGE,dh.UNITID,type.ID,dh.TYPEID,dh.DOSAGE_TIME,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m') dayDate
+      from t_emc_final_data_hour_tj
+      dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+      where dh.DOSAGE_TIME  <![CDATA[ >= ]]>str_to_date(#{startTimeTq},'%Y-%m-%d') and dh.DOSAGE_TIME <![CDATA[<= ]]>str_to_date(#{endTimeTq},'%Y-%m-%d')
+      )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID INNER JOIN v_emc_unit unit on unit.UNITID=dataenergy.UNITID
+
+      GROUP BY dataenergy.UNITID
+
+      )aa on aa.UNITID=vu.UNITID
+      ) f
+      GROUP BY f.fgsid,f.ORG_NAME
+
+   </select>
+
+
+   <!--分公司费用占比分布图里面的管理费用+设备费用+其他费用+人工费用-->
+   <select id="BranchCostProportionCostTq" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT v.fgsid id,v.ORG_NAME orgname,
+      ROUND(v.BQBM,2) as totalCost
+      FROM
+      (
+      SELECT f.fgsid,f.ORG_NAME,f.ID,f.BQBM
+      FROM
+      (
+      SELECT a.fgsid,a.ORG_NAME,SUM(d1.costtotal) BQBM,eet.ID FROM
+      (
+      SELECT t.fgsid,tmo.ORG_NAME,t.ID orgid FROM (
+      SELECT
+      (
+      SELECT ID FROM t_emc_org
+      WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) )
+      AND P_ORG_ID = (
+      SELECT ID FROM t_emc_org
+      WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = 0)
+      ) fgsid, o.ORG_NAME,o.ID  FROM t_emc_org o WHERE o.COM_ID =#{comId}
+      ) t,
+      (
+      SELECT * FROM t_emc_org WHERE 1=1
+      <if test="pOrgId != null and pOrgId !=''">
+         AND P_ORG_ID = #{pOrgId}
+      </if>
+      <if test="orgId != null and orgId !=''">
+         AND ID = #{orgId}
+      </if>
+      ) tmo
+      WHERE tmo.ID = t.fgsid) a
+      LEFT JOIN v_emc_unit vu ON vu.ORGID = a.orgid
+      LEFT JOIN  (
+      select SUM(costday.COST)/10000 as costtotal, DATE_FORMAT(costday.COST_DATE,'%Y-%m-%d') datas  ,costday.UNITID,costday.TYPEID  from t_emc_final_cost_day costday
+      GROUP BY costday.TYPEID,costday.UNITID
+
+      ) d1 on d1.UNITID=vu.UNITID LEFT JOIN t_emc_cost_type eet on eet.ID=d1.TYPEID
+
+      where d1.datas<![CDATA[ >= ]]>str_to_date(#{startTimeTq},'%Y-%m-%d') and d1.datas<![CDATA[<= ]]>str_to_date(#{endTimeTq},'%Y-%m-%d')
+      GROUP BY a.fgsid,a.ORG_NAME
+      ) f
+      GROUP BY f.fgsid,f.ORG_NAME,f.ID
+      ) v
+      GROUP BY v.fgsid,v.ORG_NAME
+   </select>
+
+   <sql id="cur_time">
+      <choose>
+         <when test="startTime!=null and startTime!=''">
+            AND (DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') >= DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+         </when>
+         <otherwise>
+            AND (DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') >= SUBDATE(CURDATE(), INTERVAL 5 DAY)
+         </otherwise>
+      </choose>
+      <choose>
+         <when test="endTime!=null and endTime!=''">
+            AND DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d'))
+         </when>
+         <otherwise>
+            AND DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') &lt;= CURDATE())
+         </otherwise>
+      </choose>
+   </sql>
+
+   <sql id="cost_cur_time">
+      <choose>
+         <when test="startTime!=null and startTime!=''">
+            AND (DATE_FORMAT(fcd.COST_DATE, '%Y-%m-%d') >= DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+         </when>
+         <otherwise>
+            AND (DATE_FORMAT(fcd.COST_DATE, '%Y-%m-%d') >= SUBDATE(CURDATE(), INTERVAL 5 DAY)
+         </otherwise>
+      </choose>
+      <choose>
+         <when test="endTime!=null and endTime!=''">
+            AND DATE_FORMAT(fcd.COST_DATE, '%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d'))
+         </when>
+         <otherwise>
+            AND DATE_FORMAT(fcd.COST_DATE, '%Y-%m-%d') &lt;= CURDATE())
+         </otherwise>
+      </choose>
+   </sql>
+
+   <!--能源流成本趋势对比图-->
+   <select id="twolEvelEnergyFlowLine" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT (case A.UNITTYPE when '1' then '供热源' when '2' then '一次网' when '3' then '换热站' when '4' then '二次线' when '5' then '民户' end) unittype,
+      ROUND(SUM(B.total)/10000,2) total, B.yeardate
+      FROM(
+      SELECT vu.UNITID, vu.UNITTYPE
+      FROM ( t_emc_org LEFT JOIN v_emc_unit vu ON ID = vu.ORGID
+       		<if test="feedType!=null and feedType!=''">
+                    AND vu.heat_type = #{feedType,jdbcType=VARCHAR} </if>
+      )
+      WHERE FIND_IN_SET( ID, emc_func_org_getchilds (<if test="orgId!=null and orgId!=''">#{orgId,jdbcType=VARCHAR}</if>) )
+      AND P_ORG_ID != '0' AND UNITID IS NOT NULL ) A
+      LEFT JOIN (
+      select BB.unitid,sum(BB.dosage*BB.PRICE)/10000 as total,BB.yeardate from (
+      SELECT h.UNITID AS unitid,h.DOSAGE dosage,eep.PRICE,
+      DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') AS yeardate,et.TYPE type
+      FROM (
+      t_emc_final_data_hour_tj h
+      LEFT JOIN t_emc_energy_type et ON h.TYPEID = et.id
+      left join t_emc_energy_price eep on eep.TYPEID=h.TYPEID
+      )
+      WHERE 1 = 1
+                     <include refid="cur_time" />
+      ) BB where BB.type != '4'
+      GROUP BY unitid,yeardate
+      ) B ON A.UNITID = B.unitid
+      WHERE B.total IS NOT NULL
+                    <if test="orgType!=null and orgType!=''"> AND A.UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+      GROUP BY A.UNITTYPE,B.yeardate
+      ORDER BY B.yeardate asc
+   </select>
+
+   <!--分公司成本趋势对比图-->
+   <select id="twolEvelSubFlowLine" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT a.FGSID id,a.ORG_NAME NAME,ROUND(IFNULL(SUM(hd.BQBM),0),2) BQBM,dt.DOSAGE_TIME DATE FROM (SELECT t.fgsid,tmo.ORG_NAME,t.ID orgid FROM (
+      SELECT
+      ( SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = 0) ) fgsid,
+      o.*
+      FROM
+      t_emc_org o
+      WHERE o.COM_ID = #{comId}) t,
+      (SELECT * FROM t_emc_org WHERE 1=1
+      <if test="pOrgId != null and pOrgId !=''">
+         AND P_ORG_ID = #{pOrgId}
+      </if>
+      <if test="orgId != null and orgId !=''">
+         AND ID = #{orgId}
+      </if>
+      ) tmo
+      WHERE tmo.ID = t.fgsid) a
+      RIGHT JOIN (SELECT DATE_FORMAT(DOSAGE_TIME,'%Y-%m-%d') DOSAGE_TIME FROM ${tableName}  WHERE DOSAGE_TIME<![CDATA[ >= ]]> #{startTime} AND DOSAGE_TIME<![CDATA[ <= ]]> #{endTime} GROUP BY DATE_FORMAT(DOSAGE_TIME,'%y-%m-%d') ORDER BY DOSAGE_TIME) dt ON 1=1
+      LEFT JOIN v_emc_unit vu ON vu.ORGID = a.orgid
+      <if test="feedType != null and feedType !=''"> AND vu.HEAT_TYPE=#{feedType} </if>
+      <if test="orgType != null and orgType !=''">
+         AND vu.UNITTYPE=#{orgType}
+      </if>
+      LEFT JOIN  (
+      SELECT d1.UNITID,SUM(d1.BM)/10000 BQBM,d1.DOSAGE_TIME FROM
+      (SELECT fdh.UNITID,(fdh.DOSAGE*eep.PRICE) BM,DATE_FORMAT(fdh.DOSAGE_TIME,'%Y-%m-%d') DOSAGE_TIME
+      FROM ${tableName} fdh ,(SELECT * from t_emc_energy_type where TYPE!=4) eet,t_emc_energy_price eep
+      WHERE fdh.DOSAGE_TIME<![CDATA[ >= ]]> #{startTime} AND fdh.DOSAGE_TIME<![CDATA[ <= ]]> #{endTime}
+      AND fdh.TYPEID = eet.ID and eep.TYPEID=fdh.TYPEID
+      GROUP BY fdh.UNITID,DATE_FORMAT(fdh.DOSAGE_TIME,'%Y-%m-%d')) d1 GROUP BY d1.UNITID,d1.DOSAGE_TIME ORDER BY DOSAGE_TIME
+      ) hd ON hd.UNITID = vu.unitid AND hd.DOSAGE_TIME = dt.DOSAGE_TIME
+      GROUP BY a.fgsid,a.ORG_NAME,dt.DOSAGE_TIME
+      ORDER BY a.fgsid,dt.DOSAGE_TIME
+   </select>
+
+   <!--分公司成本趋势对比图-->
+   <select id="subEnergyAn" parameterType="java.util.Map"  resultType="java.util.Map">
+      SELECT v.fgsid ID,v.ORG_NAME ORGNAME,v.sort,
+      ROUND(IFNULL(SUM(CASE v.TYPE WHEN '4' THEN 0 ELSE v.BQBM END),0),2) BQBM,
+      ROUND(IFNULL(SUM(CASE v1.TYPE WHEN '4' THEN 0 ELSE v1.BQBM END),0),2) TQBM
+      FROM
+      (
+      SELECT f.sort,f.fgsid,f.ORG_NAME,f.TYPE,f.BQ,f.BQBM
+      FROM
+      (SELECT a.sort,a.fgsid,a.ORG_NAME,SUM(d1.BM) BQBM,SUM(d1.DOSAGE) BQ,eet.TYPE FROM (SELECT t.sort,t.fgsid,tmo.ORG_NAME,t.ID orgid FROM (
+      SELECT
+      ( SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = 0) ) fgsid,
+      o.ORG_NAME,o.SORT,o.ID
+      FROM
+      t_emc_org o
+      WHERE o.COM_ID = #{comId}) t,
+      (SELECT * FROM t_emc_org WHERE 1=1
+               <if test="pOrgId != null and pOrgId !=''">
+      AND P_ORG_ID = #{pOrgId}
+               </if>
+               <if test="orgId != null and orgId !=''">
+                   AND ID = #{orgId}
+               </if>
+      ) tmo
+      WHERE tmo.ID = t.fgsid) a
+      LEFT JOIN v_emc_unit vu ON vu.ORGID = a.orgid
+               <if test="feedType != null and feedType !=''"> AND vu.HEAT_TYPE=#{feedType} </if>
+               <if test="orgType != null and orgType !=''">
+                   AND vu.UNITTYPE=#{orgType}
+               </if>
+      LEFT JOIN  (SELECT fdh.UNITID,SUM(fdh.DOSAGE) DOSAGE,SUM(fdh.DOSAGE*eep.PRICE)/10000 BM,fdh.TYPEID FROM t_emc_final_data_hour_tj fdh
+      INNER JOIN t_emc_energy_type eet on  fdh.TYPEID=eet.ID INNER JOIN t_emc_energy_price eep on eep.TYPEID=fdh.TYPEID
+              WHERE fdh.DOSAGE_TIME<![CDATA[ >= ]]> #{startTime} AND fdh.DOSAGE_TIME<![CDATA[ <= ]]> #{endTime}
+      GROUP BY fdh.UNITID,fdh.TYPEID) d1 ON d1.UNITID = vu.unitid
+      LEFT JOIN t_emc_energy_type eet ON eet.ID = d1.TYPEID
+      GROUP BY a.fgsid,a.ORG_NAME) f
+      GROUP BY f.fgsid,f.ORG_NAME
+      ) v LEFT JOIN
+      (
+      SELECT f.fgsid,f.ORG_NAME,f.TYPE,f.BQ,f.BQBM
+      FROM
+      (SELECT a.fgsid,a.ORG_NAME,SUM(d1.BM) BQBM,SUM(d1.DOSAGE) BQ,eet.TYPE FROM (SELECT t.fgsid,tmo.ORG_NAME,t.ID orgid FROM (
+      SELECT
+      ( SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getparents (o.ID) ) AND P_ORG_ID = 0) ) fgsid,
+      o.*
+      FROM
+      t_emc_org o
+      WHERE o.COM_ID = #{comId}) t,
+      (SELECT * FROM t_emc_org WHERE 1=1
+      --         <if test="pOrgId != null and pOrgId !=''">
+      AND P_ORG_ID =#{pOrgId}
+               </if>
+               <if test="orgId != null and orgId !=''">
+                   AND ID = #{orgId}
+               </if>
+      ) tmo
+      WHERE tmo.ID = t.fgsid) a
+      LEFT JOIN v_emc_unit vu ON vu.ORGID = a.orgid
+               <if test="feedType != null and feedType !=''">
+               AND vu.HEAT_TYPE=#{feedType}
+               </if>
+               <if test="orgType != null and orgType !=''">
+                   AND vu.UNITTYPE=#{orgType}
+               </if>
+      LEFT JOIN  (
+      SELECT fdh.UNITID,SUM(fdh.DOSAGE) DOSAGE,SUM(fdh.DOSAGE*eep.PRICE)/10000 BM,fdh.TYPEID FROM t_emc_final_data_hour_tj fdh
+      INNER JOIN t_emc_energy_type eet on  fdh.TYPEID=eet.ID INNER JOIN t_emc_energy_price eep on eep.TYPEID=fdh.TYPEID
+               WHERE fdh.DOSAGE_TIME <![CDATA[ >= ]]> #{startTimeTq} AND fdh.DOSAGE_TIME<![CDATA[ <= ]]> #{endTimeTq}
+      GROUP BY fdh.UNITID,fdh.TYPEID) d1 ON d1.UNITID = vu.unitid
+      LEFT JOIN t_emc_energy_type eet ON eet.ID = d1.TYPEID
+      GROUP BY a.fgsid,a.ORG_NAME) f
+      GROUP BY f.fgsid,f.ORG_NAME
+      ) v1 ON v.fgsid = v1.fgsid AND v.TYPE = v1.TYPE
+      GROUP BY v.fgsid,v.ORG_NAME ORDER BY v.SORT asc
+
+   </select>
+
+</mapper>

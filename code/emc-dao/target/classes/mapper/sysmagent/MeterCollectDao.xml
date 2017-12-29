@@ -1,0 +1,747 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.mdc.dao.MeterCollectDao">
+  <resultMap id="BaseResultMap" type="com.huak.mdc.model.MeterCollect">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="CODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="SERIAL_NO" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ENERGY_TYPE_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ISREAL" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="ISTOTAL" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="UNIT_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="UNIT_TYPE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="ISAUTO" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="DEPICT" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="TAG" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="COEF" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="FORMULA" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ISPRESTORE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="ISDELETE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="COM_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+    <resultMap id="BaseResultMapA" type="com.huak.mdc.vo.MeterCollectA">
+        <constructor>
+            <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="CODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="SERIAL_NO" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="ENERGY_TYPE_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="ISREAL" javaType="java.lang.Byte" jdbcType="TINYINT" />
+            <arg column="ISTOTAL" javaType="java.lang.Byte" jdbcType="TINYINT" />
+            <arg column="UNIT_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="UNITNAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="UNIT_TYPE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+            <arg column="ISAUTO" javaType="java.lang.Byte" jdbcType="TINYINT" />
+            <arg column="DEPICT" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="TAG" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="COEF" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="FORMULA" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="ISPRESTORE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+            <arg column="ISDELETE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+            <arg column="COM_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+        </constructor>
+    </resultMap>
+
+    <resultMap id="BaseResultMapB" type="com.huak.mdc.vo.MeterCollectDataA">
+        <constructor>
+            <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="CODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="COLLECTTIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="ENERGYTYPE" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="ISREAL" javaType="java.lang.String" jdbcType="TINYINT" />
+            <arg column="ISTOTAL" javaType="java.lang.String" jdbcType="TINYINT" />
+            <arg column="UNITNAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="ISAUTO" javaType="java.lang.String" jdbcType="TINYINT" />
+            <arg column="REALFLAG" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="FLAG" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="CHANGESTATUS" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="PRESTORESTATUS" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="NUM" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="ISCHANGE" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="ISPRESTORE" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="CHANGENUM" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="PRESTORENUM" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="COEF" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="COMID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="len" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="s" javaType="java.lang.String" jdbcType="VARCHAR" />
+        </constructor>
+    </resultMap>
+  <sql id="Base_Column_List">
+    ID, CODE, NAME, SERIAL_NO, ENERGY_TYPE_ID, ISREAL, ISTOTAL, UNIT_ID, UNIT_TYPE, ISAUTO, 
+    DEPICT, TAG, COEF, FORMULA, ISPRESTORE, ISDELETE, COM_ID
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_meter_collect
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_meter_collect
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.huak.mdc.model.MeterCollect">
+    insert into t_emc_meter_collect (ID, CODE, NAME, 
+      SERIAL_NO, ENERGY_TYPE_ID, ISREAL, 
+      ISTOTAL, UNIT_ID, UNIT_TYPE, 
+      ISAUTO, DEPICT, TAG, 
+      COEF, FORMULA, ISPRESTORE, 
+      ISDELETE, COM_ID)
+    values (#{id,jdbcType=VARCHAR}, #{code,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, 
+      #{serialNo,jdbcType=VARCHAR}, #{energyTypeId,jdbcType=VARCHAR}, #{isreal,jdbcType=TINYINT}, 
+      #{istotal,jdbcType=TINYINT}, #{unitId,jdbcType=VARCHAR}, #{unitType,jdbcType=TINYINT}, 
+      #{isauto,jdbcType=TINYINT}, #{depict,jdbcType=VARCHAR}, #{tag,jdbcType=VARCHAR}, 
+      #{coef,jdbcType=DOUBLE}, #{formula,jdbcType=VARCHAR}, #{isprestore,jdbcType=TINYINT},
+      #{isdelete,jdbcType=TINYINT}, #{comId,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.huak.mdc.model.MeterCollect">
+    insert into t_emc_meter_collect
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="code != null">
+        CODE,
+      </if>
+      <if test="name != null">
+        NAME,
+      </if>
+      <if test="serialNo != null">
+        SERIAL_NO,
+      </if>
+      <if test="energyTypeId != null">
+        ENERGY_TYPE_ID,
+      </if>
+      <if test="isreal != null">
+        ISREAL,
+      </if>
+      <if test="istotal != null">
+        ISTOTAL,
+      </if>
+      <if test="unitId != null">
+        UNIT_ID,
+      </if>
+      <if test="unitType != null">
+        UNIT_TYPE,
+      </if>
+      <if test="isauto != null">
+        ISAUTO,
+      </if>
+      <if test="depict != null">
+        DEPICT,
+      </if>
+      <if test="tag != null">
+        TAG,
+      </if>
+      <if test="coef != null">
+        COEF,
+      </if>
+      <if test="formula != null">
+        FORMULA,
+      </if>
+      <if test="isprestore != null">
+        ISPRESTORE,
+      </if>
+      <if test="isdelete != null">
+        ISDELETE,
+      </if>
+      <if test="comId != null">
+        COM_ID,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="code != null">
+        #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="serialNo != null">
+        #{serialNo,jdbcType=VARCHAR},
+      </if>
+      <if test="energyTypeId != null">
+        #{energyTypeId,jdbcType=VARCHAR},
+      </if>
+      <if test="isreal != null">
+        #{isreal,jdbcType=TINYINT},
+      </if>
+      <if test="istotal != null">
+        #{istotal,jdbcType=TINYINT},
+      </if>
+      <if test="unitId != null">
+        #{unitId,jdbcType=VARCHAR},
+      </if>
+      <if test="unitType != null">
+        #{unitType,jdbcType=TINYINT},
+      </if>
+      <if test="isauto != null">
+        #{isauto,jdbcType=TINYINT},
+      </if>
+      <if test="depict != null">
+        #{depict,jdbcType=VARCHAR},
+      </if>
+      <if test="tag != null">
+        #{tag,jdbcType=VARCHAR},
+      </if>
+      <if test="coef != null">
+        #{coef,jdbcType=DOUBLE},
+      </if>
+      <if test="formula != null">
+        #{formula,jdbcType=VARCHAR},
+      </if>
+      <if test="isprestore != null">
+        #{isprestore,jdbcType=TINYINT},
+      </if>
+      <if test="isdelete != null">
+        #{isdelete,jdbcType=TINYINT},
+      </if>
+      <if test="comId != null">
+        #{comId,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.mdc.model.MeterCollect">
+    update t_emc_meter_collect
+    <set>
+      <if test="code != null">
+        CODE = #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        NAME = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="serialNo != null">
+        SERIAL_NO = #{serialNo,jdbcType=VARCHAR},
+      </if>
+      <if test="energyTypeId != null">
+        ENERGY_TYPE_ID = #{energyTypeId,jdbcType=VARCHAR},
+      </if>
+      <if test="isreal != null">
+        ISREAL = #{isreal,jdbcType=TINYINT},
+      </if>
+      <if test="istotal != null">
+        ISTOTAL = #{istotal,jdbcType=TINYINT},
+      </if>
+      <if test="unitId != null">
+        UNIT_ID = #{unitId,jdbcType=VARCHAR},
+      </if>
+      <if test="unitType != null">
+        UNIT_TYPE = #{unitType,jdbcType=TINYINT},
+      </if>
+      <if test="isauto != null">
+        ISAUTO = #{isauto,jdbcType=TINYINT},
+      </if>
+      <if test="depict != null">
+        DEPICT = #{depict,jdbcType=VARCHAR},
+      </if>
+      <if test="tag != null">
+        TAG = #{tag,jdbcType=VARCHAR},
+      </if>
+      <if test="coef != null">
+        COEF = #{coef,jdbcType=DOUBLE},
+      </if>
+      <if test="formula != null">
+        FORMULA = #{formula,jdbcType=VARCHAR},
+      </if>
+      <if test="isprestore != null">
+        ISPRESTORE = #{isprestore,jdbcType=TINYINT},
+      </if>
+      <if test="isdelete != null">
+        ISDELETE = #{isdelete,jdbcType=TINYINT},
+      </if>
+      <if test="comId != null">
+        COM_ID = #{comId,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.huak.mdc.model.MeterCollect">
+    update t_emc_meter_collect
+    set CODE = #{code,jdbcType=VARCHAR},
+      NAME = #{name,jdbcType=VARCHAR},
+      SERIAL_NO = #{serialNo,jdbcType=VARCHAR},
+      ENERGY_TYPE_ID = #{energyTypeId,jdbcType=VARCHAR},
+      ISREAL = #{isreal,jdbcType=TINYINT},
+      ISTOTAL = #{istotal,jdbcType=TINYINT},
+      UNIT_ID = #{unitId,jdbcType=VARCHAR},
+      UNIT_TYPE = #{unitType,jdbcType=TINYINT},
+      ISAUTO = #{isauto,jdbcType=TINYINT},
+      DEPICT = #{depict,jdbcType=VARCHAR},
+      TAG = #{tag,jdbcType=VARCHAR},
+      COEF = #{coef,jdbcType=DOUBLE},
+      FORMULA = #{formula,jdbcType=VARCHAR},
+      ISPRESTORE = #{isprestore,jdbcType=TINYINT},
+      ISDELETE = #{isdelete,jdbcType=TINYINT},
+      COM_ID = #{comId,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+    <select id="selectPageByMap" parameterType="java.util.HashMap" resultMap="BaseResultMapA">
+        SELECT
+        mc.ID,
+        mc.CODE,
+        mc.NAME,
+        mc.SERIAL_NO,
+        vu.UNITNAME,
+        et.ID ENERGY_TYPE_ID,
+        mc.ISREAL,
+        mc.ISTOTAL,
+        mc.UNIT_ID,
+        mc.UNIT_TYPE,
+        mc.ISAUTO,
+        mc.DEPICT,
+        mc.TAG,
+        mc.COEF,
+        mc.FORMULA,
+        mc.ISPRESTORE,
+        mc.ISDELETE,
+        mc.COM_ID
+        FROM
+        t_emc_meter_collect mc
+        left join t_emc_energy_type et  on mc.ENERGY_TYPE_ID = et.id
+        LEFT JOIN v_emc_unit vu ON mc.UNIT_ID = vu.UNITID
+        where 1=1
+        and mc.ISDELETE=0
+        <if test="code != null and code!=''">
+            and CODE LIKE CONCAT('%',#{code,jdbcType=VARCHAR},'%')
+
+        </if>
+        <if test="name != null and name!=''">
+            and NAME LIKE CONCAT('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="serialNo != null and serialNo!=''">
+            and SERIAL_NO = #{serialNo,jdbcType=VARCHAR}
+        </if>
+        <if test="energyTypeId != null and energyTypeId!=''">
+            and et.ID = #{energyTypeId,jdbcType=VARCHAR}
+        </if>
+        <if test="isreal != null and isreal !=''">
+            and ISREAL = #{isreal,jdbcType=TINYINT}
+        </if>
+        <if test="istotal != null and istotal!=''">
+            and ISTOTAL = #{istotal,jdbcType=TINYINT}
+        </if>
+        <if test="unitId != null and unitId!=''">
+            and UNIT_ID = #{unitId,jdbcType=VARCHAR}
+        </if>
+        <if test="unitType != null and unitType!=''">
+            and  UNIT_TYPE = #{unitType,jdbcType=TINYINT}
+        </if>
+        <if test="isauto != null and isauto!=''">
+            and ISAUTO = #{isauto,jdbcType=TINYINT}
+        </if>
+        <if test="depict != null and depict!=''">
+            and  DEPICT = #{depict,jdbcType=VARCHAR}
+        </if>
+        <if test="tag != null and tag!=''">
+            and TAG LIKE CONCAT('%',#{tag,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="coef != null and coef!=''">
+            and COEF = #{coef,jdbcType=DOUBLE}
+        </if>
+        <if test="formula != null and formula!=''">
+            and FORMULA = #{formula,jdbcType=VARCHAR}
+        </if>
+        <if test="isprestore != null and isprestore!=''">
+            and ISPRESTORE = #{isprestore,jdbcType=TINYINT}
+        </if>
+        <if test="isdelete != null and isdelete!=''">
+            and ISDELETE = #{isdelete,jdbcType=TINYINT}
+        </if>
+        <if test="comId != null and comId!=''">
+            and COM_ID = #{comId,jdbcType=VARCHAR}
+        </if>
+        order by vu.UNITNAME,mc.CODE,et.ID,mc.ISREAL asc
+    </select>
+    <select id="selectAllByMap" parameterType="java.util.Map" resultType="java.util.Map">
+        select
+        a.ID,
+        a. CODE,
+        a. NAME,
+        a.SERIAL_NO,
+        d.ID AS ENERGY_TYPE_ID,
+        a.ISREAL,
+        a.ISTOTAL,
+        b.UNITID AS UNIT_ID,
+        b.UNITTYPE as UNIT_TYPE,
+        a.ISAUTO,
+        a.DEPICT,
+        a.TAG,
+        a.COEF,
+        a.FORMULA,
+        a.ISPRESTORE,
+        a.ISDELETE,
+        c.ID AS COM_ID,
+        c.CNAME,
+        b.UNITNAME
+        from t_emc_meter_collect a left  join  v_emc_unit b on a.UNIT_ID = b.UNITID AND a.COM_ID = b.COMID
+        left  join t_emc_company c on a.COM_ID = c.ID
+        left  join t_emc_energy_type d on a.ENERGY_TYPE_ID = d.ID
+        where 1=1
+        <if test="code != null and code!=''">
+            and CODE = #{code,jdbcType=VARCHAR}
+        </if>
+        <if test="name != null and name!=''">
+            and NAME = #{name,jdbcType=VARCHAR}
+        </if>
+        <if test="serialNo != null and serialNo!=''">
+            and SERIAL_NO = #{serialNo,jdbcType=VARCHAR}
+        </if>
+        <if test="energyTypeId != null and energyTypeId!=''">
+            and ENERGY_TYPE_ID = #{energyTypeId,jdbcType=VARCHAR}
+        </if>
+        <if test="isreal != null and isreal !=''">
+            and ISREAL = #{isreal,jdbcType=TINYINT}
+        </if>
+        <if test="istotal != null and istotal!=''">
+            and ISTOTAL = #{istotal,jdbcType=TINYINT}
+        </if>
+        <if test="unitId != null and unitId!=''">
+            and UNIT_ID = #{unitId,jdbcType=VARCHAR}
+        </if>
+        <if test="unitType != null and unitType!=''">
+            and  UNIT_TYPE = #{unitType,jdbcType=TINYINT}
+        </if>
+        <if test="isauto != null and isauto!=''">
+            and ISAUTO = #{isauto,jdbcType=TINYINT}
+        </if>
+        <if test="depict != null and depict!=''">
+            and  DEPICT = #{depict,jdbcType=VARCHAR}
+        </if>
+        <if test="tag != null and tag!=''">
+            and TAG = #{tag,jdbcType=VARCHAR}
+        </if>
+        <if test="coef != null and coef!=''">
+            and COEF = #{coef,jdbcType=DOUBLE}
+        </if>
+        <if test="formula != null and formula!=''">
+            and FORMULA = #{formula,jdbcType=VARCHAR}
+        </if>
+        <if test="isprestore != null and isprestore!=''">
+            and ISPRESTORE = #{isprestore,jdbcType=TINYINT}
+        </if>
+        <if test="isdelete != null and isdelete!=''">
+            and ISDELETE = #{isdelete,jdbcType=TINYINT}
+        </if>
+        <if test="comId != null and comId!=''">
+            and COM_ID = #{comId,jdbcType=VARCHAR}
+        </if>
+        order by id
+    </select>
+
+
+    <select id="getMeterDatas" parameterType="java.util.Map" resultType="java.util.Map">
+       SELECT
+            a.id,
+            b.UNITNAME unitName,
+            a.COM_ID comId,
+            a.CODE AS code,
+            a.NAME collectName,
+            #{collectTime} as collectTime,
+            c.ID energyType,
+            (
+                CASE a.ISREAL
+                WHEN 0 THEN
+                    '实表'
+                WHEN 1 THEN
+                    '虚表'
+                ELSE
+                    ''
+                END
+            ) isReal,
+            (
+                CASE a.ISTOTAL
+                WHEN 0 THEN
+                    '否'
+                WHEN 1 THEN
+                    '单位总表'
+                WHEN 2 THEN
+                    '系统总表'
+                ELSE
+                    ''
+                END
+            ) isTotal,
+            (
+                CASE a.ISAUTO
+                WHEN 0 THEN
+                    '自动采集'
+                WHEN 1 THEN
+                    '手工'
+                ELSE
+                    ''
+                END
+            ) isAuto,
+            a.coef,
+            a.ISREAL as realFlag,
+            (case when d.COLLECT_NUM is null then 1 else 2 end) flag,
+            (case d.ISCHANGE when 1 then '是' else '否' end) changestatus,
+            (case d.ISPRESTORE when 1 then '是' else '否' end) prestorestatus,
+         ( CASE a.ISREAL when 0 then (case when d.COLLECT_NUM is null then e.COLLECT_VALUE else d.COLLECT_NUM end ) else a.FORMULA end ) num,
+        length((
+        CASE a.ISREAL
+        WHEN 0 THEN
+        (
+        CASE
+        WHEN d.COLLECT_NUM IS NULL THEN
+        e.COLLECT_VALUE
+        ELSE
+        d.COLLECT_NUM
+        END
+        )
+        ELSE
+        a.FORMULA
+        END
+        ))len,
+        CONCAT(left(
+        (
+        CASE a.ISREAL
+        WHEN 0 THEN
+        (
+        CASE
+        WHEN d.COLLECT_NUM IS NULL THEN
+        e.COLLECT_VALUE
+        ELSE
+        d.COLLECT_NUM
+        END
+        )
+        ELSE
+        a.FORMULA
+        END
+        ),8),'...') s,
+        d.ISCHANGE as isChange,d.ISPRESTORE as isPrestore,d.CHANGE_NUM as changeNum,d.PRESTORE_NUM as prestoreNum
+        FROM
+            t_emc_meter_collect a
+        LEFT JOIN v_emc_unit b ON a.UNIT_ID = b.UNITID
+        LEFT JOIN t_emc_energy_type c ON a.ENERGY_TYPE_ID = c.ID
+        LEFT JOIN (
+            SELECT
+                COLLECT_ID,
+                COLLECT_TIME,
+                COLLECT_NUM,
+                ISCHANGE,
+                ISPRESTORE,
+                CHANGE_NUM,
+                PRESTORE_NUM
+            FROM
+                t_emc_energy_data_his
+            WHERE
+                COLLECT_TIME = #{collectTime}
+        ) d ON a.id = d.COLLECT_ID
+        LEFT JOIN t_emc_meta_data e on a.TAG = e.tag and DATE_FORMAT(e.COLLECT_TIME,'%Y-%m-%d %H') = DATE_FORMAT(#{collectTime},'%Y-%m-%d %H')
+        where 1=1
+        <if test="collectName != null and collectName!=''">
+            and a.UNIT_ID  = #{collectName,jdbcType=VARCHAR}
+        </if>
+        <if test="comId != null and comId!=''">
+            and a.COM_ID = #{comId,jdbcType=VARCHAR}
+        </if>
+        <if test="energyType != null and energyType!=''">
+            and c.ID = #{energyType,jdbcType=VARCHAR}
+        </if>
+        ORDER BY
+            b.UNITNAME,a.NAME,
+            c.ID;
+    </select>
+
+    <select id="checkName" parameterType="java.util.HashMap" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        t_emc_meter_collect mc
+        where  NAME = #{name,jdbcType=VARCHAR}
+        and UNIT_ID = #{unitId,jdbcType=VARCHAR}
+    </select>
+    <select id="checkCode" parameterType="java.util.HashMap" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        t_emc_meter_collect mc
+        where  CODE = #{code,jdbcType=VARCHAR}
+        and COM_ID = #{comId,jdbcType=VARCHAR}
+    </select>
+    <select id="checkSerialNo" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        t_emc_meter_collect mc
+        where  SERIAL_NO = #{serialNo,jdbcType=VARCHAR}
+
+    </select>
+    <select id="getUnitInfo" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT vu.UNITID unitId,vu.UNITNAME unitName from v_emc_unit vu where 1=1
+        <if test="comId != null and comId!=''">
+            and COMID = #{comId,jdbcType=VARCHAR}
+        </if>
+        <if test="unitType != null and unitType!=''">
+            and UNITTYPE = #{unitType,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+    <!--导入时，需要判断数据库中是否含有该计量器具，需要获取已有的计量器具-->
+    <select id="selectByMaps" parameterType="java.util.Map" resultType="java.util.Map">
+        select
+        CONCAT(a.CODE,"-",a.COM_ID) as code
+        from t_emc_meter_collect a
+    </select>
+
+
+    <select id="getGeneralCode" parameterType="java.lang.String" resultType="java.lang.String">
+       SELECT max(mc.CODE) FROM t_emc_meter_collect mc where mc.COM_ID=#{comId,jdbcType=VARCHAR};
+    </select>
+
+    <select id="getFormulaByIsReal" parameterType="java.lang.String" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM t_emc_meter_collect mc where mc.CODE=#{code,jdbcType=VARCHAR} AND mc.ISREAL='1'
+    </select>
+
+    <select id="getDataLoad" parameterType="java.util.Map" resultMap="BaseResultMapB">
+       SELECT
+        a.COLLECT_ID as id,
+        b.UNITNAME unitName,
+        d.COM_ID comId,
+        d.CODE AS code,
+        d.NAME name,
+        date_format(a.COLLECT_TIME,'%Y-%m-%d %H') collectTime,
+        c.ID energyType,
+        (
+        CASE d.ISREAL
+        WHEN 0 THEN
+        '实表'
+        WHEN 1 THEN
+        '虚表'
+        ELSE
+        ''
+        END
+        ) isReal,
+        (
+        CASE d.ISTOTAL
+        WHEN 0 THEN
+        '否'
+        WHEN 1 THEN
+        '单位总表'
+        WHEN 2 THEN
+        '系统总表'
+        ELSE
+        ''
+        END
+        ) isTotal,
+        (
+        CASE d.ISAUTO
+        WHEN 0 THEN
+        '自动采集'
+        WHEN 1 THEN
+        '手工'
+        ELSE
+        ''
+        END
+        ) isAuto,
+        d.coef,
+        d.ISREAL as realFlag,
+        (case when a.COLLECT_NUM is null then 1 else 2 end) flag,
+        (case a.ISCHANGE when 1 then '是' else '否' end) changestatus,
+        (case a.ISPRESTORE when 1 then '是' else '否' end) prestorestatus,
+        ( CASE d.ISREAL when 0 then  a.COLLECT_NUM  else d.FORMULA end ) num,
+        length((
+        CASE d.ISREAL
+        WHEN 0 THEN
+        a.COLLECT_NUM
+        ELSE
+        d.FORMULA
+        END
+        ))len,
+        CONCAT(left(
+        (
+        CASE d.ISREAL
+        WHEN 0 THEN
+        a.COLLECT_NUM
+        ELSE
+        d.FORMULA
+        END
+        ),8),'...') s,
+        a.ISCHANGE as isChange,a.ISPRESTORE as isPrestore,a.CHANGE_NUM as changeNum,a.PRESTORE_NUM as prestoreNum
+        FROM
+        (
+        SELECT
+        COLLECT_ID,
+        COLLECT_TIME,
+        COLLECT_NUM,
+        ISCHANGE,
+        ISPRESTORE,
+        CHANGE_NUM,
+        PRESTORE_NUM
+        FROM
+        t_emc_energy_data_his
+        WHERE 1=1
+        <if test="startTime!=null and startTime!=''">
+            and  COLLECT_TIME <![CDATA[ >= ]]> #{startTime}
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and COLLECT_TIME  <![CDATA[ <= ]]> #{endTime}
+        </if>
+        ) a  LEFT JOIN t_emc_meter_collect d ON  a.COLLECT_ID = d.id
+        LEFT JOIN v_emc_unit b ON d.UNIT_ID = b.UNITID
+        LEFT JOIN t_emc_energy_type c ON d.ENERGY_TYPE_ID = c.ID
+        where 1=1
+        <if test="unitId != null and unitId!=''">
+            and d.UNIT_ID  = #{unitId,jdbcType=VARCHAR}
+        </if>
+        <if test="name != null and name!=''">
+            and d.NAME  LIKE CONCAT('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="comId != null and comId!=''">
+            and d.COM_ID = #{comId,jdbcType=VARCHAR}
+        </if>
+        <if test="energyType != null and energyType!=''">
+            and c.ID = #{energyType,jdbcType=VARCHAR}
+        </if>
+        ORDER BY
+        b.UNITNAME,d.NAME,
+        c.ID
+    </select>
+
+
+
+
+    <!--数据填报时，需要查询所有的虚表-->
+    <select id="selectFictitiousMeters"  resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_meter_collect
+        where  id in
+        <foreach collection="list" item="id" index="index" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <!--历史数据填报时，需要查询所有的虚表-->
+    <select id="selectFictitiousMetersByCode"  resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_meter_collect
+        where ISREAL = 1
+        <if test="code != null and code !=''">
+           and  FORMULA like concat(concat('%',#{code,jdbcType=VARCHAR}),'%')
+        </if>
+        <if test="comId != null and comId !=''">
+            and  COM_ID = #{comId,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+    <select id="selectTags"  resultType="java.util.Map">
+        select TAG from t_emc_meter_collect group by TAG order by TAG DESC
+    </select>
+    <select id="selectAutoMeters" parameterType="java.util.HashMap" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM
+        t_emc_meter_collect
+        WHERE ISREAL = 1
+        AND COM_ID=#{comId}
+        AND ISDELETE=0
+    </select>
+</mapper>

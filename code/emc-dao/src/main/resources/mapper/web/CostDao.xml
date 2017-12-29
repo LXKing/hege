@@ -1,0 +1,869 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huak.home.dao.cost.CostDao" >
+
+    <!--查询分公司的汇总的能源成本趋势-->
+    <select id="getCostAll" parameterType="java.util.Map" resultType="java.lang.String">
+        SELECT ROUND(SUM(b.BM),2) dayValue,b.dayDate dayDate FROM (
+        SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+        FROM (
+        SELECT ID FROM t_emc_org WHERE FIND_IN_SET(
+        ID, emc_func_org_getchilds (#{orgId}))
+        ) o,v_emc_unit v
+        WHERE o.ID=v.ORGID AND COMID=#{comId}
+                <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+                <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+        ) a inner join
+        ( SELECT SUM(d.totalprice) BM,d.UNITID,d.dayDate FROM
+        ( select ROUND(SUM(IFNULL(A1.total,0)+IFNULL(A2.sumtotal,0)),2) AS totalprice,A1.UNITID,A2.dayDate from (
+        select a.UNITID,SUM(a.total) total from (
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        )a
+        GROUP BY a.UNITID ) AS A1 INNER JOIN(
+        select SUM(totalenergy*prices.PRICE) sumtotal,dataenergy.UNITID, dataenergy.dayDate from (
+        select dh.DOSAGE*dh.COAL_COEF totalenergy ,dh.DOSAGE,dh.COAL_COEF,dh.UNITID,type.ID,dh.TYPEID,dh.DOSAGE_TIME,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') dayDate
+        from  t${tableName}
+        dh inner join t_emc_energy_type type on dh.TYPEID=type.ID
+        )dataenergy inner join t_emc_energy_price prices on prices.TYPEID=dataenergy.ID
+        #  where dataenergy.dayDate <![CDATA[ >= ]]>str_to_date(#{startTime},'%Y-%m-%d') and dataenergy.dayDate<![CDATA[ <= ]]> str_to_date(#{endTime},'%Y-%m-%d')
+        GROUP BY dataenergy.UNITID ,dataenergy.dayDate)AS A2 ON A1.UNITID=A2.UNITID
+        GROUP BY A1.UNITID,A2.dayDate
+        ) d
+        GROUP BY d.UNITID,d.dayDate
+        ) b
+        on  a.UNITID = b.UNITID
+        GROUP BY b.dayDate
+        ORDER BY b.dayDate
+    </select>
+
+
+
+
+       <!--查询分公司的换热源的能源成本-->
+    <select id="SourceEnergyCost" parameterType="java.util.Map"  resultType="java.lang.String">
+        select SUM(a.total)
+        from (
+        select BB.unitid,sum(BB.dosage*BB.cc*BB.price) as total,BB.dosagetime from (
+            select tj.UNITID as unitid,tj.DOSAGE as dosage,tj.COAL_COEF as cc ,type.PlangRICE  as price,tj.DOSAGE_TIME as dosagetime from ${tableName} as tj inner join
+            t_emc_energy_type  as type on type.id=tj.TYPEID   where DOSAGE_TIME  <![CDATA[ >= ]]> str_to_date( #{startTime},'%Y-%m-%d') and DOSAGE_TIME <![CDATA[ =< ]]> str_to_date( #{endTime},'%Y-%m-%d')
+            ) BB GROUP BY BB.unitid
+        )A left join (select vu.UNITID from t_emc_org org inner join v_emc_unit vu on vu.ORGID=org.ID where vu.ORGNAME="第一分公司" and vu.UNITTYPE=3)
+        vunit on vunit.UNITID=A.unitid
+
+    </select>
+
+    <!--根据查询条件，查询分公司源 中的今年其他成本-->
+    <select id="SourceOtherCost" parameterType="java.util.Map"  resultType="java.util.Map">
+          select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=2 and
+           costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+            and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+         inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =1
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+    <!-- 根据查询条件，查询分公司源 中的今年管理成本-->
+    <select id="SourceManagerCost" parameterType="java.util.Map"   resultType="java.util.Map">
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=1 and
+           costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+            and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+         inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =1
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+
+
+
+    </select>
+
+    <!-- 根据查询条件，查询分公司源 中的今年人工费成本-->
+    <select id="SourceArtificialCost" parameterType="java.util.Map"  resultType="java.util.Map">
+              select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=4 and
+           costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+            and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+         inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =1
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司源 中的今年设备费成本-->
+    <select id="SourceDevicelCost" parameterType="java.util.Map"  resultType="java.util.Map">
+
+       select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=3 and
+           costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+            and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+         inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =1
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+
+
+
+
+
+
+
+
+    <!-- 根据查询条件，查询分公司户 中的今年设备费成本-->
+    <select id="RoomDevicelCost" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=3 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =5
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司户 中的今年人工费成本-->
+    <select id="RoomArtificialCost" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=4 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =5
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司户 中的今年管理费成本-->
+    <select id="RoomManagerCost" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=1 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =5
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司户 中的今年其他费成本-->
+    <select id="RoomOtherCost" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=2 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =5
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+
+
+
+
+
+
+
+
+    <!-- 根据查询条件，查询分公司线 中的今年设备费成本-->
+    <select id="LineDevicelCost" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=3 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =4
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司线 中的今年人工费成本-->
+    <select id="LineArtificialCost" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=4 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =4
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司线 中的今年管理费成本-->
+    <select id="LineManagerCost" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=1 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =4
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司线 中的今年其他费成本-->
+    <select id="LineOtherCost" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=2 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =4
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+
+
+
+
+
+
+
+    <!-- 根据查询条件，查询分公司站 中的今年设备费成本-->
+    <select id="StationDevicelCost" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=3 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =3
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司站 中的今年人工费成本-->
+    <select id="StationArtificialCost" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=4 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =3
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司站 中的今年管理费成本-->
+    <select id="StationManagerCost" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=1 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =3
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司站 中的今年其他费成本-->
+    <select id="StationOtherCost" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=2 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =3
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+
+
+
+
+
+
+    <!-- 根据查询条件，查询分公司网 中的今年设备费成本-->
+    <select id="NetworkDevicelCost" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=3 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =2
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司网 中的今年人工费成本-->
+    <select id="NetworkArtificialCost" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=4 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =2
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司网 中的今年管理费成本-->
+    <select id="NetworkManagerCost" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=1 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =2
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司网 中的今年其他费成本-->
+    <select id="NetworkOtherCost" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=2 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLast},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currfirst},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =2
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+
+
+
+
+
+    <!--根据查询条件，查询分公司源 中的去年其他成本-->
+    <select id="SourceOtherCostLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=2 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =1
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+    <!-- 根据查询条件，查询分公司源 中的今年管理成本-->
+    <select id="SourceManagerCostLastyear" parameterType="java.util.Map"   resultType="java.util.Map">
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=1 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =1
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+
+
+
+    </select>
+
+    <!-- 根据查询条件，查询分公司源 中的去年人工费成本-->
+    <select id="SourceArtificialCostLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=4 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =1
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司源 中的去年设备费成本-->
+    <select id="SourceDevicelCostLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=3 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =1
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+
+    <!-- 根据查询条件，查询分公司户 中的去年设备费成本-->
+    <select id="RoomDevicelCostLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=3 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =5
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司户 中的去年人工费成本-->
+    <select id="RoomArtificialCostLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=4 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =5
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司户 中的去年管理费成本-->
+    <select id="RoomManagerCostLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=1 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =5
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司户 中的去年其他费成本-->
+    <select id="RoomOtherCostLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=2 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =5
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+
+
+
+
+
+
+
+
+    <!-- 根据查询条件，查询分公司线 中的去年设备费成本-->
+    <select id="LineDevicelCostLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=3 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =4
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司线 中的去年人工费成本-->
+    <select id="LineArtificialCostLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=4 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =4
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司线 中的去年管理费成本-->
+    <select id="LineManagerCostLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=1 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =4
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司线 中的去年其他费成本-->
+    <select id="LineOtherCostLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=2 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =4
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+
+
+
+
+
+
+
+    <!-- 根据查询条件，查询分公司站 中的去年设备费成本-->
+    <select id="StationDevicelCostLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=3 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =3
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司站 中的去年人工费成本-->
+    <select id="StationArtificialCostLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=4 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =3
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司站 中的去年管理费成本-->
+    <select id="StationManagerCostLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=1 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =3
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司站 中的去年其他费成本-->
+    <select id="StationOtherCostLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=2 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =3
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+
+
+
+
+
+
+    <!-- 根据查询条件，查询分公司网 中的去年设备费成本-->
+    <select id="NetworkDevicelCostLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=3 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =2
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司网 中的去年人工费成本-->
+    <select id="NetworkArtificialCostLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=4 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =2
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司网 中的去年管理费成本-->
+    <select id="NetworkManagerCostLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=1 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =2
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+
+    <!-- 根据查询条件，查询分公司网 中的去年其他费成本-->
+    <select id="NetworkOtherCostLastyear" parameterType="java.util.Map"  resultType="java.util.Map">
+
+        select month(A.cost_date) as month ,sum(A.total) as monthtoal
+        from(
+        select costday.COMID,costday.UNITID ,costday.TYPEID as typeid,cost as total , costday.COST_DATE as cost_date  from t_emc_final_cost_day as costday
+        INNER JOIN t_emc_cost_type as costtype on costtype.ID=costday.TYPEID
+        where costtype.ID=2 and
+        costday.COST_DATE<![CDATA[ <= ]]>str_to_date (#{currLastqn},'%Y-%m-%d')
+        and costday.COST_DATE<![CDATA[ >= ]]> str_to_date(#{currFistqn},'%Y-%m-%d')
+        ) A INNER JOIN (
+        select unit.UNITID,unit.COMID,company.TABLE_NAME,unit.UNITTYPE,unit.ORGNAME from v_emc_unit as unit
+        inner join t_emc_company as company on company.ID=unit.COMID
+        where company.TABLE_NAME=#{tableName}  and unit.ORGNAME='第一分公司' and unit.UNITTYPE =2
+        and unit.COMID=#{comId}
+        )B on B.UNITID=A.UNITID group by month(A.cost_date);
+    </select>
+
+</mapper>

@@ -1,0 +1,856 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huak.home.dao.component.ComponentDao" >
+
+    <!--组件-能耗明细-->
+  <select id="energyDetail" resultType="java.util.Map" parameterType="java.util.Map" >
+      SELECT
+      max(case when mm.type ='qn' then mm.bm_electric else 0 end)as qn_bm_electric,
+      max(case when mm.type ='qn' then mm.bm_whater else 0 end) as qn_bm_whater,
+      max(case when mm.type ='qn' then mm.bm_heat else 0 end) as qn_bm_heat,
+      max(case when mm.type ='qn' then mm.bm_gas else 0 end) as qn_bm_gas,
+      max(case when mm.type ='qn' then  mm.bm_coal else 0 end) as qn_bm_coal,
+      max(case when mm.type ='qn' then mm.bm_solar  else 0 end) as qn_bm_solar,
+      max(case when mm.type ='qn' then mm.electric else 0 end)as qn_electric,
+      max(case when mm.type ='qn' then mm.whater else 0 end) as qn_whater,
+      max(case when mm.type ='qn' then mm.heat else 0 end) as qn_heat,
+      max(case when mm.type ='qn' then mm.gas else 0 end) as qn_gas,
+      max(case when mm.type ='qn' then  mm.coal else 0 end) as qn_coal,
+      max(case when mm.type ='qn' then mm.solar  else 0 end) as qn_solar,
+
+      (max(case when mm.type ='qn' then mm.bm_electric else 0 end)+
+      max(case when mm.type ='qn' then mm.bm_whater else 0 end) +
+      max(case when mm.type ='qn' then mm.bm_gas else 0 end) +
+      max(case when mm.type ='qn' then  mm.bm_coal else 0 end) +
+      max(case when mm.type ='qn' then mm.bm_solar  else 0 end))qn_bm_total,
+
+
+
+      max(case when mm.type ='jn' then mm.bm_electric else 0 end)as bm_electric,
+      max(case when mm.type ='jn' then mm.bm_whater else 0 end) as bm_whater,
+      max(case when mm.type ='jn' then mm.bm_heat else 0 end) as bm_heat,
+      max(case when mm.type ='jn' then mm.bm_gas else 0 end) as bm_gas,
+      max(case when mm.type ='jn' then  mm.bm_coal else 0 end) as bm_coal,
+      max(case when mm.type ='jn' then mm.bm_solar  else 0 end) as bm_solar,
+      max(case when mm.type ='jn' then mm.electric else 0 end)as electric,
+      max(case when mm.type ='jn' then mm.whater else 0 end) as whater,
+      max(case when mm.type ='jn' then mm.heat else 0 end) as heat,
+      max(case when mm.type ='jn' then mm.gas else 0 end) as gas,
+      max(case when mm.type ='jn' then  mm.coal else 0 end) as coal,
+      max(case when mm.type ='jn' then mm.solar  else 0 end) as solar,
+
+      (max(case when mm.type ='jn' then mm.bm_electric else 0 end)+
+      max(case when mm.type ='jn' then mm.bm_whater else 0 end) +
+      max(case when mm.type ='jn' then mm.bm_gas else 0 end) +
+      max(case when mm.type ='jn' then  mm.bm_coal else 0 end) +
+      max(case when mm.type ='jn' then mm.bm_solar  else 0 end) )bm_total
+
+
+      from
+      (select 'jn' as type, max(case when b.tt ='1' then b.dnum else 0 end)as  bm_whater,
+      max(case when b.tt ='2' then b.dnum else 0 end) as bm_electric,
+      max(case when b.tt ='3' then b.dnum else 0 end) as  bm_gas,
+      max(case when b.tt ='4' then b.dnum else 0 end) as bm_heat,
+      max(case when b.tt ='5' then b.dnum else 0 end) as bm_coal,
+      max(case when b.tt ='6' then b.dnum else 0 end) as bm_solar,
+      max(case when b.tt ='1' then b.num else 0 end)as  whater,
+      max(case when b.tt ='2' then b.num else 0 end) as electric,
+      max(case when b.tt ='3' then b.num else 0 end) as  gas,
+      max(case when b.tt ='4' then b.num else 0 end) as heat,
+      max(case when b.tt ='5' then b.num else 0 end) as coal,
+      max(case when b.tt ='6' then b.num else 0 end) as solar
+      from (
+      SELECT
+      b.TYPE tt,
+      sum(a.DOSAGE) num,
+      SUM(a.DOSAGE*a.COAL_COEF) dnum
+      FROM
+      ${tableName} a,
+      t_emc_energy_type b,
+      (SELECT UNITID,COMID,HEAT_TYPE,UNITTYPE FROM v_emc_unit WHERE 1=1  <if test="orgId != null and orgId !=''"> AND FIND_IN_SET(ORGID,emc_func_org_getchilds (#{orgId}))</if> )c
+      WHERE 1=1
+      <if test="feedType != null and feedType !=''">
+          and  c.HEAT_TYPE = #{feedType}
+      </if>
+      <if test="orgType != null and orgType !=''">
+          and  c.UNITTYPE  = #{orgType}
+      </if>
+      <if test="startTime != null and startTime!=''">
+          and  a.DOSAGE_TIME <![CDATA[ >= ]]> #{startTime}
+      </if>
+      <if test="endTime != null and endTime!='' ">
+          and  a.DOSAGE_TIME  <![CDATA[ <= ]]> #{endTime}
+      </if>
+      <if test="comId != null and comId !=''">
+          and  a.COMID  = #{comId}
+      </if>
+      and	a.TYPEID = b.id
+      AND a.COMID = c.COMID
+      AND a.UNITID = c.UNITID
+      GROUP BY
+      b.TYPE
+      )b
+      union ALL
+      (
+      select 'qn' as type, max(case when b.tt ='1' then b.dnum else 0 end)as  qn_bm_whater,
+      max(case when b.tt ='2' then b.dnum else 0 end) as qn_bm_electric,
+      max(case when b.tt ='3' then b.dnum else 0 end) as  qn_bm_gas,
+      max(case when b.tt ='4' then b.dnum else 0 end) as qn_bm_heat,
+      max(case when b.tt ='5' then b.dnum else 0 end) as qn_bm_coal,
+      max(case when b.tt ='6' then b.dnum else 0 end) as qn_bm_solar,
+      max(case when b.tt ='1' then b.num else 0 end)as  qn_whater,
+      max(case when b.tt ='2' then b.num else 0 end) as qn_electric,
+      max(case when b.tt ='3' then b.num else 0 end) as  qn_gas,
+      max(case when b.tt ='4' then b.num else 0 end) as qn_heat,
+      max(case when b.tt ='5' then b.num else 0 end) as qn_coal,
+      max(case when b.tt ='6' then b.num else 0 end) as qn_solar
+      from (
+      SELECT
+      b.TYPE tt,
+      sum(a.DOSAGE) num,
+      SUM(a.DOSAGE*a.COAL_COEF) dnum
+      FROM
+      ${tableName} a,
+      t_emc_energy_type b,
+      (SELECT UNITID,COMID,HEAT_TYPE,UNITTYPE FROM v_emc_unit WHERE 1=1  <if test="orgId != null and orgId !=''"> AND FIND_IN_SET(ORGID,emc_func_org_getchilds (#{orgId}))</if> )c
+      WHERE 1=1
+      <if test="feedType != null and feedType !=''">
+          and  c.HEAT_TYPE = #{feedType}
+      </if>
+      <if test="orgType != null and orgType !=''">
+          and  c.UNITTYPE  = #{orgType}
+      </if>
+      <if test="pstartTime != null ">
+          and  a.DOSAGE_TIME <![CDATA[ >= ]]> #{pstartTime}
+      </if>
+      <if test="pendTime != null">
+          and  a.DOSAGE_TIME  <![CDATA[ <= ]]> #{pendTime}
+      </if>
+      <if test="comId != null and comId !=''">
+          and  a.COMID  = #{comId}
+      </if>
+      and	a.TYPEID = b.id
+      AND a.COMID = c.COMID
+      AND a.UNITID = c.UNITID
+      GROUP BY
+      b.TYPE
+      )b
+      ))mm
+  </select>
+
+<!--组件-费用明细-->
+  <select id="costDetail" resultType="java.util.Map" parameterType="java.util.Map">
+      SELECT
+      mm.ccs,
+      (CASE WHEN mm.ccs>mm.qn_ccs THEN 'true' WHEN mm.ccs = mm.qn_ccs THEN 'null' else 'false' end) flag_ccs,
+      mm.device,
+      (CASE WHEN mm.device>mm.qn_device THEN 'true' WHEN mm.device = mm.qn_device THEN 'null' else 'false' end) flag_device,
+      mm.labor,
+      (CASE WHEN mm.labor>mm.qn_labor THEN 'true' WHEN mm.labor = mm.qn_labor THEN 'null' else 'false' end) flag_labor,
+      mm.manage,
+      (CASE WHEN mm.manage>mm.qn_manage THEN 'true' WHEN mm.manage = mm.qn_manage THEN 'null' else 'false' end) flag_manage,
+      mm.other,
+      (CASE WHEN mm.other>mm.qn_other THEN 'true' WHEN mm.other = mm.qn_other THEN 'null' else 'false' end) flag_other,
+
+      (CASE WHEN (mm.ccs+
+      mm.device+
+      mm.labor+
+      mm.manage+
+      mm.other)>(mm.qn_ccs+
+      mm.qn_device+
+      mm.qn_labor+
+      mm.qn_manage+
+      mm.qn_other) THEN 'true' WHEN (mm.ccs+
+      mm.device+
+      mm.labor+
+      mm.manage+
+      mm.other)=(mm.qn_ccs+
+      mm.qn_device+
+      mm.qn_labor+
+      mm.qn_manage+
+      mm.qn_other) THEN 'null' else 'false' end) flag_total,
+      mm.qn_ccs,
+      mm.qn_device,
+      mm.qn_labor,
+      mm.qn_manage,
+      mm.qn_other,
+      (mm.ccs+
+      mm.device+
+      mm.labor+
+      mm.manage+
+      mm.other)total_sum,
+      (mm.qn_ccs+
+      mm.qn_device+
+      mm.qn_labor+
+      mm.qn_manage+
+      mm.qn_other)qn_total_sum,
+      (CASE WHEN mm.qn_ccs = 0 THEN '#%' ELSE concat(FORMAT((mm.ccs-mm.qn_ccs)/mm.qn_ccs*100,2),'%') end) tb_css,
+      (CASE WHEN mm.qn_device = 0 THEN '#%' ELSE concat(FORMAT((mm.device-mm.qn_device)/mm.qn_device*100,2),'%') end) tb_device,
+      (CASE WHEN mm.qn_labor = 0 THEN '#%' ELSE concat(FORMAT((mm.labor-mm.qn_labor)/mm.qn_labor*100,2),'%') end) tb_labor,
+      (CASE WHEN mm.qn_manage = 0 THEN '#%' ELSE concat(FORMAT((mm.manage-mm.qn_manage)/mm.qn_manage*100,2),'%') end) tb_manage,
+      (CASE WHEN mm.qn_other = 0 THEN '#%' ELSE concat(FORMAT((mm.other-mm.qn_other)/mm.qn_other*100,2),'%') end) tb_other,
+      (CASE WHEN (mm.qn_ccs+
+      mm.qn_device+
+      mm.qn_labor+
+      mm.qn_manage+
+      mm.qn_other) = 0 THEN '#%' ELSE concat(FORMAT(((mm.ccs+
+      mm.device+
+      mm.labor+
+      mm.manage+
+      mm.other)- (mm.qn_ccs+
+      mm.qn_device+
+      mm.qn_labor+
+      mm.qn_manage+
+      mm.qn_other))/ (mm.qn_ccs+
+      mm.qn_device+
+      mm.qn_labor+
+      mm.qn_manage+
+      mm.qn_other)*100,2),'%') end) tb_total
+      FROM
+      (
+      SELECT
+      max(case when type = 'jn' then manage else 0 end)manage,
+      max(case when type = 'jn' then other else 0 end) other,
+      max(case when type = 'jn' then device else 0 end) device,
+      max(case when type = 'jn' then labor else 0 end) labor,
+      max(case when type = 'jn' then ccs else 0 end)ccs,
+      max(case when type = 'qn' then manage else 0 end)qn_manage,
+      max(case when type = 'qn' then other else 0 end) qn_other,
+      max(case when type = 'qn' then device else 0 end) qn_device,
+      max(case when type = 'qn' then labor else 0 end) qn_labor,
+      max(case when type = 'qn' then ccs else 0 end) qn_ccs
+      from
+      (select 'jn' type,
+      max(case when cc.TYPEID = '1' then cc.cost else 0 end) manage,
+      max(case when cc.TYPEID = '2' then cc.cost else 0 end) other,
+      max(case when cc.TYPEID = '3' then cc.cost else 0 end) device,
+      max(case when cc.TYPEID = '4' then cc.cost else 0 end) labor,
+      (select sum(bb.ne) from (SELECT a.typeid,sum(a.DOSAGE*a.PRICE) ne
+      FROM ${tableName} a,
+      (select UNITID from v_emc_unit  where 1=1
+      <if test="orgId != null and orgId != ''">
+          and  ORGID in (select id from t_emc_org where
+          FIND_IN_SET(id,emc_func_org_getchilds(#{orgId}))  )
+      </if>
+      <if test="feedType != null and feedType != ''">
+          and HEAT_TYPE = #{feedType}
+      </if>
+      <if test="orgType != null and orgType !=''">
+          and  UNITTYPE  = #{orgType}
+      </if>
+      group by UNITID) c
+      WHERE a.UNITID = c.unitid
+      <if test="startTime != null and startTime !=''">
+          and   a.DOSAGE_TIME <![CDATA[ >= ]]> #{startTime}
+      </if>
+      <if test="endTime != null and endTime != ''">
+          and   a.DOSAGE_TIME <![CDATA[ <= ]]> #{endTime}
+      </if>
+
+      GROUP BY TYPEID)bb)ccs
+      from (SELECT b.TYPEID,sum(b.COST) cost FROM t_emc_final_cost_day b,
+      (select * from v_emc_unit  where 1=1
+      <if test="orgId != null and orgId != ''">
+          and  ORGID in (select id from t_emc_org where FIND_IN_SET(id,emc_func_org_getchilds(#{orgId})))
+      </if>
+      <if test="feedType != null and feedType != ''">
+          and HEAT_TYPE = #{feedType}
+      </if>
+      <if test="orgType != null and orgType !=''">
+          and  UNITTYPE  = #{orgType}
+      </if>
+      GROUP BY UNITID )c
+      where  b.UNITID = c.unitid
+      <if test="startTime != null and startTime !=''">
+          and   b.cost_date <![CDATA[ >= ]]> #{startTime}
+      </if>
+      <if test="endTime != null and endTime != ''">
+          and    b.cost_date <![CDATA[ <= ]]> #{endTime}
+      </if>
+
+      GROUP BY b.TYPEID) cc
+      union
+      select 'qn' type,
+      max(case when cc.TYPEID = '1' then cc.cost else 0 end) manage,
+      max(case when cc.TYPEID = '2' then cc.cost else 0 end) other,
+      max(case when cc.TYPEID = '3' then cc.cost else 0 end) device,
+      max(case when cc.TYPEID = '4' then cc.cost else 0 end) labor,
+      (select sum(bb.ne) from (SELECT a.typeid,sum(a.DOSAGE*a.PRICE) ne
+      FROM ${tableName} a,
+      (select * from v_emc_unit  where 1=1
+      <if test="orgId != null and orgId !=''">
+          and   ORGID in (select id from t_emc_org where
+          FIND_IN_SET(id,emc_func_org_getchilds(#{orgId})))
+      </if>
+      <if test="feedType != null and feedType != ''">
+          and HEAT_TYPE = #{feedType}
+      </if>
+      <if test="orgType != null and orgType !=''">
+          and  UNITTYPE  = #{orgType}
+      </if>
+      GROUP BY UNITID) c
+      WHERE  a.UNITID = c.unitid
+      <if test="pstartTime != null and pstartTime !=''">
+          and   a.DOSAGE_TIME<![CDATA[ >= ]]> #{pstartTime}
+      </if>
+      <if test="pendTime != null and pendTime != ''">
+          and   a.DOSAGE_TIME<![CDATA[ <= ]]> #{pendTime}
+      </if>
+
+      GROUP BY TYPEID)bb)ccs
+      from (SELECT b.TYPEID,sum(b.COST) cost FROM t_emc_final_cost_day b,
+      (select * from v_emc_unit  where 1=1
+       <if test="orgId!=null and orgId!=''">
+          and  ORGID in (select id from t_emc_org where FIND_IN_SET(id,emc_func_org_getchilds(#{orgId})))
+       </if>
+      <if test="feedType != null and feedType != ''">
+          and HEAT_TYPE = #{feedType}
+      </if>
+      <if test="orgType != null and orgType!=''">
+          and  UNITTYPE  = #{orgType}
+      </if>
+      GROUP BY UNITID )c
+      where  b.UNITID = c.unitid
+      <if test="pstartTime != null and pstartTime !=''">
+          and    b.cost_date<![CDATA[ >= ]]> #{pstartTime}
+      </if>
+      <if test="pendTime != null and pendTime != ''">
+          and    b.cost_date<![CDATA[ <= ]]> #{pendTime}
+      </if>
+      GROUP BY b.TYPEID) cc)qq)mm;
+  </select>
+<!--组件-单耗趋势-->
+    <select id="getenergycomparision" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        cc.dates,
+        cc.num,
+        (CASE
+        WHEN cc.EXCELLENT IS NULL THEN
+        0
+        ELSE
+        cc.EXCELLENT
+        END) excellent,
+        (CASE
+        WHEN cc.STANDARD IS NULL THEN
+        0
+        ELSE
+        cc.STANDARD
+        END)  standard
+        FROM
+        (SELECT
+        bb.dates,
+        FORMAT(sum(bb.ne), 2) AS num,
+        (select sum(EXCELLENT) from t_emc_expend_check where bb.dates <![CDATA[ >= ]]> SDATE and bb.dates <![CDATA[ <= ]]> EDATE and COMID=#{comId} and ORG_ID=#{orgId} group by ORG_ID) excellent,
+        (select sum(STANDARD) from t_emc_expend_check where bb.dates <![CDATA[ >= ]]> SDATE and bb.dates <![CDATA[ <= ]]> EDATE and COMID=#{comId} and ORG_ID=#{orgId} group by ORG_ID) standard
+        FROM (
+        select m.dates,m.type,sum(m.num)/sum(m.area) ne from(select b.area,b.dates,b.num,b.UNITID,b.type type from (SELECT
+        c.UNITID,
+        date_format(a.DOSAGE_TIME, '%Y-%m-%d') dates,
+        bbb.TYPE type,
+        sum(a.DOSAGE * a.COAL_COEF) num,
+        avg(a.AREA) area
+        FROM
+        ${tableName} a,t_emc_energy_type bbb,
+        (SELECT UNITID FROM v_emc_unit
+        WHERE 1 = 1
+        <if test="orgId != null and orgId !=''">
+            and   ORGID in (select id from t_emc_org where
+            FIND_IN_SET(id,emc_func_org_getchilds(#{orgId})))
+        </if>
+        <if test="feedType != null and feedType !=''">
+            and  HEAT_TYPE =#{feedType}
+        </if>
+        <if test="comId != null and comId !=''">
+            and  COMID =#{comId}
+        </if>
+        <if test="orgType != null and orgType !=''">
+            and  UNITTYPE  = #{orgType}
+        </if>
+        GROUP BY UNITID ) c
+        WHERE  a.UNITID = c.unitid and a.TYPEID = bbb.id and bbb.TYPE <![CDATA[ <> ]]>'4'
+        <if test="startTime != null and startTime !=''">
+            and   a.DOSAGE_TIME<![CDATA[ >= ]]> #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            and    a.DOSAGE_TIME<![CDATA[ <= ]]> #{endTime}
+        </if>
+        GROUP BY c.UNITID, date_format(a.DOSAGE_TIME, '%Y-%m-%d'),	bbb.type) b)m group by  m.dates,m.type
+        ) bb
+        GROUP BY
+        bb.dates
+        ORDER BY
+        bb.dates ASC)cc order by cc.dates;
+    </select>
+
+    <!--组件-昨天、今天、明天-->
+    <select id="selectrecentDetail"  resultType="java.util.Map" parameterType="java.util.Map">
+        select
+        ROUND(CC.ttotal,1) ttotal,CC.twhater,CC.telectric,CC.tgas,CC.theat,CC.tcoal,CC.tsolar,
+        ROUND(CC.ytotal,1) ytotal,CC.ywhater,CC.yelectric,CC.ygas,CC.yheat,CC.ycoal,CC.ysolar,
+        ROUND(CC.towtotal,1) towtotal,CC.towwhater,CC.towelectric,CC.towgas,CC.towheat,CC.towcoal,CC.towsolar,
+        CC.treewhater,CC.treeelectric,CC.treegas,CC.treeheat,CC.treetotal,CC.treesolar,
+        (CASE WHEN CC.twhater=0 then 0 else ROUND((CC.twhater-CC.ywhater)/CC.twhater,1) end) as twhaterzz,
+        (CASE WHEN CC.telectric=0 then 0 else ROUND((CC.telectric-CC.yelectric)/CC.telectric,1) end) as telectriczz,
+        (CASE WHEN CC.tgas=0 then 0 else ROUND((CC.tgas-CC.ygas)/CC.tgas,1) end) as tgaszz,
+        (CASE WHEN CC.theat=0 then 0 else ROUND((CC.theat-CC.yheat)/CC.theat,1) end) as theatzz,
+        (CASE WHEN CC.tcoal=0 then 0 else ROUND((CC.tcoal-CC.ycoal)/CC.tcoal,1) end) as tcoalzz,
+        (CASE WHEN CC.tsolar=0 then 0 else ROUND((CC.tsolar-CC.ysolar)/CC.tsolar,1) end) as tsolarzz,
+
+        (CASE WHEN CC.ywhater=0 then 0 else ROUND((CC.ywhater-CC.towwhater)/CC.ywhater,1) end) as ywhaterzz,
+        (CASE WHEN CC.yelectric=0 then 0 else ROUND((CC.yelectric-CC.towelectric)/CC.yelectric,1) end) as yelectriczz,
+        (CASE WHEN CC.ygas=0 then 0 else ROUND((CC.ygas-CC.towgas)/CC.ygas,1) end) as ygaszz,
+        (CASE WHEN CC.yheat=0 then 0 else ROUND((CC.yheat-CC.towheat)/CC.yheat,1) end) as yheatzz,
+        (CASE WHEN CC.ycoal=0 then 0 else ROUND((CC.ycoal-CC.towcoal)/CC.ycoal,1) end) as ycoalzz,
+        (CASE WHEN CC.ysolar=0 then 0 else ROUND((CC.ysolar-CC.towsolar)/CC.ysolar,1) end) as ysolarzz,
+
+        (CASE WHEN CC.towwhater=0 then 0 else ROUND((CC.towwhater-CC.treewhater)/CC.towwhater,1) end) as towwhaterzz,
+        (CASE WHEN CC.towelectric=0 then 0 else ROUND((CC.towelectric-CC.treeelectric)/CC.towelectric,1) end) as towelectriczz,
+        (CASE WHEN CC.towgas=0 then 0 else ROUND((CC.towgas-CC.treegas)/CC.towgas,1) end) as towgaszz,
+        (CASE WHEN CC.towheat=0 then 0 else ROUND((CC.towheat-CC.treeheat)/CC.towheat,1) end) as towheatzz,
+        (CASE WHEN CC.towcoal=0 then 0 else ROUND((CC.towcoal-CC.treecoal)/CC.towcoal,1) end) as towcoalzz,
+        (CASE WHEN CC.towsolar=0 then 0 else ROUND((CC.towsolar-CC.treesolar)/CC.towsolar,1) end) as towsolarzz
+        from (SELECT
+        max(case when AA.days = 'today' THEN AA.total else 0 end) ttotal,
+        max(case when AA.days = 'today' THEN AA.whater else 0 end) twhater,
+        max(case when AA.days = 'today' THEN AA.electric else 0 end) telectric,
+        max(case when AA.days = 'today' THEN AA.heat else 0 end) theat,
+        max(case when AA.days = 'today' THEN AA.gas else 0 end)  tgas,
+        max(case when AA.days = 'today' THEN AA.coal else 0 end) tcoal,
+        max(case when AA.days = 'today' THEN AA.solar else 0 end) tsolar,
+        max(case when AA.days = 'yesterday' THEN AA.total else 0 end) ytotal,
+        max(case when AA.days = 'yesterday' THEN AA.whater else 0 end) ywhater,
+        max(case when AA.days = 'yesterday' THEN AA.electric else 0 end) yelectric,
+        max(case when AA.days = 'yesterday' THEN AA.heat else 0 end) yheat,
+        max(case when AA.days = 'yesterday' THEN AA.gas else 0 end)  ygas,
+        max(case when AA.days = 'yesterday' THEN AA.coal else 0 end) ycoal,
+        max(case when AA.days = 'yesterday' THEN AA.solar else 0 end) ysolar,
+        max(case when AA.days = 'towdayago' THEN AA.total else 0 end) towtotal,
+        max(case when AA.days = 'towdayago' THEN AA.whater else 0 end) towwhater,
+        max(case when AA.days = 'towdayago' THEN AA.electric else 0 end) towelectric,
+        max(case when AA.days = 'towdayago' THEN AA.heat else 0 end) towheat,
+        max(case when AA.days = 'towdayago' THEN AA.gas else 0 end)  towgas,
+        max(case when AA.days = 'towdayago' THEN AA.coal else 0 end) towcoal,
+        max(case when AA.days = 'towdayago' THEN AA.solar else 0 end) towsolar,
+        max(case when AA.days = 'treedayago' THEN AA.total else 0 end) treetotal,
+        max(case when AA.days = 'treedayago' THEN AA.whater else 0 end) treewhater,
+        max(case when AA.days = 'treedayago' THEN AA.electric else 0 end) treeelectric,
+        max(case when AA.days = 'treedayago' THEN AA.heat else 0 end) treeheat,
+        max(case when AA.days = 'treedayago' THEN AA.gas else 0 end)  treegas,
+        max(case when AA.days = 'treedayago' THEN AA.coal else 0 end) treecoal,
+        max(case when AA.days = 'treedayago' THEN AA.solar else 0 end) treesolar
+
+        FROM (select 'today' as days,sum(q.totalcol) as totals,sum(q.totall) as total,max((case when q.type= 1 then q.dh else 0 end)) as whater,
+        max((case when q.type= 2 then q.dh else 0 end)) as electric,
+        max((case when q.type= 3 then q.dh else 0 end)) as gas,
+        max((case when q.type= 4 then q.dh else 0 end)) heat,
+        max((case when q.type= 5 then q.dh else 0 end)) as coal,
+        max((case when q.type= 6 then q.dh else 0 end)) as solar
+        from (SELECT mm.dates,mm.type,ROUND(sum(mm.coles)/sum(mm.area),1)dh ,sum(mm.coles) as totalcol,sum(mm.toles) as totall
+        from (select  c.UNITID, date_format(a.DOSAGE_TIME, '%Y-%m-%d') as dates,
+        bbb.type as type,sum(a.DOSAGE)as coles,sum(a.DOSAGE*a.COAL_COEF) as toles,AVG(a.AREA)as area
+        FROM
+        ${tableName} a,t_emc_energy_type bbb,
+        (SELECT UNITID FROM v_emc_unit
+        WHERE 1 = 1
+        <if test="orgId != null and orgId !=''">
+            and   ORGID in (select id from t_emc_org where
+            FIND_IN_SET(id,emc_func_org_getchilds(#{orgId})))
+        </if>
+        <if test="feedType != null and feedType !=''">
+            and  HEAT_TYPE =#{feedType}
+        </if>
+        <if test="comId != null and comId !=''">
+            and  COMID =#{comId}
+        </if>
+        <if test="orgType != null and orgType !=''">
+            and  UNITTYPE  = #{orgType}
+        </if>
+        GROUP BY UNITID ) c
+        WHERE  a.UNITID = c.unitid and a.TYPEID = bbb.id
+        <if test="today != null and today !=''">
+            and   a.DOSAGE_TIME <![CDATA[>=]]> CONCAT(#{today},' 00:00:00')
+            and   a.DOSAGE_TIME <![CDATA[<=]]> CONCAT(#{today},' 23:59:59')
+        </if>
+        GROUP BY c.UNITID, date_format(a.DOSAGE_TIME, '%Y-%m-%d'),	bbb.type)mm group by mm.dates,mm.type)q group by q.dates
+
+        union all
+        ( select 'yesterday' as days,sum(q.totalcol),sum(q.totall),max((case when q.type= 1 then q.dh else 0 end)),
+        max((case when q.type= 2 then q.dh else 0 end)),
+        max((case when q.type= 3 then q.dh else 0 end)),
+         max((case when q.type= 4 then q.dh else 0 end)) heat,
+        max((case when q.type= 5 then q.dh else 0 end)),
+        max((case when q.type= 6 then q.dh else 0 end))
+        from (SELECT mm.dates,mm.type,ROUND(sum(mm.coles)/sum(mm.area),1)dh ,sum(mm.coles) as totalcol,sum(mm.toles) as totall
+        from (select  c.UNITID, date_format(a.DOSAGE_TIME, '%Y-%m-%d') as dates,
+        bbb.type as type,sum(a.DOSAGE)as coles,sum(a.DOSAGE*a.COAL_COEF) as toles,AVG(a.AREA)as area
+        FROM
+        ${tableName} a,t_emc_energy_type bbb,
+        (SELECT UNITID FROM v_emc_unit
+        WHERE 1 = 1
+        <if test="orgId != null and orgId !=''">
+            and   ORGID in (select id from t_emc_org where
+            FIND_IN_SET(id,emc_func_org_getchilds(#{orgId})))
+        </if>
+        <if test="feedType != null and feedType !=''">
+            and  HEAT_TYPE =#{feedType}
+        </if>
+        <if test="comId != null and comId !=''">
+            and  COMID =#{comId}
+        </if>
+        <if test="orgType != null and orgType !=''">
+            and  UNITTYPE  = #{orgType}
+        </if>
+        GROUP BY UNITID ) c
+        WHERE  a.UNITID = c.unitid and a.TYPEID = bbb.id
+        <if test="yesterday != null and yesterday !=''">
+            and   a.DOSAGE_TIME <![CDATA[>=]]> CONCAT(#{yesterday},' 00:00:00')
+            and   a.DOSAGE_TIME <![CDATA[<=]]> CONCAT(#{yesterday},' 23:59:59')
+        </if>
+        GROUP BY c.UNITID, date_format(a.DOSAGE_TIME, '%Y-%m-%d'),	bbb.type)mm group by mm.dates,mm.type)q group by q.dates)
+        union ALL
+        ( select 'towdayago' as days,sum(q.totalcol),sum(q.totall),max((case when q.type= 1 then q.dh else 0 end)),
+        max((case when q.type= 2 then q.dh else 0 end)),
+        max((case when q.type= 3 then q.dh else 0 end)),
+         max((case when q.type= 4 then q.dh else 0 end)) heat,
+        max((case when q.type= 5 then q.dh else 0 end)),
+        max((case when q.type= 6 then q.dh else 0 end))
+        from (SELECT mm.dates,mm.type,ROUND(sum(mm.coles)/sum(mm.area),1)dh ,sum(mm.coles) as totalcol,sum(mm.toles) as totall
+        from (select  c.UNITID, date_format(a.DOSAGE_TIME, '%Y-%m-%d') as dates,
+        bbb.type as type,sum(a.DOSAGE)as coles,sum(a.DOSAGE*a.COAL_COEF) as toles,AVG(a.AREA)as area
+        FROM
+        ${tableName} a,t_emc_energy_type bbb,
+        (SELECT UNITID FROM v_emc_unit
+        WHERE 1 = 1
+        <if test="orgId != null and orgId !=''">
+            and   ORGID in (select id from t_emc_org where
+            FIND_IN_SET(id,emc_func_org_getchilds(#{orgId})))
+        </if>
+        <if test="feedType != null and feedType !=''">
+            and  HEAT_TYPE =#{feedType}
+        </if>
+        <if test="comId != null and comId !=''">
+            and  COMID =#{comId}
+        </if>
+        <if test="orgType != null and orgType !=''">
+            and  UNITTYPE  = #{orgType}
+        </if>
+        GROUP BY UNITID ) c
+        WHERE  a.UNITID = c.unitid and a.TYPEID = bbb.id
+        <if test="towdayago != null and towdayago !=''">
+            and   a.DOSAGE_TIME <![CDATA[>=]]> CONCAT(#{towdayago},' 00:00:00')
+            and   a.DOSAGE_TIME <![CDATA[<=]]> CONCAT(#{towdayago},' 23:59:59')
+        </if>
+
+        GROUP BY c.UNITID, date_format(a.DOSAGE_TIME, '%Y-%m-%d'),	bbb.type)mm group by mm.dates,mm.type)q group by q.dates)
+        union ALL
+        ( select 'treedayago' as days,sum(q.totalcol),sum(q.totall),max((case when q.type= 1 then q.dh else 0 end)),
+        max((case when q.type= 2 then q.dh else 0 end)),
+        max((case when q.type= 3 then q.dh else 0 end)),
+        max((case when q.type= 4 then q.dh else 0 end)) heat,
+        max((case when q.type= 5 then q.dh else 0 end)),
+        max((case when q.type= 6 then q.dh else 0 end))
+        from (SELECT mm.dates,mm.type,ROUND(sum(mm.coles)/sum(mm.area),1)dh ,sum(mm.coles) as totalcol,sum(mm.toles) as totall
+        from (select  c.UNITID, date_format(a.DOSAGE_TIME, '%Y-%m-%d') as dates,
+        bbb.type as type,sum(a.DOSAGE)as coles,sum(a.DOSAGE*a.COAL_COEF) as toles,AVG(a.AREA)as area
+        FROM
+        ${tableName} a,t_emc_energy_type bbb,
+        (SELECT UNITID FROM v_emc_unit
+        WHERE 1 = 1
+        <if test="orgId != null and orgId !=''">
+            and   ORGID in (select id from t_emc_org where
+            FIND_IN_SET(id,emc_func_org_getchilds(#{orgId})))
+        </if>
+        <if test="feedType != null and feedType !=''">
+            and  HEAT_TYPE =#{feedType}
+        </if>
+        <if test="comId != null and comId !=''">
+            and  COMID =#{comId}
+        </if>
+        <if test="orgType != null and orgType !=''">
+            and  UNITTYPE  = #{orgType}
+        </if>
+        GROUP BY UNITID ) c
+        WHERE  a.UNITID = c.unitid and a.TYPEID = bbb.id
+        <if test="treedayago != null and treedayago !=''">
+            and   a.DOSAGE_TIME <![CDATA[>=]]> CONCAT(#{treedayago},' 00:00:00')
+            and   a.DOSAGE_TIME <![CDATA[<=]]> CONCAT(#{treedayago},' 23:59:59')
+        </if>
+        GROUP BY c.UNITID, date_format(a.DOSAGE_TIME, '%Y-%m-%d'),	bbb.type)mm group by mm.dates,mm.type)q group by q.dates))AA)CC
+    </select>
+
+    <!--获取计划-->
+    <select id="getplan" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+           p.num as plan
+        FROM
+            t_emc_energy_project p,
+            t_emc_heat_season s
+        WHERE
+            p.SEASON_ID = s.id
+        <if test="startTime != null and startTime !=''">
+            and  s.SDATE &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            and  s.EDATE  &lt;= #{endTime}
+        </if>
+        <if test="orgId != null and orgId !=''">
+            and  p.ORG_ID  = #{orgId}
+        </if>
+        <if test="comId != null and comId !=''">
+            and  s.COMID  = #{comId}
+        </if>
+        ORDER BY
+            s.EDATE DESC
+        LIMIT 0, 1
+    </select>
+
+    <!--获取当前采暖季-->
+    <select id="getCurrentSeason" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+        *
+        FROM
+        t_emc_heat_season t
+        WHERE
+        t.COMID = #{comId}
+        AND t.SDATE <![CDATA[ <= ]]> #{sdate}
+        AND t.EDATE <![CDATA[ >= ]]> #{edate}
+    </select>
+
+    <!--获取上个采暖季-->
+    <select id="getPreSeason" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+        *
+        FROM
+        t_emc_heat_season t
+        WHERE
+        t.COMID = #{comId}
+        AND t.EDATE <![CDATA[ < ]]> #{edate}
+        ORDER BY t.EDATE DESC
+    </select>
+
+    <!--获取报警数据-->
+    <select id="getAlarms" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+        SUM(case when c.m <![CDATA[ >= ]]>  d.ENTERPRISE  then 1 else 0 end ) mild,
+        SUM(case when c.m <![CDATA[ >= ]]>  d.LOCAL  then 1 else 0 end ) moderate,
+        SUM(case when c.m <![CDATA[ >= ]]>  d.INDUSTRY then 1 else 0 end ) serious,
+        count(1) total
+        FROM
+        (
+        SELECT
+        b.type,
+        b.unitid,
+        <choose>
+            <when test="0 == days">
+                sum(b.dosage) / (avg(b.area)) m
+            </when>
+            <otherwise>
+                sum(b.dosage) / (avg(b.area)*#{days})m
+            </otherwise>
+        </choose>
+        FROM
+        (
+        SELECT
+        a.UNITID unitid,
+        b.type type,
+        DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d %H') time,
+        avg(a.AREA) area,
+        avg(a.DOSAGE) dosage
+        FROM
+        t_emc_final_data_hour_tj a
+        LEFT JOIN t_emc_energy_type b ON a.TYPEID = b.id
+        WHERE 1=1
+        <if test="startTime != null and startTime !=''">
+            AND a.DOSAGE_TIME <![CDATA[ >= ]]> #{startTime}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            AND a.DOSAGE_TIME <![CDATA[ <= ]]> #{endTime}
+        </if>
+        <if test="comId != null and comId !=''">
+            and  a.COMID  = #{comId}
+        </if>
+        GROUP BY
+        a.UNITID,
+        b.type,
+        DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d %H')
+        ) b
+        GROUP BY
+        b.type,
+        b.UNITID
+        ) c ,
+        (
+        SELECT
+        e.UNIT_ID,
+        f.ENERGY_TYPE,
+        e.ENTERPRISE,
+        e. LOCAL,
+        e.INDUSTRY
+        FROM
+        t_emc_index_record e
+        LEFT JOIN t_emc_index_type f ON e.TYPE_ID = f.ID
+        WHERE
+        e.INDEX_TIME = (
+        SELECT
+        max(INDEX_TIME)
+        FROM
+        t_emc_index_record
+        WHERE
+        UNIT_ID = e.UNIT_ID
+        AND TYPE_ID = e.TYPE_ID
+        GROUP BY
+        UNIT_ID,
+        TYPE_ID
+        )
+        <if test="comId != null and comId !=''">
+            and  e.COM_ID  = #{comId}
+        </if>
+        group by f.ENERGY_TYPE,e.UNIT_ID
+        ) d
+        where c.type = d.ENERGY_TYPE
+        AND c.unitid = d.UNIT_ID
+        and c.m >= d.ENTERPRISE
+    </select>
+
+    <!--获取报警详情-->
+    <select id="getAlarmsDetail" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+            aa.ENTERPRISE as enterprise,
+            aa.INDUSTRY as industry,
+            aa.LOCAL as local,
+            aa.m as num,
+            aa.type as type,
+            bb.UNITNAME as unitname
+        FROM
+        (SELECT
+        SUM(case when (c.m <![CDATA[ >= ]]>  d.ENTERPRISE and c.m <![CDATA[ < ]]> d.LOCAL) then 1 else 0 end ) mild,
+        SUM(case when (c.m <![CDATA[ >= ]]>  d.LOCAL and c.m <![CDATA[ < ]]> d.INDUSTRY) then 1 else 0 end ) moderate,
+        SUM(case when c.m <![CDATA[ >= ]]>  d.INDUSTRY then 1 else 0 end ) serious,
+        count(1) total
+        FROM
+        (
+        SELECT
+        b.type,
+        b.unitid,
+        <choose>
+            <when test="0 == days">
+                sum(b.dosage) / (avg(b.area)) m
+            </when>
+            <otherwise>
+                sum(b.dosage) / (avg(b.area)*#{days})m
+            </otherwise>
+        </choose>
+        FROM
+        (
+        SELECT
+        a.UNITID unitid,
+        b.type type,
+        DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d %H') time,
+        avg(a.AREA) area,
+        avg(a.DOSAGE) dosage
+        FROM
+        t_emc_final_data_hour_tj a
+        LEFT JOIN t_emc_energy_type b ON a.TYPEID = b.id
+        WHERE 1=1
+        <if test="startTime != null and startTime !=''">
+            AND a.DOSAGE_TIME <![CDATA[ >= ]]> #{startTime}
+        </if>
+        <if test="endTime != null and endTime !=''">
+            AND a.DOSAGE_TIME <![CDATA[ <= ]]> #{endTime}
+        </if>
+        <if test="comId != null and comId !=''">
+            and  a.COMID  = #{comId}
+        </if>
+        GROUP BY
+        a.UNITID,
+        b.type,
+        DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d %H')
+        ) b
+        GROUP BY
+        b.type,
+        b.UNITID
+        ) c ,
+        (
+        SELECT
+        e.UNIT_ID,
+        f.ENERGY_TYPE,
+        e.ENTERPRISE,
+        e. LOCAL,
+        e.INDUSTRY
+        FROM
+        t_emc_index_record e
+        LEFT JOIN t_emc_index_type f ON e.TYPE_ID = f.ID
+        WHERE
+        e.INDEX_TIME = (
+        SELECT
+        max(INDEX_TIME)
+        FROM
+        t_emc_index_record
+        WHERE
+        UNIT_ID = e.UNIT_ID
+        AND TYPE_ID = e.TYPE_ID
+        GROUP BY
+        UNIT_ID,
+        TYPE_ID
+        )
+        <if test="comId != null and comId !=''">
+            and  e.COM_ID  = #{comId}
+        </if>
+        group by f.ENERGY_TYPE,e.UNIT_ID
+        ) d
+        where c.type = d.ENERGY_TYPE
+        AND c.unitid = d.UNIT_ID
+        and c.m >= d.ENTERPRISE) aa
+        LEFT JOIN v_emc_unit bb ON aa.unitid = bb.UNITID;
+    </select>
+
+    <select id="getWorkAlarmTotal" parameterType="java.util.Map" resultType="java.lang.Double">
+        SELECT count(*) FROM (SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE,v.COMID
+        FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+        WHERE o.ID=v.ORGID AND COMID=#{comId}
+        ) a ,
+        t_emc_alarm_config c WHERE c.COM_ID=a.COMID AND c.UNIT_ID = a.UNITID AND c.UNIT_TYPE = a.UNITTYPE
+        AND c.ISENABLE = 0
+    </select>
+    <select id="getWorkAlarmNum" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+        sum(case when s.LEVEL= 0 then s.num else 0 end) level1,
+        sum(case when s.LEVEL= 1 then s.num else 0 end) level2,
+        sum(case when s.LEVEL= 2 then s.num else 0 end) level3,
+        sum(case when s.LEVEL= 3 then s.num else 0 end) level4
+        FROM (
+        SELECT COUNT(r.id) num,c.ALARM_LEVEL LEVEL FROM (SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE,v.COMID
+        FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+        WHERE o.ID=v.ORGID AND COMID=#{comId}
+
+        ) a ,
+        t_emc_alarm_config c,t_emc_alarm_record r WHERE c.COM_ID=a.COMID AND c.UNIT_ID = a.UNITID AND c.UNIT_TYPE = a.UNITTYPE
+        AND c.ISENABLE = 0 AND r.CONFIG_ID = c.ID AND r.END_TIME IS NULL
+        GROUP BY c.ALARM_LEVEL) s
+    </select>
+    <select id="getTempAlarmTotal" parameterType="java.util.Map" resultType="java.lang.Double">
+        SELECT count(*) FROM (SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE,v.COMID
+        FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+        WHERE o.ID=v.ORGID AND COMID=#{comId}
+
+        ) a ,
+        t_emc_temperature_tj t,t_emc_alarm_config_temp c
+        WHERE t.COM_ID = a.COMID AND t.STATION_NAME = a.UNITNAME
+        AND c.COM_ID =a.COMID AND c.UNIT_ID = a.UNITID
+        AND c.UNIT_TYPE = a.UNITTYPE AND c.ISENABLE = '0'
+        AND  t.REDE_TIME <![CDATA[ >= ]]> #{startTime} AND t.REDE_TIME <![CDATA[ <= ]]> #{endTime}
+    </select>
+    <select id="getTempAlarmNum" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT sum(c.MINTEMP>t.TEMP) min,sum(t.TEMP>c.MAXTEMP) max
+        FROM (SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE,v.COMID
+        FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+        WHERE o.ID=v.ORGID AND COMID=#{comId}
+
+        ) a ,
+        t_emc_temperature_tj t,t_emc_alarm_config_temp c
+        WHERE t.COM_ID = a.COMID AND t.STATION_NAME = a.UNITNAME
+        AND c.COM_ID =a.COMID AND c.UNIT_ID = a.UNITID
+        AND c.UNIT_TYPE = a.UNITTYPE AND c.ISENABLE = '0'
+        AND  t.REDE_TIME <![CDATA[ >= ]]> #{startTime} AND t.REDE_TIME <![CDATA[ <= ]]> #{endTime}
+        AND (c.MINTEMP>t.TEMP OR t.TEMP>c.MAXTEMP)
+    </select>
+</mapper>

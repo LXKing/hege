@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<decorators defaultdir="/WEB-INF/layouts/">
+    <excludes>
+        <!--跳过静态资源-->
+        <pattern>/static/*</pattern>
+        <pattern>/script/*</pattern>
+    </excludes>
+
+    <!--默认的装饰器-->
+    <decorator name="default" page="default.jsp"/>
+    <!--登录的装饰器-->
+    <decorator name="login" page="login.jsp"/>
+    <!--主要的装饰器-->
+    <decorator name="main" page="main.jsp"/>
+    <!--带有回到顶部的装饰器-->
+    <decorator name="main_top" page="main_top.jsp"/>
+    <!--三级页面装饰器-->
+    <decorator name="main_third" page="main_third.jsp"/>
+    <!--后台-->
+    <decorator name="system" page="system.jsp"/>
+    <!--项目调度-->
+    <decorator name="process" page="process.jsp"/>
+
+    <!--三级页面分公司装饰器-->
+    <decorator name="main_third_fgs" page="main_third_fgs.jsp"/>
+
+    <!--健康指数装饰器-->
+    <decorator name="health" page="health.jsp"/>
+
+</decorators>

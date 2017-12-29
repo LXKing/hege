@@ -1,0 +1,1114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huak.home.dao.thiredpage.ThiredpageEnergyDao" >
+
+    <sql id="between_and">
+        BETWEEN
+        <choose>
+            <when test="startTime!=null and startTime!=''">
+                #{startTime,jdbcType=VARCHAR}
+            </when>
+            <otherwise>
+                SUBDATE(CURDATE(), INTERVAL 5 DAY)
+            </otherwise>
+        </choose>
+        AND
+        <choose>
+            <when test="endTime!=null and endTime!=''">
+                #{endTime,jdbcType=VARCHAR}
+            </when>
+            <otherwise>
+                CURDATE()
+            </otherwise>
+        </choose>
+    </sql>
+
+    <!-- 能耗子页面，能耗曲线，能源流相关数据查询开始 -->
+    <!-- 查询今年的集团能耗 -->
+    <!-- 查询条件map内容：{orgId=38, feedType=2, startTime=2016-11-15, endTime=2017-06-15, orgType=} -->
+    <sql id="cur_last_time">
+        <choose>
+            <when test="startTime!=null and startTime!=''">
+                AND (DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+            </when>
+            <otherwise>
+                AND (DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') <![CDATA[>=]]> SUBDATE(CURDATE(), INTERVAL 5 DAY)
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="endTime!=null and endTime!=''">
+                AND DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') <![CDATA[<=]]> #{endTime,jdbcType=VARCHAR})
+            </when>
+            <otherwise>
+                AND DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') <![CDATA[<=]]> CURDATE())
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="startTime!=null and startTime!=''">
+                OR (DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') <![CDATA[>=]]> SUBDATE(#{startTime,jdbcType=VARCHAR}, INTERVAL 1 YEAR)
+            </when>
+            <otherwise>
+                OR (DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') <![CDATA[>=]]> SUBDATE(SUBDATE(CURDATE(), INTERVAL 5 DAY), INTERVAL 1 YEAR)
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="endTime!=null and endTime!=''">
+                AND DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') <![CDATA[<=]]> SUBDATE(#{endTime,jdbcType=VARCHAR}, INTERVAL 1 YEAR))
+            </when>
+            <otherwise>
+                AND DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') <![CDATA[<=]]> SUBDATE(CURDATE(), INTERVAL 1 YEAR))
+            </otherwise>
+        </choose>
+    </sql>
+
+   <!--三级页面-源、网、站、线、户的各个能源类型的能耗趋势图-->
+    <select id="getDatas" resultType="java.util.Map" parameterType="java.util.Map">
+
+        SELECT
+        '0'as curyear,
+        aa.time,
+        max(case when aa.UNITTYPE = '1' then aa.DOSAGE else 0 end ) chart1,
+        max(case when aa.UNITTYPE = '2' then aa.DOSAGE else 0 end ) chart2,
+        max(case when aa.UNITTYPE = '3' then aa.DOSAGE else 0 end ) chart3,
+        max(case when aa.UNITTYPE = '4' then aa.DOSAGE else 0 end ) chart4,
+        max(case when aa.UNITTYPE = '5' then aa.DOSAGE else 0 end ) chart5 from
+        (select b.UNITTYPE,DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d') time,SUM(a.DOSAGE) DOSAGE
+        FROM
+        ${tableName}   a ,
+        (
+            select v.UNITID,v.UNITTYPE,v.COMID from (select UNITID,UNITTYPE,COMID,ORGID FROM v_emc_unit WHERE 1=1
+                <if test=" orgType != null and orgType != ''">
+                    and  UNITTYPE =  #{orgType,jdbcType=VARCHAR}
+                </if>
+                <if test="feedType!= null and feedType != ''">
+                    and  HEAT_TYPE =  #{feedType,jdbcType=VARCHAR}
+                </if>
+                <if test="comId != null and comId !=''">
+                    and  COMID =#{comId}
+                </if>
+           ) v where  EXISTS(
+                SELECT
+                1
+                FROM
+                t_emc_org
+                WHERE
+                id = v.ORGID
+                <if test="orgId != null and orgId !=''">
+                   and  FIND_IN_SET(id,emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR}))
+                </if>
+            )
+        ) b,
+        t_emc_energy_type c
+        where
+        a.UNITID = b.UNITID
+        AND a.COMID = b.COMID
+        and c.id = a.TYPEID
+        <if test="startTime!=null and startTime!=''">
+            and a.DOSAGE_TIME <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and a.DOSAGE_TIME <![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+        </if>
+        <if test="energytype != null and energytype !=''">
+            and c.TYPE = #{energytype,jdbcType=VARCHAR}
+        </if>
+        <if test="comId != null and comId !=''">
+            and a.COMID = #{comId,jdbcType=VARCHAR}
+        </if>
+        group by DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d'),b.UNITTYPE) aa GROUP BY aa.time
+        union all
+        (SELECT
+        '1' as curyear,
+        aa.time,
+        max(case when aa.UNITTYPE = '1' then aa.DOSAGE else 0 end ) chart1,
+        max(case when aa.UNITTYPE = '2' then aa.DOSAGE else 0 end ) chart2,
+        max(case when aa.UNITTYPE = '3' then aa.DOSAGE else 0 end ) chart3,
+        max(case when aa.UNITTYPE = '4' then aa.DOSAGE else 0 end ) chart4,
+        max(case when aa.UNITTYPE = '5' then aa.DOSAGE else 0 end ) chart5 from
+        (select b.UNITTYPE,DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d') time,SUM(a.DOSAGE) DOSAGE
+        FROM
+        ${tableName}   a ,
+        (
+        select v.UNITID,v.UNITTYPE,v.COMID from (select UNITID,UNITTYPE,COMID,ORGID FROM v_emc_unit WHERE 1=1
+        <if test="orgType!= null and orgType != ''">
+            and  UNITTYPE =  #{orgType,jdbcType=VARCHAR}
+        </if>
+        <if test="feedType!= null and feedType != ''">
+            and  HEAT_TYPE =  #{feedType,jdbcType=VARCHAR}
+        </if>
+        <if test="comId != null and comId !=''">
+            and  COMID =#{comId}
+        </if>
+        ) v where  EXISTS(
+        SELECT
+        1
+        FROM
+        t_emc_org
+        WHERE
+        id = v.ORGID
+        <if test="orgId != null and orgId !=''">
+            and  FIND_IN_SET(id,emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR}))
+        </if>
+        )
+        ) b,
+        t_emc_energy_type c
+        where
+        a.UNITID = b.UNITID
+        AND a.COMID = b.COMID
+        and c.id = a.TYPEID
+        <if test="startTimeTq!=null and startTimeTq!=''">
+            and a.DOSAGE_TIME <![CDATA[>=]]> #{startTimeTq,jdbcType=VARCHAR}
+        </if>
+        <if test="endTimeTq!=null and endTimeTq!=''">
+            and a.DOSAGE_TIME <![CDATA[<=]]> #{endTimeTq,jdbcType=VARCHAR}
+        </if>
+        <if test="energytype != null and energytype !=''">
+            and c.TYPE = #{energytype,jdbcType=VARCHAR}
+        </if>
+        <if test="comId != null and comId !=''">
+            and a.COMID = #{comId,jdbcType=VARCHAR}
+        </if>
+        group by DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d'),b.UNITTYPE) aa GROUP BY aa.time)
+
+    </select>
+
+    <!--三级页面-集团的各个能源类型的能耗趋势图-->
+    <select id="getDatasAll" resultType="java.util.Map" parameterType="java.util.Map">
+
+        SELECT
+        '0'as curyear,
+        aa.time,
+       sum(aa.DOSAGE) num,sum(aa.BM_DOSAGE) bm_num from
+        (select b.UNITTYPE,DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d') time,SUM(a.DOSAGE) DOSAGE,SUM(a.DOSAGE*a.COAL_COEF) BM_DOSAGE
+        FROM
+        ${tableName}   a ,
+        (
+        select v.UNITID,v.UNITTYPE,v.COMID from (select UNITID,UNITTYPE,COMID,ORGID FROM v_emc_unit WHERE 1=1
+        <if test=" orgType != null and orgType != ''">
+            and  UNITTYPE =  #{orgType,jdbcType=VARCHAR}
+        </if>
+        <if test="feedType!= null and feedType != ''">
+            and  HEAT_TYPE =  #{feedType,jdbcType=VARCHAR}
+        </if>
+        <if test="comId != null and comId !=''">
+            and  COMID =#{comId}
+        </if>
+        ) v where  EXISTS(
+        SELECT
+        1
+        FROM
+        t_emc_org
+        WHERE
+        id = v.ORGID
+        <if test="orgId != null and orgId !=''">
+            and  FIND_IN_SET(id,emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR}))
+        </if>
+        )
+        ) b,
+        (select id,type from t_emc_energy_type where 1=1
+        <choose>
+            <when test="energytype != null and energytype !=''">
+                and TYPE = #{energytype,jdbcType=VARCHAR}
+            </when>
+            <otherwise>
+                and TYPE <![CDATA[ <> ]]> '4'
+            </otherwise>
+        </choose>
+        ) c
+        where
+        a.UNITID = b.UNITID
+        AND a.COMID = b.COMID
+        and c.id = a.TYPEID
+        <if test="startTime!=null and startTime!=''">
+            and a.DOSAGE_TIME <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and a.DOSAGE_TIME <![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+        </if>
+
+        <if test="comId != null and comId !=''">
+            and a.COMID = #{comId,jdbcType=VARCHAR}
+        </if>
+        group by DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d'),b.UNITTYPE) aa GROUP BY aa.time
+        union all
+        (SELECT
+        '1' as curyear,
+        aa.time,
+        sum(aa.DOSAGE) num,sum(aa.BM_DOSAGE) bm_num  from
+        (select b.UNITTYPE,DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d') time,SUM(a.DOSAGE) DOSAGE,SUM(a.DOSAGE*a.COAL_COEF) BM_DOSAGE
+        FROM
+        ${tableName}   a ,
+        (
+        select v.UNITID,v.UNITTYPE,v.COMID from (select UNITID,UNITTYPE,COMID,ORGID FROM v_emc_unit WHERE 1=1
+        <if test="orgType!= null and orgType != ''">
+            and  UNITTYPE =  #{orgType,jdbcType=VARCHAR}
+        </if>
+        <if test="feedType!= null and feedType != ''">
+            and  HEAT_TYPE =  #{feedType,jdbcType=VARCHAR}
+        </if>
+        <if test="comId != null and comId !=''">
+            and  COMID =#{comId}
+        </if>
+        ) v where  EXISTS(
+        SELECT
+        1
+        FROM
+        t_emc_org
+        WHERE
+        id = v.ORGID
+        <if test="orgId != null and orgId !=''">
+            and  FIND_IN_SET(id,emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR}))
+        </if>
+        )
+        ) b,
+        (select id,type from t_emc_energy_type WHERE 1=1
+        <choose>
+            <when test="energytype != null and energytype !=''">
+                and TYPE = #{energytype,jdbcType=VARCHAR}
+            </when>
+            <otherwise>
+                and TYPE <![CDATA[ <> ]]> '4'
+            </otherwise>
+        </choose>
+        ) c
+        where
+        a.UNITID = b.UNITID
+        AND a.COMID = b.COMID
+        and c.id = a.TYPEID
+        <if test="startTimeTq!=null and startTimeTq!=''">
+            and a.DOSAGE_TIME <![CDATA[>=]]> #{startTimeTq,jdbcType=VARCHAR}
+        </if>
+        <if test="endTimeTq!=null and endTimeTq!=''">
+            and a.DOSAGE_TIME <![CDATA[<=]]> #{endTimeTq,jdbcType=VARCHAR}
+        </if>
+        <if test="comId != null and comId !=''">
+            and a.COMID = #{comId,jdbcType=VARCHAR}
+        </if>
+        group by DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d'),b.UNITTYPE) aa GROUP BY aa.time)
+
+    </select>
+
+     <select id="selectassessment" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT round(SUM(B.dosage),2) dosage, A.UNITID,A.unitname as unitname FROM (
+
+         <if test="orgType!= null and orgId !='' and  orgType == 3">
+         SELECT vu.UNITID,b.STATION_NAME as unitname FROM v_emc_unit vu,
+         t_emc_unit_station b
+         </if>
+         <if test="orgType!= null and orgId !='' and  orgType == 1">
+             SELECT vu.UNITID,b.FEED_NAME as unitname FROM v_emc_unit vu,
+             t_emc_unit_feed b
+         </if>
+        WHERE 1 = 1 and vu.UNITID = b.ID
+         <if test="orgId != null and orgId !=''">
+             and   EXISTS (select id from t_emc_org where
+             FIND_IN_SET(id,emc_func_org_getchilds(#{orgId})) and id = vu.ORGID)
+         </if>
+         <if test="feedType != null and feedType !=''">
+             and  vu.HEAT_TYPE =#{feedType}
+         </if>
+         <if test="comId != null and comId !=''"> and  vu.COMID =#{comId} </if>
+         <if test="orgType != null and orgType !=''">
+             and  vu.UNITTYPE  = #{orgType}
+         </if>
+        GROUP BY vu.UNITID , <if test="orgType!= null and orgId !='' and  orgType == 3">b.STATION_NAME</if>
+         <if test="orgType!= null and orgId !='' and  orgType == 1">b.FEED_NAME</if>) A,
+        (
+        SELECT h.UNITID AS unitid,sum(h.DOSAGE) dosage, et.type AS energytype,
+        DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') AS yeardate
+        FROM  (select UNITID,DOSAGE,DOSAGE_TIME,TYPEID from ${tableName} where 1=1
+             <if test="comId != null and comId !=''">
+                 and  COMID =#{comId}
+             </if>
+             <if test="startTime!=null and startTime!=''">
+                 and DOSAGE_TIME <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+             </if>
+             <if test="endTime!=null and endTime!=''">
+                 and DOSAGE_TIME <![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+             </if>
+         )h left join
+         (select id,type from t_emc_energy_type where 1=1 <if test="energytype != null and energytype !=''"> and  type =#{energytype} </if>) et on h.TYPEID = et.id
+        GROUP BY unitid, et.type, yeardate
+        ) B where A.UNITID = B.unitid and B.energytype is not null
+        GROUP BY A.UNITID order by SUM(B.dosage) DESC
+     </select>
+
+    <select id="getTables" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        d.UNITNAME as unitName,
+        d.UNITTYPE as unitType,
+        <foreach collection="currentYear" index="index" item="tag" open=""  separator="," close="">
+            MAX((CASE d.DOSAGE_TIME WHEN #{tag} THEN d.DOSAGE ELSE 0 END)) c${index}
+        </foreach>
+        ,
+        <foreach collection="lastYear" index="i" item="val" open=""  separator="," close="">
+            MAX((CASE d.DOSAGE_TIME WHEN #{val} THEN d.DOSAGE ELSE 0 END)) l${i}
+        </foreach>
+        ,
+        <foreach collection="currentYear" index="i" item="val" open=""  separator="," close="">
+            0 p${i}
+        </foreach>
+        FROM (select a.unitid,a.unittype,a.unitname,m.DOSAGE as DOSAGE,m.DOSAGE_TIME as DOSAGE_TIME ,m.BM  FROM
+        (select UNITID,UNITNAME,UNITTYPE from v_emc_unit where 1=1
+        <if test="feedType != null and feedType !=''">
+            and  HEAT_TYPE =#{feedType}
+        </if>
+        <if test="orgType != null and orgType!=''">UNITTYPE = #{orgType}</if>
+        <if test="orgId != null and orgId !=''">
+          and FIND_IN_SET(ORGID,emc_func_org_getchilds(#{orgId}))
+        </if>
+        )a left join
+        ( SELECT fdh.UNITID,SUM(fdh.DOSAGE) DOSAGE,SUM(fdh.DOSAGE*fdh.COAL_COEF) BM,DATE_FORMAT(DOSAGE_TIME,'%Y-%m-%d') DOSAGE_TIME
+        FROM ${tableName}  fdh,t_emc_energy_type eet  WHERE 1=1
+        <if test="comId != null and comId !=''">
+            AND fdh.COMID= #{comId}
+        </if>
+        <if test="energytype != null and energytype !=''">
+            and eet.TYPE = #{energytype,jdbcType=VARCHAR}
+        </if>
+
+        <if test="startTime!=null and startTime!=''">
+            and fdh.DOSAGE_TIME <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and fdh.DOSAGE_TIME <![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+        </if>
+        and fdh.TYPEID = eet.ID
+        GROUP BY fdh.UNITID,DATE_FORMAT(DOSAGE_TIME,'%Y-%m-%d')) m on a.unitid = m.unitid
+        union all
+        (select a.unitid,a.unittype,a.unitname,m.DOSAGE as DOSAGE,m.DOSAGE_TIME as DOSAGE_TIME ,m.BM  FROM
+        (select UNITID,UNITNAME,UNITTYPE from v_emc_unit where 1=1
+        <if test="feedType != null and feedType !=''">
+            and  HEAT_TYPE =#{feedType}
+        </if>
+        <if test="orgType != null and orgType!=''">HEAT_TYPE = #{orgType}</if>
+        <if test="orgId != null and orgId !=''">
+            and FIND_IN_SET(ORGID,emc_func_org_getchilds(#{orgId}))
+        </if>
+        )a left join
+        (SELECT fdh.UNITID,SUM(fdh.DOSAGE) DOSAGE,SUM(fdh.DOSAGE*fdh.COAL_COEF) BM,DATE_FORMAT(DOSAGE_TIME,'%Y-%m-%d')
+        DOSAGE_TIME
+        FROM ${tableName}  fdh,t_emc_energy_type eet WHERE fdh.TYPEID = eet.ID
+            <if test="comId != null and comId !=''">AND fdh.COMID= #{comId} </if>
+            <if test="energytype != null and energytype !=''">and eet.TYPE = #{energytype,jdbcType=VARCHAR}</if>
+
+            <if test="startTimeTq!=null and startTimeTq!=''">
+                and fdh.DOSAGE_TIME <![CDATA[>=]]> #{startTimeTq,jdbcType=VARCHAR}
+            </if>
+            <if test="endTimeTq!=null and endTimeTq!=''">
+                and fdh.DOSAGE_TIME <![CDATA[<=]]> #{endTimeTq,jdbcType=VARCHAR}
+            </if>
+            GROUP BY fdh.UNITID,DATE_FORMAT(DOSAGE_TIME,'%Y-%m-%d'))m on a.unitid = m.unitid
+        )
+
+        ) d   GROUP BY d.UNITID  order by d.UNITTYPE,d.UNITNAME
+
+    </select>
+
+    <select id="getTotal" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        (CASE WHEN M.UNITTYPE = '1' THEN '热源'
+        WHEN M.UNITTYPE = '2' THEN '管网'
+        WHEN M.UNITTYPE = '3' THEN '换热站'
+        WHEN M.UNITTYPE = '4' THEN '管线'
+        WHEN M.UNITTYPE = '5' THEN '民户' else '' end) as unitName,
+        M.UNITTYPE as unitType,
+        <foreach collection="currentYear" index="index" item="tag" open=""  separator="," close="">
+            MAX((CASE M.DOSAGE_TIME WHEN #{tag} THEN M.DOSAGE ELSE 0 END)) c${index}
+        </foreach>
+        ,
+        <foreach collection="lastYear" index="i" item="val" open=""  separator="," close="">
+            MAX((CASE M.DOSAGE_TIME WHEN #{val} THEN M.DOSAGE ELSE 0 END)) l${i}
+        </foreach>
+        ,
+        <foreach collection="lastYear" index="i" item="val" open=""  separator="," close="">
+            0 p${i}
+        </foreach>
+         FROM (SELECT
+        ev.UNITTYPE,
+        SUM(fdh.DOSAGE) DOSAGE,
+        SUM(fdh.DOSAGE * fdh.COAL_COEF) BM,
+        DATE_FORMAT(DOSAGE_TIME, '%Y-%m-%d') DOSAGE_TIME
+        FROM
+        ${tableName}    fdh,
+        t_emc_energy_type eet,
+        (select UNITID,UNITTYPE,COMID from v_emc_unit where 1=1
+        <if test="feedType != null and feedType !=''">
+            and  HEAT_TYPE =#{feedType}
+        </if>
+        <if test="orgId != null and orgId != ''">
+            and EXISTS (select id from t_emc_org where
+            FIND_IN_SET(id,emc_func_org_getchilds(#{orgId})) and id = ORGID)
+        </if>
+        ) ev
+        WHERE
+        fdh.TYPEID = eet.ID
+        and fdh.UNITID = ev.UNITID
+        and fdh.COMID = ev.COMID
+        <if test="comId != null and comId !=''">
+            AND fdh.COMID= #{comId}
+        </if>
+        <if test="energytype != null and energytype !=''">
+            and eet.TYPE = #{energytype,jdbcType=VARCHAR}
+        </if>
+
+        <if test="startTime!=null and startTime!=''">
+            and fdh.DOSAGE_TIME <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and fdh.DOSAGE_TIME <![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        ev.UNITTYPE,
+        DATE_FORMAT(DOSAGE_TIME, '%Y-%m-%d')
+
+        UNION ALL
+        (SELECT
+        ev.UNITTYPE,
+        SUM(fdh.DOSAGE) DOSAGE,
+        SUM(fdh.DOSAGE * fdh.COAL_COEF) BM,
+        DATE_FORMAT(DOSAGE_TIME, '%Y-%m-%d') DOSAGE_TIME
+        FROM
+        ${tableName}    fdh,
+        t_emc_energy_type eet,
+        (select UNITID,UNITTYPE,COMID from v_emc_unit where 1=1
+        <if test="feedType != null and feedType !=''">
+            and  HEAT_TYPE =#{feedType}
+        </if>
+        <if test="orgId != null and orgId != ''">
+            and EXISTS (select id from t_emc_org where
+            FIND_IN_SET(id,emc_func_org_getchilds(#{orgId})) and id = ORGID)
+        </if>
+         ) ev
+        WHERE
+        fdh.TYPEID = eet.ID
+        and fdh.UNITID = ev.UNITID
+        and fdh.COMID = ev.COMID
+        <if test="comId != null and comId !=''">
+            AND fdh.COMID= #{comId}
+        </if>
+        <if test="energytype != null and energytype !=''">
+            and eet.TYPE = #{energytype,jdbcType=VARCHAR}
+        </if>
+
+        <if test="startTimeTq!=null and startTimeTq!=''">
+            and fdh.DOSAGE_TIME <![CDATA[>=]]> #{startTimeTq,jdbcType=VARCHAR}
+        </if>
+        <if test="endTimeTq!=null and endTimeTq!=''">
+            and fdh.DOSAGE_TIME <![CDATA[<=]]> #{endTimeTq,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        ev.UNITTYPE,
+        DATE_FORMAT(DOSAGE_TIME, '%Y-%m-%d')))M
+
+        group by M.UNITTYPE
+
+    </select>
+
+    <!--三级页面-用能单位-各个能源类型计划、同期对比图-->
+    <select id="getUnitsEnergyDetail"  resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        b.unitname as unitname,
+        ( CASE WHEN b.DOSAGE IS NULL THEN 0 ELSE b.DOSAGE END) AS jn_num,
+        ( CASE WHEN q.DOSAGE IS NULL THEN 0 ELSE q.DOSAGE END) AS qn_num,
+        ( CASE WHEN b.plan IS NULL THEN 0 ELSE b.plan END ) AS jn_plan,
+        ( CASE WHEN q.plan IS NULL THEN 0 ELSE q.plan END ) AS qn_plan,
+        ROUND((case q.DOSAGE when null then 0 when 0 then 0 else (b.DOSAGE -q.DOSAGE)/q.DOSAGE end),2) as tqb
+        FROM
+        (
+        SELECT
+        a.UNITID,
+        a.unitname,
+        IFNULL(m.DOSAGE,0)  AS DOSAGE,
+        m.BM,
+        m.plan
+        FROM
+        (
+        SELECT
+        UNITID,
+        UNITNAME,
+        UNITTYPE
+        FROM
+        v_emc_unit
+        WHERE 1=1
+        <if test="feedType != null and feedType !=''">
+            and  HEAT_TYPE =#{feedType}
+        </if>
+        <if test="orgType != null and orgType !=''">
+            and  UNITTYPE =#{orgType}
+        </if>
+        <if test="orgId != null and orgId != ''">
+            AND FIND_IN_SET(  ORGID, emc_func_org_getchilds (#{orgId}))
+        </if>
+        ) a
+        LEFT JOIN (
+        SELECT
+        fdh.UNITID,
+        SUM(fdh.DOSAGE) DOSAGE,
+        SUM(fdh.DOSAGE * fdh.COAL_COEF) BM,
+        sum(0) plan
+        FROM
+         ${tableName} fdh,
+        t_emc_energy_type eet
+        WHERE
+        fdh.TYPEID = eet.ID
+        <if test="comId != null and comId !=''">
+            AND fdh.COMID= #{comId}
+        </if>
+        <if test="energytype != null and energytype !=''">
+            and eet.TYPE = #{energytype,jdbcType=VARCHAR}
+        </if>
+
+        <if test="startTime!=null and startTime!=''">
+            and fdh.DOSAGE_TIME <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and fdh.DOSAGE_TIME <![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        fdh.UNITID
+        ) m ON a.unitid = m.unitid
+        ) b
+        LEFT JOIN (
+        SELECT
+        a.UNITID,
+        a.unitname,
+        IFNULL(m.DOSAGE,0) AS DOSAGE,
+        m.BM,
+        m.plan
+        FROM
+        (
+        SELECT
+        UNITID,
+        UNITNAME,
+        UNITTYPE
+        FROM
+        v_emc_unit
+        WHERE 1=1
+        <if test="orgType != null and orgType !=''">
+            and  UNITTYPE =#{orgType}
+        </if>
+        <if test="feedType != null and feedType !=''">
+            and  HEAT_TYPE =#{feedType}
+        </if>
+        <if test="orgId != null and orgId != ''">
+            AND FIND_IN_SET(  ORGID, emc_func_org_getchilds (#{orgId}))
+        </if>
+        ) a
+        LEFT JOIN (
+        SELECT
+        fdh.UNITID,
+        SUM(fdh.DOSAGE) DOSAGE,
+        SUM(fdh.DOSAGE * fdh.COAL_COEF) BM,
+        sum(0) plan
+        FROM
+         ${tableName} fdh,
+        t_emc_energy_type eet
+        WHERE
+        fdh.TYPEID = eet.ID
+        <if test="comId != null and comId !=''">
+            AND fdh.COMID= #{comId}
+        </if>
+        <if test="energytype != null and energytype !=''">
+            and eet.TYPE = #{energytype,jdbcType=VARCHAR}
+        </if>
+
+        <if test="startTimeTq!=null and startTimeTq!=''">
+            and fdh.DOSAGE_TIME <![CDATA[>=]]> #{startTimeTq,jdbcType=VARCHAR}
+        </if>
+        <if test="endTimeTq!=null and endTimeTq!=''">
+            and fdh.DOSAGE_TIME <![CDATA[<=]]> #{endTimeTq,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        fdh.UNITID
+        ) m ON a.unitid = m.unitid
+        ) q ON b.UNITID = q.UNITID order by  unitname
+        
+    </select>
+
+    <!--三级页面-用能单位-各个能源类型的排名-->
+    <select id="getUnitsAssessment"  resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        b.unitname as unitname,
+        ( CASE WHEN b.DOSAGE IS NULL THEN 0 ELSE b.DOSAGE END) AS jn_num,
+        ( CASE WHEN q.DOSAGE IS NULL THEN 0 ELSE q.DOSAGE END) AS qn_num,
+        ( CASE WHEN b.plan IS NULL THEN 0 ELSE b.plan END ) AS jn_plan,
+        ( CASE WHEN q.plan IS NULL THEN 0 ELSE q.plan END ) AS qn_plan,
+        (case when q.DOSAGE is null then 0 else ROUND((b.DOSAGE -q.DOSAGE)/q.DOSAGE) end) as tqb
+        FROM
+        (
+        SELECT
+        a.UNITID,
+        a.unitname,
+        m.DOSAGE AS DOSAGE,
+        m.BM,
+        m.plan
+        FROM
+        (
+        SELECT
+        UNITID,
+        UNITNAME,
+        UNITTYPE
+        FROM
+        v_emc_unit
+        WHERE 1=1
+        <if test="feedType != null and feedType !=''">
+            and  HEAT_TYPE =#{feedType}
+        </if>
+        <if test="orgType != null and orgType !=''">
+            and  UNITTYPE =#{orgType}
+        </if>
+        <if test="orgId != null and orgId != ''">
+            AND FIND_IN_SET(  ORGID, emc_func_org_getchilds (#{orgId}))
+        </if>
+        ) a
+        LEFT JOIN (
+        SELECT
+        fdh.UNITID,
+        SUM(fdh.DOSAGE) DOSAGE,
+        SUM(fdh.DOSAGE * fdh.COAL_COEF) BM,
+        sum(0) plan
+        FROM
+         ${tableName} fdh,
+        t_emc_energy_type eet
+        WHERE
+        fdh.TYPEID = eet.ID
+        <if test="comId != null and comId !=''">
+            AND fdh.COMID= #{comId}
+        </if>
+        <if test="energytype != null and energytype !=''">
+            and eet.TYPE = #{energytype,jdbcType=VARCHAR}
+        </if>
+
+        <if test="startTime!=null and startTime!=''">
+            and fdh.DOSAGE_TIME <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and fdh.DOSAGE_TIME <![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        fdh.UNITID
+        ) m ON a.unitid = m.unitid
+        ) b
+        LEFT JOIN (
+        SELECT
+        a.UNITID,
+        a.unitname,
+        m.DOSAGE AS DOSAGE,
+        m.BM,
+        m.plan
+        FROM
+        (
+        SELECT
+        UNITID,
+        UNITNAME,
+        UNITTYPE
+        FROM
+        v_emc_unit
+        WHERE 1=1
+        <if test="orgType != null and orgType !=''">
+            and  UNITTYPE =#{orgType}
+        </if>
+        <if test="feedType != null and feedType !=''">
+            and  HEAT_TYPE =#{feedType}
+        </if>
+        <if test="orgId != null and orgId != ''">
+            AND FIND_IN_SET(  ORGID, emc_func_org_getchilds (#{orgId}))
+        </if>
+        ) a
+        LEFT JOIN (
+        SELECT
+        fdh.UNITID,
+        SUM(fdh.DOSAGE) DOSAGE,
+        SUM(fdh.DOSAGE * fdh.COAL_COEF) BM,
+        sum(0) plan
+        FROM
+         ${tableName} fdh,
+        t_emc_energy_type eet
+        WHERE
+        fdh.TYPEID = eet.ID
+        <if test="comId != null and comId !=''">
+            AND fdh.COMID= #{comId}
+        </if>
+        <if test="energytype != null and energytype !=''">
+            and eet.TYPE = #{energytype,jdbcType=VARCHAR}
+        </if>
+
+        <if test="startTimeTq!=null and startTimeTq!=''">
+            and fdh.DOSAGE_TIME <![CDATA[>=]]> #{startTimeTq,jdbcType=VARCHAR}
+        </if>
+        <if test="endTimeTq!=null and endTimeTq!=''">
+            and fdh.DOSAGE_TIME <![CDATA[<=]]> #{endTimeTq,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        fdh.UNITID
+        ) m ON a.unitid = m.unitid
+        ) q ON b.UNITID = q.UNITID order by  b.DOSAGE desc
+
+    </select>
+
+    <!--三级页面-集团的各个能源类型的能耗趋势图-->
+    <select id="getUnitAllAssessment" resultType="java.util.Map" parameterType="java.util.Map">
+
+        SELECT
+        aa.time,
+        sum(aa.DOSAGE) num from
+        (select b.UNITTYPE,DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d') time,SUM(a.DOSAGE) DOSAGE
+        FROM
+        ${tableName}   a ,
+        (
+        select v.UNITID,v.UNITTYPE,v.COMID from (select UNITID,UNITTYPE,COMID,ORGID FROM v_emc_unit WHERE 1=1
+        <if test=" orgType != null and orgType != ''">
+            and  UNITTYPE =  #{orgType,jdbcType=VARCHAR}
+        </if>
+        <if test="feedType!= null and feedType != ''">
+            and  HEAT_TYPE =  #{feedType,jdbcType=VARCHAR}
+        </if>
+        <if test="comId != null and comId !=''">
+            and  COMID =#{comId}
+        </if>
+        ) v where  EXISTS(
+        SELECT
+        1
+        FROM
+        t_emc_org
+        WHERE
+        id = v.ORGID
+        <if test="orgId != null and orgId !=''">
+            and  FIND_IN_SET(id,emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR}))
+        </if>
+        )
+        ) b,
+        (select id,type from t_emc_energy_type where 1=1
+        <if test="energytype != null and energytype !=''">
+            and TYPE = #{energytype,jdbcType=VARCHAR}
+        </if>
+        ) c
+        where
+        a.UNITID = b.UNITID
+        AND a.COMID = b.COMID
+        and c.id = a.TYPEID
+        <if test="startTime!=null and startTime!=''">
+            and a.DOSAGE_TIME <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and a.DOSAGE_TIME <![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+        </if>
+
+        <if test="comId != null and comId !=''">
+            and a.COMID = #{comId,jdbcType=VARCHAR}
+        </if>
+        group by DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d'),b.UNITTYPE) aa GROUP BY aa.time
+    </select>
+
+    <!--三级页面-用能单位-表格数据展示-->
+    <select id="getThirdTables" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        v.UNITNAME as unitName,
+        v.UNITTYPE as unitType,
+        IFNULL(bb.coal,0) as c4,IFNULL(bb.whater,0) as c0,IFNULL(bb.electric,0) as c1,IFNULL(bb.gas,0) as c2,IFNULL(bb.heat,0) as c3,IFNULL(bb.loy,0) as c5,
+        IFNULL(bb.whater_plan,0) as p0,IFNULL(bb.electric_plan,0) as p1,IFNULL(bb.gas_plan,0) as p2,IFNULL(bb.heat_plan,0) as p3,IFNULL(bb.coal_plan,0) as p4,IFNULL(bb.loy_plan,0) as p5,
+        IFNULL(cc.coal,0) as l4,IFNULL(cc.whater,0) as l0,IFNULL(cc.electric,0) as l1,IFNULL(cc.gas,0) as l2,IFNULL(cc.heat,0) as l3,IFNULL(cc.loy,0) as l5
+        FROM
+        v_emc_unit v
+        LEFT JOIN(
+        select m.UNITID,
+        max(case m.TYPE when 1 then m.DOSAGE else 0 end) whater,
+        max(case m.TYPE when 2 then m.DOSAGE else 0 end) electric,
+        max(case m.TYPE when 3 then m.DOSAGE else 0 end) gas,
+        max(case m.TYPE when 4 then m.DOSAGE else 0 end) heat,
+        max(case m.TYPE when 5 then m.DOSAGE else 0 end) coal,
+        max(case m.TYPE when 6 then m.DOSAGE else 0 end) loy,
+        max(case m.TYPE when 1 then m.plan else 0 end) whater_plan,
+        max(case m.TYPE when 2 then m.plan else 0 end) electric_plan,
+        max(case m.TYPE when 3 then m.plan else 0 end) gas_plan,
+        max(case m.TYPE when 4 then m.plan else 0 end) heat_plan,
+        max(case m.TYPE when 5 then m.plan else 0 end) coal_plan,
+        max(case m.TYPE when 6 then m.plan else 0 end) loy_plan
+        from (SELECT
+        a.UNITID,
+        b.TYPE,
+        sum(DOSAGE) as DOSAGE,
+        sum(0) as plan
+        FROM
+         ${tableName} a,
+        t_emc_energy_type b
+        where a.TYPEID = b.id
+        <if test="startTime!=null and startTime!=''">
+            and a.DOSAGE_TIME <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and a.DOSAGE_TIME <![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+        </if>
+        <if test="comId != null and comId !=''">
+            and a.COMID= #{comId}
+        </if>
+        <if test="energytype != null and energytype !=''">
+            and b.TYPE = #{energytype,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        a.UNITID,
+        b.TYPE)m group by m.UNITID
+        )bb on v.UNITID = bb.UNITID
+        LEFT JOIN(
+        select m.UNITID,
+        max(case m.TYPE when 1 then m.DOSAGE else 0 end) whater,
+        max(case m.TYPE when 2 then m.DOSAGE else 0 end) electric,
+        max(case m.TYPE when 3 then m.DOSAGE else 0 end) gas,
+        max(case m.TYPE when 4 then m.DOSAGE else 0 end) heat,
+        max(case m.TYPE when 5 then m.DOSAGE else 0 end) coal,
+        max(case m.TYPE when 6 then m.DOSAGE else 0 end) loy,
+        max(case m.TYPE when 1 then m.plan else 0 end) whater_plan,
+        max(case m.TYPE when 2 then m.plan else 0 end) electric_plan,
+        max(case m.TYPE when 3 then m.plan else 0 end) gas_plan,
+        max(case m.TYPE when 4 then m.plan else 0 end) heat_plan,
+        max(case m.TYPE when 5 then m.plan else 0 end) coal_plan,
+        max(case m.TYPE when 6 then m.plan else 0 end) loy_plan
+        from (SELECT
+        a.UNITID,
+        b.TYPE,
+        sum(DOSAGE) as DOSAGE,
+        sum(0) as plan
+        FROM
+         ${tableName} a,
+        t_emc_energy_type b
+        where a.TYPEID = b.id
+        <if test="startTimeTq!=null and startTimeTq!=''">
+            and a.DOSAGE_TIME <![CDATA[>=]]> #{startTimeTq,jdbcType=VARCHAR}
+        </if>
+        <if test="endTimeTq!=null and endTimeTq!=''">
+            and a.DOSAGE_TIME <![CDATA[<=]]> #{endTimeTq,jdbcType=VARCHAR}
+        </if>
+        <if test="comId != null and comId !=''">
+            and a.COMID= #{comId}
+        </if>
+        <if test="energytype != null and energytype !=''">
+            and b.TYPE = #{energytype,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        a.UNITID,
+        b.TYPE)m group by m.UNITID
+        )cc on v.UNITID =cc.UNITID
+        where 1=1
+        <if test="feedType != null and feedType !=''">
+            and  v.HEAT_TYPE =#{feedType}
+        </if>
+        <if test="orgType != null and orgType !=''">
+            and  v.UNITTYPE =#{orgType}
+        </if>
+        <if test="orgId != null and orgId != ''">
+            AND FIND_IN_SET(v.ORGID, emc_func_org_getchilds (#{orgId}))
+        </if>
+        order by  v.UNITNAME
+    </select>
+
+
+    <!--三级页面-用能单位-能源总用量总-->
+    <select id="getThirdTotals" resultType="java.util.Map" parameterType="java.util.Map">
+        select
+        aa.unitType as unitType ,
+        (CASE WHEN aa.UNITTYPE = '1' THEN '热源'
+        WHEN aa.UNITTYPE = '2' THEN '管网'
+        WHEN aa.UNITTYPE = '3' THEN '换热站'
+        WHEN aa.UNITTYPE = '4' THEN '管线'
+        WHEN aa.UNITTYPE = '5' THEN '民户' else '' end) as unitName,
+        aa.w as c0,aa.e as c1,aa.g as c2,aa.h as c3,aa.c as c4,aa.l as c5,
+        IFNULL(b.w1,0) as l0,
+        IFNULL(b.e1,0) as l1,
+        IFNULL(b.g1,0) as l2,
+        IFNULL(b.h1,0) as l3,
+        IFNULL(b.c1,0) as l4,
+        IFNULL(b.l1,0) as l5,
+        aa.w_plan as p0,aa.e_plan as p1,aa.g_plan as p2,aa.h_plan as p3,aa.c_plan p4,aa.l_plan p5
+        from (SELECT m.unitType,
+        max(case m.TYPE when 1 then m.num else 0 end )w,
+        max(case m.TYPE when 2 then m.num else 0 end )e,
+        max(case m.TYPE when 3 then m.num else 0 end )g,
+        max(case m.TYPE when 4 then m.num else 0 end )h,
+        max(case m.TYPE when 5 then m.num else 0 end )c,
+        max(case m.TYPE when 6 then m.num else 0 end )l,
+        max(case m.TYPE when 1 then m.plan else 0 end )w_plan,
+        max(case m.TYPE when 2 then m.plan else 0 end )e_plan,
+        max(case m.TYPE when 3 then m.plan else 0 end )g_plan,
+        max(case m.TYPE when 4 then m.plan else 0 end )h_plan,
+        max(case m.TYPE when 5 then m.plan else 0 end )c_plan,
+        max(case m.TYPE when 6 then m.plan else 0 end ) l_plan
+        from (SELECT
+        b.TYPE,c.UNITTYPE as unitType,sum(a.DOSAGE) as num,sum(0) as plan
+        FROM
+         ${tableName} a,
+        t_emc_energy_type b,
+        (select UNITID,COMID,UNITTYPE FROM   v_emc_unit
+        WHERE 1=1
+        <if test="orgId != null and orgId !=''">
+            and  FIND_IN_SET(ORGID,emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR}))
+        </if>
+        ) c
+        WHERE
+        a.TYPEID = b.id
+        and a.UNITID = c.UNITID
+        <if test="comId != null and comId !=''">
+            AND a.COMID= #{comId}
+        </if>
+        <if test="energytype != null and energytype !=''">
+            and b.TYPE = #{energytype,jdbcType=VARCHAR}
+        </if>
+
+        <if test="startTime!=null and startTime!=''">
+            and a.DOSAGE_TIME <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and a.DOSAGE_TIME <![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+        </if>
+        GROUP BY b.TYPE,c.UNITTYPE)m GROUP BY m.UNITTYPE) aa
+        left JOIN(
+        SELECT m.UNITTYPE,
+        max(case m.TYPE when 1 then m.num else 0 end ) w1,
+        max(case m.TYPE when 2 then m.num else 0 end ) e1,
+        max(case m.TYPE when 3 then m.num else 0 end ) g1,
+        max(case m.TYPE when 4 then m.num else 0 end ) h1,
+        max(case m.TYPE when 5 then m.num else 0 end ) c1,
+        max(case m.TYPE when 6 then m.num else 0 end ) l1
+        from (SELECT
+        b.TYPE,c.UNITTYPE,sum(a.DOSAGE) as num
+        FROM
+         ${tableName} a,
+        t_emc_energy_type b,
+        (select UNITID,COMID,UNITTYPE FROM   v_emc_unit
+          WHERE 1=1
+        <if test="orgId != null and orgId !=''">
+            and  FIND_IN_SET(ORGID,emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR}))
+        </if>
+        ) c
+        WHERE
+        a.TYPEID = b.id
+        and a.UNITID = c.UNITID
+        and a.COMID = c.COMID
+        <if test="comId != null and comId !=''">
+            AND a.COMID= #{comId}
+        </if>
+
+        <if test="startTimeTq!=null and startTimeTq!=''">
+            and a.DOSAGE_TIME <![CDATA[>=]]> #{startTimeTq,jdbcType=VARCHAR}
+        </if>
+        <if test="endTimeTq!=null and endTimeTq!=''">
+            and a.DOSAGE_TIME <![CDATA[<=]]> #{endTimeTq,jdbcType=VARCHAR}
+        </if>
+
+        GROUP BY b.TYPE,c.UNITTYPE)m GROUP BY m.UNITTYPE
+        )b on aa.UNITTYPE = b.UNITTYPE
+    </select>
+
+
+    <!--三级页面-源、网、站、线、户的各个能源类型的能耗趋势图-->
+    <select id="getFgsDatas" resultType="java.util.Map" parameterType="java.util.Map">
+
+        SELECT
+        '0'as curyear,
+        aa.time,
+        max(case when aa.TYPE = '1' then aa.DOSAGE else 0 end ) chart1,
+        max(case when aa.TYPE = '2' then aa.DOSAGE else 0 end ) chart2,
+        max(case when aa.TYPE = '3' then aa.DOSAGE else 0 end ) chart3,
+        max(case when aa.TYPE = '4' then aa.DOSAGE else 0 end ) chart4,
+        max(case when aa.TYPE = '5' then aa.DOSAGE else 0 end ) chart5 from
+        (select c.TYPE,DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d') time,SUM(a.DOSAGE) DOSAGE
+        FROM
+        ${tableName}   a ,
+        (
+        select v.UNITID,v.UNITTYPE,v.COMID from (select UNITID,UNITTYPE,COMID,ORGID FROM v_emc_unit WHERE 1=1
+        <if test=" orgType != null and orgType != ''">
+            and  UNITTYPE =  #{orgType,jdbcType=VARCHAR}
+        </if>
+        <if test="feedType!= null and feedType != ''">
+            and  HEAT_TYPE =  #{feedType,jdbcType=VARCHAR}
+        </if>
+        <if test="comId != null and comId !=''">
+            and  COMID =#{comId}
+        </if>
+        ) v where  EXISTS(
+        SELECT
+        1
+        FROM
+        t_emc_org
+        WHERE
+        id = v.ORGID
+        <if test="orgId != null and orgId !=''">
+            and  FIND_IN_SET(id,emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR}))
+        </if>
+        )
+        ) b,
+        t_emc_energy_type c
+        where
+        a.UNITID = b.UNITID
+        AND a.COMID = b.COMID
+        and c.id = a.TYPEID
+        <if test="startTime!=null and startTime!=''">
+            and a.DOSAGE_TIME <![CDATA[>=]]> #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            and a.DOSAGE_TIME <![CDATA[<=]]> #{endTime,jdbcType=VARCHAR}
+        </if>
+        <if test="energytype != null and energytype !=''">
+            and c.TYPE = #{energytype,jdbcType=VARCHAR}
+        </if>
+        <if test="comId != null and comId !=''">
+            and a.COMID = #{comId,jdbcType=VARCHAR}
+        </if>
+        group by DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d'),c.TYPE) aa GROUP BY aa.time
+        union all
+        (SELECT
+        '1' as curyear,
+        aa.time,
+        max(case when aa.TYPE = '1' then aa.DOSAGE else 0 end ) chart1,
+        max(case when aa.TYPE = '2' then aa.DOSAGE else 0 end ) chart2,
+        max(case when aa.TYPE = '3' then aa.DOSAGE else 0 end ) chart3,
+        max(case when aa.TYPE = '4' then aa.DOSAGE else 0 end ) chart4,
+        max(case when aa.TYPE = '5' then aa.DOSAGE else 0 end ) chart5 from
+        (select c.TYPE,DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d') time,SUM(a.DOSAGE) DOSAGE
+        FROM
+        ${tableName}   a ,
+        (
+        select v.UNITID,v.UNITTYPE,v.COMID from (select UNITID,UNITTYPE,COMID,ORGID FROM v_emc_unit WHERE 1=1
+        <if test="orgType!= null and orgType != ''">
+            and  UNITTYPE =  #{orgType,jdbcType=VARCHAR}
+        </if>
+        <if test="feedType!= null and feedType != ''">
+            and  HEAT_TYPE =  #{feedType,jdbcType=VARCHAR}
+        </if>
+        <if test="comId != null and comId !=''">
+            and  COMID =#{comId}
+        </if>
+        ) v where  EXISTS(
+        SELECT
+        1
+        FROM
+        t_emc_org
+        WHERE
+        id = v.ORGID
+        <if test="orgId != null and orgId !=''">
+            and  FIND_IN_SET(id,emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR}))
+        </if>
+        )
+        ) b,
+        t_emc_energy_type c
+        where
+        a.UNITID = b.UNITID
+        AND a.COMID = b.COMID
+        and c.id = a.TYPEID
+        <if test="startTimeTq!=null and startTimeTq!=''">
+            and a.DOSAGE_TIME <![CDATA[>=]]> #{startTimeTq,jdbcType=VARCHAR}
+        </if>
+        <if test="endTimeTq!=null and endTimeTq!=''">
+            and a.DOSAGE_TIME <![CDATA[<=]]> #{endTimeTq,jdbcType=VARCHAR}
+        </if>
+        <if test="energytype != null and energytype !=''">
+            and c.TYPE = #{energytype,jdbcType=VARCHAR}
+        </if>
+        <if test="comId != null and comId !=''">
+            and a.COMID = #{comId,jdbcType=VARCHAR}
+        </if>
+        group by DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d'),c.TYPE) aa GROUP BY aa.time)
+
+    </select>
+
+</mapper>

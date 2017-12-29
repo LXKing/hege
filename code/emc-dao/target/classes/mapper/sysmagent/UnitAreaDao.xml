@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.mdc.dao.UnitAreaDao">
+    <resultMap id="BaseResultMap" type="com.huak.mdc.model.UnitArea">
+        <constructor>
+            <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="COMID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="UNITID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="AREA" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="STIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="UNITTYPE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+        </constructor>
+    </resultMap>
+    <sql id="Base_Column_List">
+        ID, COMID, UNITID, AREA, STIME, UNITTYPE
+    </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_unit_area
+        where ID = #{id,jdbcType=VARCHAR}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+        delete from t_emc_unit_area
+        where ID = #{id,jdbcType=VARCHAR}
+    </delete>
+
+    <insert id="insertSelective" parameterType="com.huak.mdc.model.UnitArea">
+        insert into t_emc_unit_area
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                ID,
+            </if>
+            <if test="comid != null">
+                COMID,
+            </if>
+            <if test="unitid != null">
+                UNITID,
+            </if>
+            <if test="area != null">
+                AREA,
+            </if>
+            <if test="stime != null">
+                STIME,
+            </if>
+            <if test="unittype != null">
+                UNITTYPE,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="comid != null">
+                #{comid,jdbcType=VARCHAR},
+            </if>
+            <if test="unitid != null">
+                #{unitid,jdbcType=VARCHAR},
+            </if>
+            <if test="area != null">
+                #{area,jdbcType=DOUBLE},
+            </if>
+            <if test="stime != null">
+                #{stime,jdbcType=VARCHAR},
+            </if>
+            <if test="unittype != null">
+                #{unittype,jdbcType=TINYINT},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.huak.mdc.model.UnitArea">
+        update t_emc_unit_area
+        <set>
+            <if test="comid != null">
+                COMID = #{comid,jdbcType=VARCHAR},
+            </if>
+            <if test="unitid != null">
+                UNITID = #{unitid,jdbcType=VARCHAR},
+            </if>
+            <if test="area != null">
+                AREA = #{area,jdbcType=DOUBLE},
+            </if>
+            <if test="stime != null">
+                STIME = #{stime,jdbcType=VARCHAR},
+            </if>
+            <if test="unittype != null">
+                UNITTYPE = #{unittype,jdbcType=TINYINT},
+            </if>
+        </set>
+        where ID = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <select id="getUnitAreaByTime" parameterType="java.util.Map" resultType="java.lang.Double">
+        SELECT AREA FROM t_emc_unit_area
+        WHERE COMID=#{id} AND UNITID=#{unitId}
+        AND UNITTYPE=#{unitType} AND STIME<![CDATA[ <= ]]> #{time}
+        ORDER BY STIME DESC LIMIT 1
+    </select>
+
+</mapper>

@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.weather.dao.WeekforcastDao">
+  <resultMap id="BaseResultMap" type="com.huak.weather.model.Weekforcast">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="CODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="REPORT_DATE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="WEEK" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="WIND" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="WINP" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="TEMP_HIGH" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="TEMP_LOW" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="WEATHER" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="WEATHER_ICON" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="STATUS" javaType="java.lang.Byte" jdbcType="BIT" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    ID, CODE, REPORT_DATE, WEEK, WIND, WINP, TEMP_HIGH, TEMP_LOW, WEATHER, WEATHER_ICON, 
+    STATUS
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.util.Map" resultMap="BaseResultMap">
+    select 
+      <include refid="Base_Column_List" />
+    from t_emc_weather_weekforcast
+    where 1=1
+      <if test="code != null and code != ''">
+        and  CODE = #{code,jdbcType=VARCHAR}
+      </if>
+      <if test="week != null and week != ''">
+        and  WEEK = #{week,jdbcType=VARCHAR}
+      </if>
+      <if test="status != null and status != ''">
+        and  STATUS = #{status,jdbcType=TINYINT}
+      </if>
+      <if test="reportDate != null and reportDate != ''">
+          and  REPORT_DATE = #{reportDate,jdbcType=VARCHAR}
+      </if>
+    order by REPORT_DATE ASC
+  </select>
+
+    <select id="selectByParams" parameterType="java.util.Map" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_weather_weekforcast
+        where 1=1
+        <if test="code != null and code != ''">
+            and  CODE = #{code,jdbcType=VARCHAR}
+        </if>
+        <if test="week != null and week != ''">
+            and  WEEK = #{week,jdbcType=VARCHAR}
+        </if>
+        <if test="status != null and status != ''">
+            and  STATUS = #{status,jdbcType=TINYINT}
+        </if>
+        <if test="reportDate != null and reportDate != ''">
+            and  REPORT_DATE = #{reportDate,jdbcType=VARCHAR}
+        </if>
+        order  by REPORT_DATE asc
+    </select>
+
+    <select id="selectByComponent" parameterType="java.util.Map" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_weather_weekforcast
+        where 1=1
+        <if test="code != null and code != ''">
+            and  CODE = #{code,jdbcType=VARCHAR}
+        </if>
+        <if test="week != null and week != ''">
+            and  WEEK = #{week,jdbcType=VARCHAR}
+        </if>
+        <if test="status != null and status != ''">
+            and  STATUS = #{status,jdbcType=TINYINT}
+        </if>
+        <if test="reportDate != null and reportDate != ''">
+            and  REPORT_DATE <![CDATA[ >= ]]> #{reportDate,jdbcType=VARCHAR}
+        </if>
+        order  by REPORT_DATE asc limit 1,4
+    </select>
+
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from t_emc_weather_weekforcast
+    where ID = #{id,jdbcType=INTEGER}
+  </delete>
+  <delete id="deletebyParmas" parameterType="java.util.Map">
+      delete from t_emc_weather_weekforcast
+      where   CODE = #{code,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.huak.weather.model.Weekforcast">
+    insert into t_emc_weather_weekforcast (ID, CODE, REPORT_DATE, 
+      WEEK, WIND, WINP, TEMP_HIGH, 
+      TEMP_LOW, WEATHER, WEATHER_ICON, 
+      STATUS)
+    values (#{id,jdbcType=INTEGER}, #{code,jdbcType=VARCHAR}, #{reportDate,jdbcType=VARCHAR},
+      #{week,jdbcType=VARCHAR}, #{wind,jdbcType=VARCHAR}, #{winp,jdbcType=VARCHAR}, #{tempHigh,jdbcType=VARCHAR}, 
+      #{tempLow,jdbcType=VARCHAR}, #{weather,jdbcType=VARCHAR}, #{weatherIcon,jdbcType=VARCHAR}, 
+      #{status,jdbcType=BIT})
+  </insert>
+   <insert id="insertWeekForcastByArray" parameterType="java.util.List">
+       insert into t_emc_weather_weekforcast (CODE, REPORT_DATE, WEEK, WIND, WINP, TEMP_HIGH, TEMP_LOW,
+       WEATHER, WEATHER_ICON,STATUS)
+       values
+       <foreach collection="list" item="item" index="index" separator="," >
+           (#{item.code},#{item.reportDate},#{item.week},#{item.wind},#{item.winp},#{item.tempHigh},#{item.tempLow},
+           #{item.weather},#{item.weatherIcon},#{item.status})
+       </foreach>
+   </insert>
+
+  <insert id="insertSelective" parameterType="com.huak.weather.model.Weekforcast">
+    insert into t_emc_weather_weekforcast
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="code != null">
+        CODE,
+      </if>
+      <if test="reportDate != null">
+        REPORT_DATE,
+      </if>
+      <if test="week != null">
+        WEEK,
+      </if>
+      <if test="wind != null">
+        WIND,
+      </if>
+      <if test="winp != null">
+        WINP,
+      </if>
+      <if test="tempHigh != null">
+        TEMP_HIGH,
+      </if>
+      <if test="tempLow != null">
+        TEMP_LOW,
+      </if>
+      <if test="weather != null">
+        WEATHER,
+      </if>
+      <if test="weatherIcon != null">
+        WEATHER_ICON,
+      </if>
+      <if test="status != null">
+        STATUS,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="code != null">
+        #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="reportDate != null">
+        #{reportDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="week != null">
+        #{week,jdbcType=VARCHAR},
+      </if>
+      <if test="wind != null">
+        #{wind,jdbcType=VARCHAR},
+      </if>
+      <if test="winp != null">
+        #{winp,jdbcType=VARCHAR},
+      </if>
+      <if test="tempHigh != null">
+        #{tempHigh,jdbcType=VARCHAR},
+      </if>
+      <if test="tempLow != null">
+        #{tempLow,jdbcType=VARCHAR},
+      </if>
+      <if test="weather != null">
+        #{weather,jdbcType=VARCHAR},
+      </if>
+      <if test="weatherIcon != null">
+        #{weatherIcon,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=BIT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.weather.model.Weekforcast">
+    update t_emc_weather_weekforcast
+    <set>
+      <if test="code != null">
+        CODE = #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="reportDate != null">
+        REPORT_DATE = #{reportDate,jdbcType=VARCHAR},
+      </if>
+      <if test="week != null">
+        WEEK = #{week,jdbcType=VARCHAR},
+      </if>
+      <if test="wind != null">
+        WIND = #{wind,jdbcType=VARCHAR},
+      </if>
+      <if test="winp != null">
+        WINP = #{winp,jdbcType=VARCHAR},
+      </if>
+      <if test="tempHigh != null">
+        TEMP_HIGH = #{tempHigh,jdbcType=VARCHAR},
+      </if>
+      <if test="tempLow != null">
+        TEMP_LOW = #{tempLow,jdbcType=VARCHAR},
+      </if>
+      <if test="weather != null">
+        WEATHER = #{weather,jdbcType=VARCHAR},
+      </if>
+      <if test="weatherIcon != null">
+        WEATHER_ICON = #{weatherIcon,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null">
+        STATUS = #{status,jdbcType=BIT},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.huak.weather.model.Weekforcast">
+    update t_emc_weather_weekforcast
+    set CODE = #{code,jdbcType=VARCHAR},
+      REPORT_DATE = #{reportDate,jdbcType=VARCHAR},
+      WEEK = #{week,jdbcType=VARCHAR},
+      WIND = #{wind,jdbcType=VARCHAR},
+      WINP = #{winp,jdbcType=VARCHAR},
+      TEMP_HIGH = #{tempHigh,jdbcType=VARCHAR},
+      TEMP_LOW = #{tempLow,jdbcType=VARCHAR},
+      WEATHER = #{weather,jdbcType=VARCHAR},
+      WEATHER_ICON = #{weatherIcon,jdbcType=VARCHAR},
+      STATUS = #{status,jdbcType=BIT}
+    where ID = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.mdc.dao.EnergyPriceDao">
+  <resultMap id="BaseResultMap" type="com.huak.mdc.model.EnergyPrice">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="COMID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="TYPEID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="PRICE" javaType="java.math.BigDecimal" jdbcType="DECIMAL" />
+      <arg column="SDATE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="STIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ETIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    ID, COMID, TYPEID, PRICE, SDATE, STIME, ETIME
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_energy_price
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_energy_price
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+
+  <insert id="insertSelective" parameterType="com.huak.mdc.model.EnergyPrice">
+    insert into t_emc_energy_price
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="comid != null">
+        COMID,
+      </if>
+      <if test="typeid != null">
+        TYPEID,
+      </if>
+      <if test="price != null">
+        PRICE,
+      </if>
+      <if test="sdate != null">
+        SDATE,
+      </if>
+      <if test="stime != null">
+        STIME,
+      </if>
+      <if test="etime != null">
+        ETIME,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="comid != null">
+        #{comid,jdbcType=VARCHAR},
+      </if>
+      <if test="typeid != null">
+        #{typeid,jdbcType=VARCHAR},
+      </if>
+      <if test="price != null">
+        #{price,jdbcType=DECIMAL},
+      </if>
+      <if test="sdate != null">
+        #{sdate,jdbcType=VARCHAR},
+      </if>
+      <if test="stime != null">
+        #{stime,jdbcType=VARCHAR},
+      </if>
+      <if test="etime != null">
+        #{etime,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.mdc.model.EnergyPrice">
+    update t_emc_energy_price
+    <set>
+      <if test="comid != null">
+        COMID = #{comid,jdbcType=VARCHAR},
+      </if>
+      <if test="typeid != null">
+        TYPEID = #{typeid,jdbcType=VARCHAR},
+      </if>
+      <if test="price != null">
+        PRICE = #{price,jdbcType=DECIMAL},
+      </if>
+      <if test="sdate != null">
+        SDATE = #{sdate,jdbcType=VARCHAR},
+      </if>
+      <if test="stime != null">
+        STIME = #{stime,jdbcType=VARCHAR},
+      </if>
+      <if test="etime != null">
+        ETIME = #{etime,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+
+    <select id="getEnergyPriceByTime" parameterType="java.util.Map" resultType="java.math.BigDecimal">
+        SELECT IFNULL(c.PRICE,t.PRICE) PRICE FROM t_emc_energy_type t
+        LEFT JOIN (
+        SELECT PRICE,TYPEID FROM t_emc_energy_price
+        WHERE COMID = #{id} AND TYPEID = #{energyTypeId}
+        AND  SDATE <![CDATA[ <= ]]> #{time}
+        AND STIME<![CDATA[ <= ]]>#{hour} AND ETIME<![CDATA[ > ]]>#{hour}
+        ORDER BY SDATE DESC LIMIT 1
+        ) c ON t.ID = c.TYPEID
+        WHERE t.ID = #{energyTypeId}
+
+    </select>
+</mapper>

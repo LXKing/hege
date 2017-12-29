@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huak.sys.dao.EnergyProjectDao" >
+  <resultMap id="BaseResultMap" type="com.huak.sys.model.EnergyProject" >
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="ORG_ID" property="orgId" jdbcType="VARCHAR" />
+    <result column="SEASON_ID" property="seasonId" jdbcType="VARCHAR" />
+    <result column="NUM" property="num" jdbcType="DOUBLE" />
+  </resultMap>
+  <resultMap id="BaseVoResultMap" type="com.huak.sys.model.EnergyProjectVo" >
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="ORG_ID" property="orgId" jdbcType="VARCHAR" />
+    <result column="ORG_NAME" property="orgName" jdbcType="VARCHAR" />
+    <result column="SEASON_ID" property="seasonId" jdbcType="VARCHAR" />
+    <result column="SEASON_NAME" property="seasonName" jdbcType="VARCHAR" />
+    <result column="NUM" property="num" jdbcType="DOUBLE" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, ORG_ID, SEASON_ID, NUM
+  </sql>
+  <!-- 根据主键查询 -->
+  <select id="get" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_energy_project
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <!-- 分页查询 -->
+  <select id="selectPageByMap" parameterType="java.util.Map" resultMap="BaseVoResultMap">
+  	select p.ID ID,p.ORG_ID ORG_ID,p.SEASON_ID SEASON_ID,p.NUM NUM,o.ORG_NAME ORG_NAME,s.`NAME` SEASON_NAME
+  	from t_emc_energy_project p,t_emc_org o,t_emc_heat_season s 
+  	where p.ORG_ID = o.ID and p.SEASON_ID = s.ID
+  	<if test="orgId != null and orgId != ''"> and p.ORG_ID = #{orgId,jdbcType=VARCHAR}</if>
+  	<if test="seasonId != null and seasonId != ''"> and p.SEASON_ID = #{seasonId,jdbcType=VARCHAR}</if>
+  </select>
+  <!-- 导出 -->
+  <select id="export" parameterType="java.util.Map" resultType="java.util.Map">
+  	select p.ID ID,p.ORG_ID ORG_ID,p.SEASON_ID SEASON_ID,p.NUM NUM,o.ORG_NAME ORG_NAME,s.`NAME` SEASON_NAME
+  	from t_emc_energy_project p,t_emc_org o,t_emc_heat_season s 
+  	where p.ORG_ID = o.ID and p.SEASON_ID = s.ID
+  	<if test="orgId != null and orgId != ''"> and p.ORG_ID = #{orgId,jdbcType=VARCHAR}</if>
+  	<if test="seasonId != null and seasonId != ''"> and p.SEASON_ID = #{orgId,jdbcType=VARCHAR}</if>
+  </select>
+  <!-- 唯一性 -->
+  <select id="hasUnique" parameterType="java.util.Map" resultType="java.lang.Long">
+  	select count(1) from t_emc_energy_project 
+  	where ORG_ID = #{orgId,jdbcType=VARCHAR} and SEASON_ID = #{seasonId,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 采暖季下拉框html -->
+  <select id="getSeasonSelectHtml" parameterType="java.util.Map" resultType="java.util.Map">
+  	select s.ID ID,s.`NAME` NAME from t_emc_heat_season s where s.COMID = #{comId,jdbcType=VARCHAR} ORDER BY s.`NAME` asc
+  </select>
+  <!-- 删除 -->
+  <delete id="delete" parameterType="java.lang.String" >
+    delete from t_emc_energy_project
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <!-- 新增 -->
+  <insert id="insert" parameterType="com.huak.sys.model.EnergyProject" >
+    insert into t_emc_energy_project
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="orgId != null" >
+        ORG_ID,
+      </if>
+      <if test="seasonId != null" >
+        SEASON_ID,
+      </if>
+      <if test="num != null" >
+        NUM,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="orgId != null" >
+        #{orgId,jdbcType=VARCHAR},
+      </if>
+      <if test="seasonId != null" >
+        #{seasonId,jdbcType=VARCHAR},
+      </if>
+      <if test="num != null" >
+        #{num,jdbcType=DOUBLE},
+      </if>
+    </trim>
+  </insert>
+  <!-- 修改 -->
+  <update id="update" parameterType="com.huak.sys.model.EnergyProject" >
+    update t_emc_energy_project
+    <set >
+      <if test="orgId != null" >
+        ORG_ID = #{orgId,jdbcType=VARCHAR},
+      </if>
+      <if test="seasonId != null" >
+        SEASON_ID = #{seasonId,jdbcType=VARCHAR},
+      </if>
+      <if test="num != null" >
+        NUM = #{num,jdbcType=DOUBLE},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <insert id="insertByPrimaryKeySelective" parameterType="com.huak.sys.model.EnergyProject" >
+    insert into t_emc_energy_project (ID, ORG_ID, SEASON_ID, 
+      NUM)
+    values (#{id,jdbcType=VARCHAR}, #{orgId,jdbcType=VARCHAR}, #{seasonId,jdbcType=VARCHAR}, 
+      #{num,jdbcType=DOUBLE})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.huak.sys.model.EnergyProject" >
+    update t_emc_energy_project
+    set ORG_ID = #{orgId,jdbcType=VARCHAR},
+      SEASON_ID = #{seasonId,jdbcType=VARCHAR},
+      NUM = #{num,jdbcType=DOUBLE}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

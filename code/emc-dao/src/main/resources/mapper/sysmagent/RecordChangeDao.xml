@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.mdc.dao.RecordChangeDao">
+  <resultMap id="BaseResultMap" type="com.huak.mdc.model.RecordChange">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="COLLECT_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="CHANGE_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="USED_NUM" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="NEW_NUM" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="USED_COEF" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="NEW_COEF" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="CREATE_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="CRESTOR" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+
+    <resultMap id="BaseResultMapA" type="com.huak.mdc.vo.RecordChangeA">
+        <constructor>
+            <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="COLLECT_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="CHANGE_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="USED_NUM" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="NEW_NUM" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="USED_COEF" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="NEW_COEF" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="CREATE_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="CRESTOR" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="UNITNAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+        </constructor>
+    </resultMap>
+  <sql id="Base_Column_List">
+    ID, COLLECT_ID, CHANGE_TIME, USED_NUM, NEW_NUM, USED_COEF, NEW_COEF, CREATE_TIME, 
+    CRESTOR
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_record_change
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_record_change
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+
+  <insert id="insertSelective" parameterType="com.huak.mdc.model.RecordChange">
+    insert into t_emc_record_change
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="collectId != null">
+        COLLECT_ID,
+      </if>
+      <if test="changeTime != null">
+        CHANGE_TIME,
+      </if>
+      <if test="usedNum != null">
+        USED_NUM,
+      </if>
+      <if test="newNum != null">
+        NEW_NUM,
+      </if>
+      <if test="usedCoef != null">
+        USED_COEF,
+      </if>
+      <if test="newCoef != null">
+        NEW_COEF,
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME,
+      </if>
+      <if test="crestor != null">
+        CRESTOR,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="collectId != null">
+        #{collectId,jdbcType=VARCHAR},
+      </if>
+      <if test="changeTime != null">
+        #{changeTime,jdbcType=VARCHAR},
+      </if>
+      <if test="usedNum != null">
+        #{usedNum,jdbcType=DOUBLE},
+      </if>
+      <if test="newNum != null">
+        #{newNum,jdbcType=DOUBLE},
+      </if>
+      <if test="usedCoef != null">
+        #{usedCoef,jdbcType=DOUBLE},
+      </if>
+      <if test="newCoef != null">
+        #{newCoef,jdbcType=DOUBLE},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=VARCHAR},
+      </if>
+      <if test="crestor != null">
+        #{crestor,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.mdc.model.RecordChange">
+    update t_emc_record_change
+    <set>
+      <if test="collectId != null">
+        COLLECT_ID = #{collectId,jdbcType=VARCHAR},
+      </if>
+      <if test="changeTime != null">
+        CHANGE_TIME = #{changeTime,jdbcType=VARCHAR},
+      </if>
+      <if test="usedNum != null">
+        USED_NUM = #{usedNum,jdbcType=DOUBLE},
+      </if>
+      <if test="newNum != null">
+        NEW_NUM = #{newNum,jdbcType=DOUBLE},
+      </if>
+      <if test="usedCoef != null">
+        USED_COEF = #{usedCoef,jdbcType=DOUBLE},
+      </if>
+      <if test="newCoef != null">
+        NEW_COEF = #{newCoef,jdbcType=DOUBLE},
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME = #{createTime,jdbcType=VARCHAR},
+      </if>
+      <if test="crestor != null">
+        CRESTOR = #{crestor,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+    <select id="selectPageByMap"  parameterType="java.util.Map" resultMap="BaseResultMapA">
+        SELECT
+        rp.ID, rp.COLLECT_ID, rp.CHANGE_TIME, rp.USED_NUM, rp.NEW_NUM, rp.USED_COEF, rp.NEW_COEF, rp.CREATE_TIME,
+        au.USER_NAME CRESTOR,vu.UNITNAME,mc.name NAME
+        from t_emc_record_change rp
+
+        LEFT JOIN t_emc_auth_user au on rp.CRESTOR=au.ID
+
+        LEFT JOIN t_emc_meter_collect mc on rp.COLLECT_ID=mc.ID
+
+        LEFT JOIN v_emc_unit vu on mc.UNIT_ID=vu.UNITID
+
+        where 1=1
+
+        <if test="collectId != null and collectId!=''">
+            and COLLECT_ID=#{collectId,jdbcType=VARCHAR}
+        </if>
+        <if test="startTime != null and startTime!=''">
+            and CHANGE_TIME <![CDATA[ >= ]]> #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime!=''">
+            and CHANGE_TIME <![CDATA[ <= ]]> #{endTime,jdbcType=VARCHAR}
+        </if>
+        <if test="usedNum != null and usedNum!=''">
+            and USED_NUM = #{usedNum,jdbcType=DOUBLE}
+        </if>
+        <if test="newNum != null and newNum!=''">
+            and NEW_NUM = #{newNum,jdbcType=DOUBLE}
+        </if>
+        <if test="usedCoef != null and usedCoef!=''">
+            and USED_COEF = #{usedCoef,jdbcType=DOUBLE}
+        </if>
+        <if test="newCoef != null and newCoef!=''">
+            and NEW_COEF = #{newCoef,jdbcType=DOUBLE}
+        </if>
+        <if test="createTime != null and createTime!=''">
+            and CREATE_TIME = #{createTime,jdbcType=VARCHAR}
+        </if>
+        <if test="crestor != null and crestor!=''">
+            and CRESTOR = #{crestor,jdbcType=VARCHAR}
+        </if>
+        <if test="name != null and name!=''">
+            and mc.name LIKE CONCAT('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="unitName != null and unitName!=''">
+            and vu.UNITNAME LIKE CONCAT('%',#{unitName,jdbcType=VARCHAR},'%')
+        </if>
+        order by rp.CREATE_TIME,rp.CHANGE_TIME desc
+    </select>
+    <select id="selectAllByMap"  parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+        rp.ID, rp.COLLECT_ID, rp.CHANGE_TIME, rp.USED_NUM, rp.NEW_NUM, rp.USED_COEF, rp.NEW_COEF, rp.CREATE_TIME,
+        rp.CRESTOR,vu.UNITNAME,mc.name NAME
+        from t_emc_record_change rp
+
+        LEFT JOIN t_emc_auth_user au on rp.CRESTOR=au.ID
+
+        LEFT JOIN t_emc_meter_collect mc on rp.COLLECT_ID=mc.ID
+
+        LEFT JOIN v_emc_unit vu on mc.UNIT_ID=vu.UNITID
+
+        where 1=1
+
+        <if test="collectId != null and collectId!=''">
+            and COLLECT_ID=#{collectId,jdbcType=VARCHAR}
+        </if>
+        <if test="startTime != null and startTime!=''">
+            and CHANGE_TIME <![CDATA[ >= ]]> #{startTime,jdbcType=VARCHAR}
+        </if>
+        <if test="endTime != null and endTime!=''">
+            and CHANGE_TIME <![CDATA[ <= ]]> #{endTime,jdbcType=VARCHAR}
+        </if>
+        <if test="usedNum != null and usedNum!=''">
+            and USED_NUM = #{usedNum,jdbcType=DOUBLE}
+        </if>
+        <if test="newNum != null and newNum!=''">
+            and NEW_NUM = #{newNum,jdbcType=DOUBLE}
+        </if>
+        <if test="usedCoef != null and usedCoef!=''">
+            and USED_COEF = #{usedCoef,jdbcType=DOUBLE}
+        </if>
+        <if test="newCoef != null and newCoef!=''">
+            and NEW_COEF = #{newCoef,jdbcType=DOUBLE}
+        </if>
+        <if test="createTime != null and createTime!=''">
+            and CREATE_TIME = #{createTime,jdbcType=VARCHAR}
+        </if>
+        <if test="crestor != null and crestor!=''">
+            and CRESTOR = #{crestor,jdbcType=VARCHAR}
+        </if>
+        <if test="name != null and name!=''">
+            and mc.name = #{name,jdbcType=VARCHAR}
+        </if>
+        <if test="unitName != null and unitName!=''">
+            and vu.UNITNAME = #{unitName,jdbcType=VARCHAR}
+        </if>
+        order by rp.CREATE_TIME,rp.CHANGE_TIME desc
+    </select>
+
+</mapper>

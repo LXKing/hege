@@ -1,0 +1,10 @@
+com\huak\dao\UserDao.class
+com\huak\task\dao\MetaDataDao.class
+com\huak\task\model\MetaData.class
+com\huak\model\UnitArea.class
+com\huak\dao\UnitAreaDao.class
+com\huak\model\Season.class
+com\huak\dao\SeasonDao.class
+com\huak\model\User.class
+com\huak\org\model\MeterCollect.class
+com\huak\org\dao\MeterCollectDao.class

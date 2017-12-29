@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.task.dao.TemperatureDao">
+  <resultMap id="BaseResultMap" type="com.huak.task.model.Temperature">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="COM_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="STATION_NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="SENSOR" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="COMMUNITY_NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ROMM_CODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="TEMP" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="SUNNY" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="TELL" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ROOM_NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="REDE_TIME" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    ID, COM_ID, STATION_NAME, SENSOR, COMMUNITY_NAME, ROMM_CODE, TEMP, SUNNY, TELL, ROOM_NAME, 
+    REDE_TIME
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_temperature_tj
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_temperature_tj
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.huak.task.model.Temperature">
+    insert into t_emc_temperature_tj (ID, COM_ID, STATION_NAME,
+      SENSOR, COMMUNITY_NAME, ROMM_CODE, 
+      TEMP, SUNNY, TELL, ROOM_NAME, 
+      REDE_TIME)
+    values (#{id,jdbcType=VARCHAR}, #{comId,jdbcType=VARCHAR}, #{stationName,jdbcType=VARCHAR}, 
+      #{sensor,jdbcType=VARCHAR}, #{communityName,jdbcType=VARCHAR}, #{rommCode,jdbcType=VARCHAR}, 
+      #{temp,jdbcType=DOUBLE}, #{sunny,jdbcType=VARCHAR}, #{tell,jdbcType=VARCHAR}, #{roomName,jdbcType=VARCHAR}, 
+      #{redeTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.huak.task.model.Temperature">
+    insert into t_emc_temperature_tj
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="comId != null">
+        COM_ID,
+      </if>
+      <if test="stationName != null">
+        STATION_NAME,
+      </if>
+      <if test="sensor != null">
+        SENSOR,
+      </if>
+      <if test="communityName != null">
+        COMMUNITY_NAME,
+      </if>
+      <if test="rommCode != null">
+        ROMM_CODE,
+      </if>
+      <if test="temp != null">
+        TEMP,
+      </if>
+      <if test="sunny != null">
+        SUNNY,
+      </if>
+      <if test="tell != null">
+        TELL,
+      </if>
+      <if test="roomName != null">
+        ROOM_NAME,
+      </if>
+      <if test="redeTime != null">
+        REDE_TIME,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="comId != null">
+        #{comId,jdbcType=VARCHAR},
+      </if>
+      <if test="stationName != null">
+        #{stationName,jdbcType=VARCHAR},
+      </if>
+      <if test="sensor != null">
+        #{sensor,jdbcType=VARCHAR},
+      </if>
+      <if test="communityName != null">
+        #{communityName,jdbcType=VARCHAR},
+      </if>
+      <if test="rommCode != null">
+        #{rommCode,jdbcType=VARCHAR},
+      </if>
+      <if test="temp != null">
+        #{temp,jdbcType=DOUBLE},
+      </if>
+      <if test="sunny != null">
+        #{sunny,jdbcType=VARCHAR},
+      </if>
+      <if test="tell != null">
+        #{tell,jdbcType=VARCHAR},
+      </if>
+      <if test="roomName != null">
+        #{roomName,jdbcType=VARCHAR},
+      </if>
+      <if test="redeTime != null">
+        #{redeTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.task.model.Temperature">
+    update t_emc_temperature_tj
+    <set>
+      <if test="comId != null">
+        COM_ID = #{comId,jdbcType=VARCHAR},
+      </if>
+      <if test="stationName != null">
+        STATION_NAME = #{stationName,jdbcType=VARCHAR},
+      </if>
+      <if test="sensor != null">
+        SENSOR = #{sensor,jdbcType=VARCHAR},
+      </if>
+      <if test="communityName != null">
+        COMMUNITY_NAME = #{communityName,jdbcType=VARCHAR},
+      </if>
+      <if test="rommCode != null">
+        ROMM_CODE = #{rommCode,jdbcType=VARCHAR},
+      </if>
+      <if test="temp != null">
+        TEMP = #{temp,jdbcType=DOUBLE},
+      </if>
+      <if test="sunny != null">
+        SUNNY = #{sunny,jdbcType=VARCHAR},
+      </if>
+      <if test="tell != null">
+        TELL = #{tell,jdbcType=VARCHAR},
+      </if>
+      <if test="roomName != null">
+        ROOM_NAME = #{roomName,jdbcType=VARCHAR},
+      </if>
+      <if test="redeTime != null">
+        REDE_TIME = #{redeTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.huak.task.model.Temperature">
+    update t_emc_temperature_tj
+    set COM_ID = #{comId,jdbcType=VARCHAR},
+      STATION_NAME = #{stationName,jdbcType=VARCHAR},
+      SENSOR = #{sensor,jdbcType=VARCHAR},
+      COMMUNITY_NAME = #{communityName,jdbcType=VARCHAR},
+      ROMM_CODE = #{rommCode,jdbcType=VARCHAR},
+      TEMP = #{temp,jdbcType=DOUBLE},
+      SUNNY = #{sunny,jdbcType=VARCHAR},
+      TELL = #{tell,jdbcType=VARCHAR},
+      ROOM_NAME = #{roomName,jdbcType=VARCHAR},
+      REDE_TIME = #{redeTime,jdbcType=TIMESTAMP}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+    <select id="selectAllByMap" parameterType="com.huak.task.model.Temperature" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_temperature_tj
+        where 1=1
+        <if test="comId != null and comId!='' and comId !='null'">
+            and  COM_ID = #{comId,jdbcType=VARCHAR}
+        </if>
+        <if test="stationName != null and stationName !=''">
+            and  STATION_NAME =  #{stationName,jdbcType=TINYINT}
+        </if>
+
+        <if test="sensor != null and sensor!=''">
+            and  SENSOR = #{sensor,jdbcType=DOUBLE}
+        </if>
+        <if test="communityName != null and communityName!=''">
+            and COMMUNITY_NAME = #{communityName,jdbcType=INTEGER}
+        </if>
+        <if test="rommCode != null and rommCode!=''">
+            and  ROMM_CODE = #{rommCode,jdbcType=INTEGER}
+        </if>
+        <!--<if test="heatType != null and heatType!=''">-->
+            <!--and  HEAT_TYPE = #{heatType,jdbcType=TINYINT}-->
+        <!--</if>-->
+
+    </select>
+
+    <select id="selectByMap" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+        STATION_NAME as station,
+        COMMUNITY_NAME village,
+        DATE_FORMAT(REDE_TIME, '%H:%i') times,
+        ROMM_CODE roomcode,
+        (CASE WHEN avg(TEMP) IS NULL THEN 0 ELSE avg(TEMP) END) temps
+        FROM
+        t_emc_temperature_tj
+        WHERE 1=1
+        <if test="date != null and date!='' and date !='null'">
+            and   REDE_TIME <![CDATA[>=]]> CONCAT(#{date},' 00:00:00')
+            and   REDE_TIME <![CDATA[<=]]> CONCAT(#{date},' 23:59:59')
+        </if>
+
+        <if test="comId != null and comId!='' and comId !='null'">
+            AND  COM_ID = #{comId,jdbcType=VARCHAR}
+        </if>
+        GROUP BY
+        STATION_NAME,
+        COMMUNITY_NAME,
+        DATE_FORMAT(REDE_TIME, '%H:%i'),
+        ROMM_CODE
+        ORDER BY
+        REDE_TIME ASC
+    </select>
+
+</mapper>

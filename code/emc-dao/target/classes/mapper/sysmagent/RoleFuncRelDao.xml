@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.auth.dao.RoleFuncRelDao">
+  <resultMap id="BaseResultMap" type="com.huak.auth.model.RoleFuncRel">
+    <constructor>
+      <arg column="ROLE_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="FUNC_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+  <insert id="insert" parameterType="com.huak.auth.model.RoleFuncRel">
+    insert into t_emc_auth_role_func_rel (ROLE_ID, FUNC_ID)
+    values (#{roleId,jdbcType=VARCHAR}, #{funcId,jdbcType=VARCHAR})
+  </insert>
+    <delete id="deleteRelByRole" parameterType="java.lang.String">
+       delete from t_emc_auth_role_func_rel
+        where ROLE_ID = #{roleId,jdbcType=VARCHAR}
+    </delete>
+    <select id="selectGrantByRoleKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        ROLE_ID, FUNC_ID
+        from t_emc_auth_role_func_rel
+        where ROLE_ID = #{roleId,jdbcType=VARCHAR}
+    </select>
+</mapper>

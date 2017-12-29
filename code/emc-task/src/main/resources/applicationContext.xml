@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://code.alibabatech.com/schema/dubbo
+       http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder location="classpath:application-env.properties" ignore-unresolvable="true" />
+    <!-- 消费方应用名，用于计算依赖关系，不是匹配条件，不要与提供方一样 -->
+    <dubbo:application name="${dubbo.name}" />
+
+    <!-- 使用zookeeper注册中心暴露服务地址 -->
+    <dubbo:registry protocol="zookeeper" address="${dubbo.address}" />
+
+    <!-- 组播注册 -->
+    <!-- <dubbo:registry address="multicast://224.5.6.7:1234" /> -->
+    <!-- 生成远程服务代理，可以像使用本地bean一样使用SeasonService -->
+    <dubbo:reference id="weatherTaskService"    interface="com.huak.weather.WeatherTaskService" timeout="12000"  check="true" version="${service.version}" />
+    <!-- 生成远程服务代理，可以像使用本地bean一样使用SeasonService -->
+    <dubbo:reference id="workWarnService"    interface="com.huak.diacrisis.WorkWarnService" timeout="12000"  check="true" version="${service.version}" />
+    <!-- 生成远程服务代理，可以像使用本地bean一样使用SeasonService -->
+    <dubbo:reference id="roomTempService"    interface="com.huak.api.RoomTempService" timeout="12000"  check="true" version="${service.version}" />
+    <!-- 生成远程服务代理，可以像使用本地bean一样使用SeasonService -->
+    <dubbo:reference id="energyAnalyService"    interface="com.huak.api.EnergyAnalyService" timeout="12000"  check="true" version="${service.version}" />
+    <!-- 生成远程服务代理，可以像使用本地bean一样使用SeasonService -->
+    <dubbo:reference id="autoSaveEnergyService"    interface="com.huak.energy.AutoSaveEnergyService" timeout="120000"  check="true" version="${service.version}" />
+    <dubbo:reference id="energyDataHisService"    interface="com.huak.mdc.EnergyDataHisService" timeout="720000" retries="0" check="true" version="${service.version}" />
+    <dubbo:reference id="companyService"    interface="com.huak.org.CompanyService" timeout="120000"  check="true" version="${service.version}" />
+    <dubbo:reference id="meterCollectService"    interface="com.huak.mdc.MeterCollectService" timeout="120000"  check="true" version="${service.version}" />
+</beans>

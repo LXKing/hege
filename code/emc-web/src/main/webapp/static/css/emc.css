@@ -1,0 +1,295 @@
+/*华热科技*/
+.weather .chart-content ul div.detail div:first-child {
+    font-size: 26px;
+}
+.PeopleTabdiv {
+    display: block;
+}
+.groupEnergy-info {
+    padding: 40px 0 0 0px;
+    /*width:25%;float:left;*/
+}
+
+.facedark .quanquanwrap>div:nth-child(1)>div.runm>div>div,
+
+.facedark quanquanwrap>div:nth-child(1)>div.runm>div:after {
+    background-image: -moz-linear-gradient( -45deg, rgb(234, 145, 80) 0%, rgb(224, 96, 61) 100%);
+    background-image: -webkit-linear-gradient( -45deg, rgb(234, 145, 80) 0%, rgb(224, 96, 61) 100%);
+    background-image: -ms-linear-gradient( -45deg, rgb(234, 145, 80) 0%, rgb(224, 96, 61) 100%);
+}
+
+.facedark .quanquanwrap>div:nth-child(1)>div:nth-child(1).runm>div>div>div:after {
+    background-image: url(../imgdark/index/icon1_1_g.png)
+}
+
+.facedark .quanquanwrap>div:nth-child(1)>div:nth-child(2).runm>div>div>div:after {
+    background-image: url(../imgdark/index/icon1_2_g.png)
+}
+
+.facedark .quanquanwrap>div:nth-child(1)>div:nth-child(3).runm>div>div>div:after {
+    background-image: url(../imgdark/index/icon1_3_g.png)
+}
+
+.facedark .quanquanwrap>div:nth-child(1)>div:nth-child(4).runm>div>div>div:after {
+    background-image: url(../imgdark/index/icon1_4_g.png)
+}
+
+
+.quanquanwrap>div:nth-child(1)>div.runm>div>div,
+
+.quanquanwrap>div:nth-child(1)>div.runm>div:after {
+    background-image: -moz-linear-gradient( -45deg, rgb(234, 145, 80) 0%, rgb(224, 96, 61) 100%);
+    background-image: -webkit-linear-gradient( -45deg, rgb(234, 145, 80) 0%, rgb(224, 96, 61) 100%);
+    background-image: -ms-linear-gradient( -45deg, rgb(234, 145, 80) 0%, rgb(224, 96, 61) 100%);
+}
+
+.facedark .quanquanwrap>div:nth-child(1)>div.runa>div>div,
+.facedark .quanquanwrap>div:nth-child(1)>div.runa>div:after {
+    background-image: -moz-linear-gradient( -45deg, rgb(50, 187, 182) 0%, rgb(59, 150, 219) 100%);
+    background-image: -webkit-linear-gradient( -45deg, rgb(50, 187, 182) 0%, rgb(59, 150, 219) 100%);
+    background-image: -ms-linear-gradient( -45deg, rgb(50, 187, 182) 0%, rgb(59, 150, 219) 100%);
+}
+
+.quanquanwrap>div:nth-child(1)>div:nth-child(1).runm>div>div>div:after {
+    background-image: url(../imgdark/index/icon1_1_g.png)
+}
+
+.quanquanwrap>div:nth-child(1)>div:nth-child(2).runm>div>div>div:after {
+    background-image: url(../imgdark/index/icon1_2_g.png)
+}
+
+.quanquanwrap>div:nth-child(1)>div:nth-child(3).runm>div>div>div:after {
+    background-image: url(../imgdark/index/icon1_3_g.png)
+}
+
+.quanquanwrap>div:nth-child(1)>div:nth-child(4).runm>div>div>div:after {
+    background-image: url(../imgdark/index/icon1_4_g.png)
+}
+
+
+.facedark .energyBoxLegendListText_cb {
+    font-size: 14px;
+    color: #d4513b;
+}
+
+.facedark .energyBoxLegendListPara_cb {
+    color: #d4513b;
+    font-size: 11px
+}
+
+.facedark .energyBoxLegendListPara_cd {
+    color: green;
+    font-size: 11px
+}
+
+.panelright .main-box{
+    margin:0;
+    min-height: 700px;
+}
+
+.facedark .panelleft{
+    min-height: 700px;
+}
+
+.editTable .div-edit{
+    margin:0;
+    padding-left: 8px;
+    height: 100%;
+    width: 100%;
+    line-height: 40px;
+}
+
+.editTable .td-edit{
+    padding: 0;
+    min-height: 26px;
+    height: 40px;
+}
+
+.editTable .input-edit{
+    margin:0;
+    height: 40px;
+    width: 100%;
+}
+
+.wrapper {
+    padding: 0 20px;
+}
+
+.wrapper-content {
+    padding: 20px;
+}
+
+/* 黑色弹出框 */
+.facedark .layui-layer-title {
+    padding: 0 80px 0 20px;
+    height: 42px;
+    line-height: 42px;
+    border-bottom: 0px solid #eee;
+    font-size: 14px;
+    color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background-color: #F8F8F8;
+}
+.facedark  .layer-ext-moon .layui-layer-title {
+    background: rgb(0, 8, 12);
+    color: #e8eef3;
+    font-size: 16px;
+    font-weight: bold;
+    height: 46px;
+    line-height: 46px;
+}
+
+.facedark .layui-layer-page .layui-layer-content {
+    position: relative;
+    overflow: auto;
+    background-color: rgba(4, 20, 32, 0.96);
+}
+.facedark .layer-ext-moon .layui-layer-btn {
+    padding: 15px 0;
+    background: rgb(0, 8, 12);
+    border: 0px #c7c7c7 solid;
+}
+.facedark .layer-ext-moon .layui-layer-btn .layui-layer-btn0 {
+    background: rgba(14, 53, 84, 0.58);
+    border: 1px solid #082236;
+}
+
+.facedark .layer-ext-moon .layui-layer-btn .layui-layer-btn1 {
+    background: rgba(62, 59, 58, 0.63);
+    color: rgba(29, 184, 193, 0.71);
+    border: 1px solid #272829;
+    border-radius: 3px;
+}
+
+.facedark .form-horizontal .inputs-lg {
+    background: transparent;
+    border: 1px solid #3c6275;
+}
+
+.select-box .inputs-lg {
+    width: 160px;
+}
+
+.facedark .chosen-container > .chosen-single{
+    background: #0e1d29;
+}
+
+.facedark .chosen-container .chosen-drop {
+    background: #0e1d29;
+}
+
+.help-block {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+.facedark .form-group.has-success input:focus,
+.facedark .form-group.has-success select:focus,
+.facedark .form-group.has-success textarea:focus {
+    background-color: #0e1d29;
+}
+.panelright {
+     margin-left: 0px;
+}
+
+.quanquanwrap>div:nth-child(2)>div>ul li {
+    height: 25px;
+    line-height: 25px;
+}
+.quanquanwrap>div:nth-child(2)>div>ul li:nth-child(1) span.a {
+    color: #d4513b;
+}
+.quanquanwrap>div:nth-child(2)>div>ul li:nth-child(2) span.b {
+    color: #348bce;
+}
+.quanquanwrap>div:nth-child(2)>div>ul li:nth-child(3) span.c {
+    color: #2eada8;
+}
+.quanquanwrap>div:nth-child(2)>div>ul li:nth-child(4) span.d {
+    color: #adaa4c;
+}
+.facedark .healthwrap .healthitem>div>h1 {
+    color: #fff;
+}
+.facedark .healthwrap .resultlist .healthitem .panelwrap {
+    border-bottom: none;
+}
+.healthwrap .healthitem .panelwrap {
+    border: none;
+}
+.healthwrap .healthitem>div>h1 {
+    position: relative;
+    padding-left: 13px;
+}
+.facedark .erroritem>div:nth-child(1):after {
+    right: 0;
+    width: 85%;
+    left: auto;
+    background: #203e4d;
+}
+.erroritem>div:nth-child(1):after {
+    content: '';
+    height: 1px;
+    width: 100%;
+    position: absolute;
+    left: 0px;
+    background: #e5e5e5;
+    clear: both;
+    display: block;
+    top: 29px;
+}
+.erroritem>div:nth-child(1) {
+    position: relative;
+}
+.erroritem>div>h1 {
+    margin-bottom: 22px;
+    padding-top: 22px;
+    background: #fff;
+    padding-right: 10px;
+    float: left;
+    z-index: 999;
+    position: relative;
+}
+.healthwrap .erroritem .panelwrap {
+    clear: both;
+    min-height: 50px;
+}
+.facedark .erroritem>div>h1 {
+    background: transparent;
+}
+
+#replacebtn {
+     cursor: pointer;
+     background: url('../img/health/test-btn-retest.png') no-repeat;
+     height: 44px;
+     width: 140px;
+     display: inline-block
+ }
+.facedark #replacebtn {
+    background: url(../imgdark/health/test-btn-retest.png) no-repeat;
+}
+
+.pressbar div {
+    width: 0px;
+}
+
+.chart-box .cb-legend {
+    width: 8px;
+    height: 4px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.chart-box .cb-legend-1 {
+    background-color: rgba(59,150,219,0.4);
+}
+.chart-box .cb-legend-2 {
+    background-color: rgba(59,150,219,1);
+}
+.chart-box .cb-legend-3 {
+    background-color: rgba(50,187,182,1);
+}
+.chart-box .cb-legend-4 {
+    background-color: rgba(50,187,182,1);
+}

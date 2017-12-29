@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.sys.dao.AdministrativeDao">
+  <resultMap id="BaseResultMap" type="com.huak.sys.model.Administrative">
+    <constructor>
+      <idArg column="ADM_CODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ADM_NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="P_CODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ADM_LEVEL" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="ADM_TYPE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="LNG" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="LAT" javaType="java.lang.Double" jdbcType="DOUBLE" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    ADM_CODE, ADM_NAME, P_CODE, ADM_LEVEL, ADM_TYPE, LNG, LAT
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_sys_administrative
+    where ADM_CODE = #{admCode,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_sys_administrative
+    where ADM_CODE = #{admCode,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.huak.sys.model.Administrative">
+    insert into t_emc_sys_administrative (ADM_CODE, ADM_NAME, P_CODE, 
+      ADM_LEVEL, ADM_TYPE, LNG, 
+      LAT)
+    values (#{admCode,jdbcType=VARCHAR}, #{admName,jdbcType=VARCHAR}, #{pCode,jdbcType=VARCHAR}, 
+      #{admLevel,jdbcType=TINYINT}, #{admType,jdbcType=VARCHAR}, #{lng,jdbcType=DOUBLE}, 
+      #{lat,jdbcType=DOUBLE})
+  </insert>
+  <insert id="insertSelective" parameterType="com.huak.sys.model.Administrative">
+    insert into t_emc_sys_administrative
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="admCode != null">
+        ADM_CODE,
+      </if>
+      <if test="admName != null">
+        ADM_NAME,
+      </if>
+      <if test="pCode != null">
+        P_CODE,
+      </if>
+      <if test="admLevel != null">
+        ADM_LEVEL,
+      </if>
+      <if test="admType != null">
+        ADM_TYPE,
+      </if>
+      <if test="lng != null">
+        LNG,
+      </if>
+      <if test="lat != null">
+        LAT,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="admCode != null">
+        #{admCode,jdbcType=VARCHAR},
+      </if>
+      <if test="admName != null">
+        #{admName,jdbcType=VARCHAR},
+      </if>
+      <if test="pCode != null">
+        #{pCode,jdbcType=VARCHAR},
+      </if>
+      <if test="admLevel != null">
+        #{admLevel,jdbcType=TINYINT},
+      </if>
+      <if test="admType != null">
+        #{admType,jdbcType=VARCHAR},
+      </if>
+      <if test="lng != null">
+        #{lng,jdbcType=DOUBLE},
+      </if>
+      <if test="lat != null">
+        #{lat,jdbcType=DOUBLE},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.sys.model.Administrative">
+    update t_emc_sys_administrative
+    <set>
+      <if test="admName != null">
+        ADM_NAME = #{admName,jdbcType=VARCHAR},
+      </if>
+      <if test="pCode != null">
+        P_CODE = #{pCode,jdbcType=VARCHAR},
+      </if>
+      <if test="admLevel != null">
+        ADM_LEVEL = #{admLevel,jdbcType=TINYINT},
+      </if>
+      <if test="admType != null">
+        ADM_TYPE = #{admType,jdbcType=VARCHAR},
+      </if>
+      <if test="lng != null">
+        LNG = #{lng,jdbcType=DOUBLE},
+      </if>
+      <if test="lat != null">
+        LAT = #{lat,jdbcType=DOUBLE},
+      </if>
+    </set>
+    where ADM_CODE = #{admCode,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.huak.sys.model.Administrative">
+    update t_emc_sys_administrative
+    set ADM_NAME = #{admName,jdbcType=VARCHAR},
+      P_CODE = #{pCode,jdbcType=VARCHAR},
+      ADM_LEVEL = #{admLevel,jdbcType=TINYINT},
+      ADM_TYPE = #{admType,jdbcType=VARCHAR},
+      LNG = #{lng,jdbcType=DOUBLE},
+      LAT = #{lat,jdbcType=DOUBLE}
+    where ADM_CODE = #{admCode,jdbcType=VARCHAR}
+  </update>
+
+    <select id="findAllByLevel"  resultType="java.util.Map" parameterType="java.util.Map">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_sys_administrative where 1=1
+        <if test="admLevel != null and admLevel !=''">
+            and  ADM_LEVEL = #{admLevel,jdbcType=TINYINT}
+        </if>
+        order by ADM_LEVEL
+    </select>
+    <select id="findAllAdministrative"  parameterType="java.util.Map"  resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_sys_active
+
+    </select>
+    <select id="getAdministrativeSize" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_sys_administrative
+        where ADM_CODE = #{admCode,jdbcType=VARCHAR}
+    </select>
+    <select id="getAdministrativeSizeCheckName" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_sys_administrative
+        where ADM_NAME = #{admName,jdbcType=VARCHAR}
+    </select>
+</mapper>

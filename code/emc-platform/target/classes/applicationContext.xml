@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://code.alibabatech.com/schema/dubbo
+       http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder location="classpath:application-env.properties" ignore-unresolvable="true" />
+    <!-- 消费方应用名，用于计算依赖关系，不是匹配条件，不要与提供方一样 -->
+    <dubbo:application name="${dubbo.name}" />
+
+    <!-- 使用zookeeper注册中心暴露服务地址 -->
+    <dubbo:registry protocol="zookeeper" address="${dubbo.address}" />
+
+    <!-- 组播注册 -->
+    <!-- <dubbo:registry address="multicast://224.5.6.7:1234" /> -->
+    <!-- 生成远程服务代理，可以像使用本地bean一样使用SeasonService -->
+    <dubbo:reference id="orgService"    interface="com.huak.org.OrgService" timeout="12000"  check="true" version="${service.version}" />
+    <dubbo:reference id="feedService"    interface="com.huak.org.FeedService" timeout="12000"  check="true" version="${service.version}" />
+    <dubbo:reference id="onecenetService"    interface="com.huak.org.OncenetService" timeout="12000"  check="true" version="${service.version}" />
+    <dubbo:reference id="nodeService"    interface="com.huak.org.NodeService" timeout="12000"  check="true" version="${service.version}" />
+    <!--组织机构代理服务结束-->
+    <dubbo:reference id="seasonService"    interface="com.huak.sys.SeasonService" timeout="12000"  check="true" version="${service.version}" />
+    <dubbo:reference id="roleService"    interface="com.huak.auth.RoleService" timeout="12000"  check="true" version="${service.version}"/>
+    <dubbo:reference id="menuService"    interface="com.huak.auth.MenuService" timeout="12000"  check="true" version="${service.version}"/>
+    <dubbo:reference id="funcService"    interface="com.huak.auth.FuncService" timeout="12000"  check="true" version="${service.version}"/>
+    <dubbo:reference id="sysDicService"    interface="com.huak.sys.SysDicService" timeout="12000"  check="true" version="${service.version}"/>
+    <dubbo:reference id="administrativeService"    interface="com.huak.org.AdministrativeService" timeout="1200000"  check="true" version="${service.version}"/>
+    <dubbo:reference id="userService"    interface="com.huak.auth.UserService" timeout="12000"  check="true" version="${service.version}" />
+    <dubbo:reference id="employeeService"    interface="com.huak.auth.EmployeeService" timeout="12000"  check="true" version="${service.version}" />
+    <dubbo:reference id="reversibleEncryption"    interface="com.huak.base.ReversibleEncryption" timeout="12000"  check="true" version="${service.version}" />
+    <dubbo:reference id="companyService"    interface="com.huak.org.CompanyService" timeout="12000"  check="true" version="${service.version}" />
+    <dubbo:reference id="secondnetService"    interface="com.huak.org.SecondnetService" timeout="12000"  check="true" version="${service.version}" />
+    <dubbo:reference id="energyTypeService"    interface="com.huak.sys.EnergyTypeService" timeout="12000"  check="true" version="${service.version}" />
+    <dubbo:reference id="costTypeService"    interface="com.huak.sys.CostTypeService" timeout="12000"  check="true" version="${service.version}" />
+    <dubbo:reference id="meterCollectService"    interface="com.huak.mdc.MeterCollectService" timeout="12000"  check="true" version="${service.version}" />
+    <dubbo:reference id="prestoreService"    interface="com.huak.prst.PrestoreService" timeout="12000"  check="true" version="${service.version}" />
+    <dubbo:reference id="indexTypeService"    interface="com.huak.sys.IndexTypeService" timeout="12000"  check="true" version="${service.version}" />
+    <dubbo:reference id="changeService"    interface="com.huak.prst.ChangeService" timeout="720000" retries="0"  check="true" version="${service.version}" />
+
+    <!-- 日志 -->
+	<dubbo:reference id="loggerService"    interface="com.huak.log.OperateLogService" timeout="12000"  check="true" version="${service.version}"/>
+	<dubbo:reference id="communityService"    interface="com.huak.org.CommunityService" timeout="12000"  check="true" version="${service.version}"/>
+	<dubbo:reference id="banService"    interface="com.huak.org.BanService" timeout="12000"  check="true" version="${service.version}"/>
+	<dubbo:reference id="cellService"    interface="com.huak.org.CellService" timeout="12000"  check="true" version="${service.version}"/>
+	<dubbo:reference id="roomService"    interface="com.huak.org.RoomService" timeout="12000"  check="true" version="${service.version}"/>
+    <dubbo:reference id="energyProjectService"    interface="com.huak.sys.EnergyProjectService" timeout="12000"  check="true" version="${service.version}" />
+    <!-- 验证码 -->
+    <bean id="captchaProducer" class="com.google.code.kaptcha.impl.DefaultKaptcha">
+        <property name="config">
+            <bean class="com.google.code.kaptcha.util.Config">
+                <constructor-arg>
+                    <props>
+                        <prop key="kaptcha.border">no</prop>
+                        <prop key="kaptcha.border.color">black</prop>
+                        <prop key="kaptcha.textproducer.font.color">black</prop>
+                        <prop key="kaptcha.image.width">130</prop>
+                        <prop key="kaptcha.textproducer.font.size">30</prop>
+                        <prop key="kaptcha.image.height">50</prop>
+                        <prop key="kaptcha.session.key">code</prop>
+                        <prop key="kaptcha.textproducer.char.length">4</prop>
+                        <prop key="kaptcha.textproducer.char.string">0123456789</prop>
+                        <prop key="kaptcha.textproducer.font.names">Arial,Courier</prop>
+                        <prop key="kaptcha.noise.impl">com.google.code.kaptcha.impl.NoNoise</prop>
+                    </props>
+                </constructor-arg>
+            </bean>
+        </property>
+    </bean>
+</beans>

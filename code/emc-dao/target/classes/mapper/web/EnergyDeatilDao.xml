@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huak.home.dao.EnergyDetailDao" >
+    <resultMap id="BaseResultMap" type="com.huak.home.model.EnergyDetail" >
+        <result column="ID" property="id" jdbcType="VARCHAR" />
+        <result column="UNITNAME" property="unitName" jdbcType="VARCHAR" />
+        <result column="BQDHT" property="totalBq" jdbcType="DOUBLE" />
+        <result column="TQDHT" property="totalTq" jdbcType="DOUBLE" />
+        <result column="BQWATER" property="waterBq" jdbcType="DOUBLE" />
+        <result column="TQWATER" property="waterTq" jdbcType="DOUBLE" />
+        <result column="BQELECTRIC" property="electricBq" jdbcType="DOUBLE" />
+        <result column="TQELECTRIC" property="electricTq" jdbcType="DOUBLE" />
+        <result column="BQGAS" property="gasBq" jdbcType="DOUBLE" />
+        <result column="TQGAS" property="gasTq" jdbcType="DOUBLE" />
+        <result column="BQHEAT" property="heatBq" jdbcType="DOUBLE" />
+        <result column="TQHEAT" property="heatTq" jdbcType="DOUBLE" />
+        <result column="BQCOAL" property="coalBq" jdbcType="DOUBLE" />
+        <result column="TQCOAL" property="coalTq" jdbcType="DOUBLE" />
+        <result column="BQOIL" property="oilBq" jdbcType="DOUBLE" />
+        <result column="TQOIL" property="oilTq" jdbcType="DOUBLE" />
+    </resultMap>
+
+    <select id="selectEnergyDetail" parameterType="java.util.Map" resultMap="BaseResultMap">
+
+        SELECT
+        d1.UNITTYPE id,
+        d1.dht bqdht,
+        d1.bqwater bqwater,
+        d1.bqe bqelectric,
+        d1.bqg bqgas,
+        d1.bqh bqheat,
+        d1.bqc bqcoal,
+        d1.bql bqoil,
+        d2.dht tqdht,
+        d2.bqwater tqwater,
+        d2.bqe tqelectric,
+        d2.bqg tqgas,
+        d2.bqh tqheat,
+        d2.bqc tqcoal,
+        d2.bql tqoil
+        from
+
+        (SELECT type.unittype,type.typename,
+        IFNULL(c1.dht,0) dht,IFNULL(c1.bqwater,0)bqwater,IFNULL(c1.bqe,0)bqe,IFNULL(c1.bqg,0)bqg,IFNULL(c1.bqh,0)bqh,IFNULL(c1.bqc,0)bqc,IFNULL(c1.bql,0)bql
+        from (SELECT 1 unittype,'源' typename FROM DUAL
+        UNION
+        SELECT 2 unittype,'网' typename FROM DUAL
+        UNION
+        SELECT 3 unittype,'站' typename FROM DUAL
+        UNION
+        SELECT 4 unittype,'先' typename FROM DUAL
+        UNION
+        SELECT 5 unittype,'户' typename FROM DUAL) type
+        LEFT JOIN
+        (SELECT  ROUND(IFNULL(sum(CASE a.TYPE WHEN '4' THEN 0 ELSE a.BM END)/AVG(a.AREA),0),2) dht,a.UNITTYPE,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '1' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqwater,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '2' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqe,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '3' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqg,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '4' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqh,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '5' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqc,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '6' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bql
+        from (
+        SELECT  sum(h.BM) BM,sum(h.DOSAGE) DOSAGE,h.TYPE,ou.UNITTYPE,SUM(h.AREA) AREA  from (
+        SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR})) and o.COM_ID=#{comId,jdbcType=VARCHAR}) m,v_emc_unit v
+
+        WHERE m.ID=v.ORGID
+        <if test="feedType != null and feedType !=''">
+        and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        <if test="orgType != null and orgType !=''">
+            AND v.UNITTYPE=#{orgType}
+        </if>
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (SELECT fd.UNITID,SUM(fd.DOSAGE) DOSAGE,SUM(fd.DOSAGE*fd.COAL_COEF) BM,et.TYPE,AVG(fd.AREA) AREA
+        FROM ${tableName} fd LEFT JOIN t_emc_energy_type et on fd.TYPEID=et.ID
+        WHERE  fd.DOSAGE_TIME &gt;=#{startTime,jdbcType=VARCHAR} AND fd.DOSAGE_TIME &lt;= #{endTime,jdbcType=VARCHAR}
+        GROUP BY fd.UNITID,et.TYPE) h on ou.UNITID=h.UNITID
+        GROUP BY h.TYPE,ou.UNITTYPE
+        ) a
+        GROUP BY a.UNITTYPE)c1 ON c1.UNITTYPE=type.unittype)d1
+        LEFT JOIN
+        (SELECT type.unittype,type.typename,
+        IFNULL(c1.dht,0) dht,IFNULL(c1.bqwater,0)bqwater,IFNULL(c1.bqe,0)bqe,IFNULL(c1.bqg,0)bqg,IFNULL(c1.bqh,0)bqh,IFNULL(c1.bqc,0)bqc,IFNULL(c1.bql,0)bql
+        from (SELECT 1 unittype,'源' typename FROM DUAL
+        UNION
+        SELECT 2 unittype,'网' typename FROM DUAL
+        UNION
+        SELECT 3 unittype,'站' typename FROM DUAL
+        UNION
+        SELECT 4 unittype,'先' typename FROM DUAL
+        UNION
+        SELECT 5 unittype,'户' typename FROM DUAL) type
+        LEFT JOIN
+        (SELECT  ROUND(IFNULL(sum(CASE a.TYPE WHEN '4' THEN 0 ELSE a.BM END)/AVG(a.AREA),0),2) dht,a.UNITTYPE,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '1' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqwater,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '2' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqe,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '3' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqg,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '4' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqh,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '5' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqc,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '6' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bql
+        from (
+        SELECT  sum(h.BM) BM,sum(h.DOSAGE) DOSAGE,h.TYPE,ou.UNITTYPE,SUM(h.AREA) AREA  from (
+        SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR})) and o.COM_ID=#{comId,jdbcType=VARCHAR}) m,v_emc_unit v
+
+        WHERE m.ID=v.ORGID
+        <if test="feedType != null and feedType !=''">
+        and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        <if test="orgType != null and orgType !=''">
+            AND v.UNITTYPE=#{orgType}
+        </if>
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (SELECT fd.UNITID,SUM(fd.DOSAGE) DOSAGE,SUM(fd.DOSAGE*fd.COAL_COEF) BM,et.TYPE,AVG(fd.AREA) AREA
+        FROM ${tableName} fd LEFT JOIN t_emc_energy_type et on fd.TYPEID=et.ID
+        WHERE  fd.DOSAGE_TIME &gt;=#{startTimeTq,jdbcType=VARCHAR} AND fd.DOSAGE_TIME &lt;= #{endTimeTq,jdbcType=VARCHAR}
+        GROUP BY fd.UNITID,et.TYPE) h on ou.UNITID=h.UNITID
+        GROUP BY h.TYPE,ou.UNITTYPE
+        ) a
+        GROUP BY a.UNITTYPE)c1 ON c1.UNITTYPE=type.unittype)d2 on d1.UNITTYPE=d2.UNITTYPE
+        ORDER BY d1.UNITTYPE
+
+    </select>
+
+    <select id="selectEnergyProportion" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT  ROUND(IFNULL(sum(CASE a.TYPE WHEN '4' THEN 0 ELSE a.BM END)/AVG(a.AREA),0),2) value ,
+            CASE a.UNITTYPE     WHEN '1' THEN '供热源'
+								WHEN '2' THEN '一次网'
+								WHEN '3' THEN '换热站'
+								WHEN '4' THEN '二次网'
+								WHEN '5' THEN '用户'
+       END AS name
+        from (
+        SELECT  sum(h.BM) BM,sum(h.DOSAGE) DOSAGE,h.TYPE,ou.UNITTYPE,SUM(h.AREA) AREA  from (
+        SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR})) and o.COM_ID=#{comId,jdbcType=VARCHAR}) c,v_emc_unit v
+
+        WHERE c.ID=v.ORGID
+        <if test="feedType != null and feedType !=''">
+        and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        <if test="orgType != null and orgType !=''">
+            AND v.UNITTYPE=#{orgType}
+        </if>
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (SELECT fd.UNITID,SUM(fd.DOSAGE) DOSAGE,SUM(fd.DOSAGE*fd.COAL_COEF) BM,et.TYPE,AVG(fd.AREA) AREA
+        FROM ${tableName} fd LEFT JOIN t_emc_energy_type et on fd.TYPEID=et.ID
+        WHERE  fd.DOSAGE_TIME &gt;=#{startTime,jdbcType=VARCHAR} AND fd.DOSAGE_TIME &lt;= #{endTime,jdbcType=VARCHAR}
+        GROUP BY fd.UNITID,et.TYPE) h on ou.UNITID=h.UNITID
+        GROUP BY h.TYPE,ou.UNITTYPE
+        ) a
+        GROUP BY a.UNITTYPE
+
+    </select>
+
+    <select  id="selectEnergyTrend" parameterType="java.util.Map" resultType="java.util.Map">
+        select DATE_FORMAT(c.DOSAGE_TIME,'%Y-%m-%d') DATE,sum(c.num) VALUE ,
+        CASE b.UNITTYPE WHEN '1' THEN '供热源'
+        WHEN '2' THEN '一次网'
+        WHEN '3' THEN '换热站'
+        WHEN '4' THEN '二次线'
+        WHEN '5' THEN '用户'
+        END AS NAME
+
+        from (select b.UNITID,b.DOSAGE_TIME,sum(b.num) num from (SELECT
+        DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d') DOSAGE_TIME,
+        a.TYPEID,
+        a.UNITID,
+        sum(a.DOSAGE * a.COAL_COEF) as num
+        FROM
+        ${tableName} a
+        where 1= 1
+        and a.DOSAGE_TIME &gt;=#{startTime,jdbcType=VARCHAR}
+        and a.DOSAGE_TIME &lt;= #{endTime,jdbcType=VARCHAR}
+        GROUP BY
+        DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d'),
+        a.TYPEID,
+        a.UNITID) b group by b.UNITID,b.DOSAGE_TIME) c,	(select * from v_emc_unit where 1=1
+        <if test="feedType != null and feedType !=''"> and HEAT_TYPE =#{feedType,jdbcType=VARCHAR} </if>
+        <if test="orgType != null and orgType !=''">
+            AND UNITTYPE=#{orgType}
+        </if>
+        AND ORGID in (SELECT id FROM t_emc_org where FIND_IN_SET( id,emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR})))) b
+        WHERE
+        c.UNITID = b.UNITID
+        GROUP BY b.UNITTYPE, DATE_FORMAT(c.DOSAGE_TIME,'%Y-%m-%d') order by DATE_FORMAT(c.DOSAGE_TIME,'%Y-%m-%d')asc
+        ;
+    </select>
+
+    <select  id="selectEnergyTong" parameterType="java.util.Map" resultType="java.util.Map">
+
+        SELECT d1.UNITTYPE,d1.dht BQ,
+        d2.dht TQ,
+        CASE d1.UNITTYPE WHEN '1' THEN '供热源'
+        WHEN '2' THEN '一次网'
+        WHEN '3' THEN '换热站'
+        WHEN '4' THEN '二次线'
+        WHEN '5' THEN '用户'
+        END AS NAME
+        from
+
+        (SELECT  ROUND(IFNULL(sum(CASE a.TYPE WHEN '4' THEN 0 ELSE a.BM END)/AVG(a.AREA),0),2) dht,a.UNITTYPE,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '1' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqwater,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '2' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqe,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '3' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqg,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '4' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqh,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '5' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqc,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '6' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bql
+        from (
+        SELECT  sum(h.BM) BM,sum(h.DOSAGE) DOSAGE,h.TYPE,ou.UNITTYPE,SUM(h.AREA) AREA  from (
+        SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR})) and o.COM_ID=#{comId,jdbcType=VARCHAR}) m,v_emc_unit v
+
+        WHERE m.ID=v.ORGID
+        <if test="feedType != null and feedType !=''">
+        and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        <if test="orgType != null and orgType !=''">
+            AND v.UNITTYPE=#{orgType}
+        </if>
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (SELECT fd.UNITID,SUM(fd.DOSAGE) DOSAGE,SUM(fd.DOSAGE*fd.COAL_COEF) BM,et.TYPE,AVG(fd.AREA) AREA
+        FROM ${tableName} fd LEFT JOIN t_emc_energy_type et on fd.TYPEID=et.ID
+        WHERE  fd.DOSAGE_TIME &gt;=#{startTime,jdbcType=VARCHAR} AND fd.DOSAGE_TIME &lt;= #{endTime,jdbcType=VARCHAR}
+        GROUP BY fd.UNITID,et.TYPE) h on ou.UNITID=h.UNITID
+        GROUP BY h.TYPE,ou.UNITTYPE
+        ) a
+        GROUP BY a.UNITTYPE)d1
+        LEFT JOIN
+        (SELECT  ROUND(IFNULL(sum(CASE a.TYPE WHEN '4' THEN 0 ELSE a.BM END)/AVG(a.AREA),0),2) dht,a.UNITTYPE,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '1' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqwater,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '2' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqe,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '3' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqg,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '4' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqh,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '5' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqc,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '6' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bql
+        from (
+        SELECT  sum(h.BM) BM,sum(h.DOSAGE) DOSAGE,h.TYPE,ou.UNITTYPE,SUM(h.AREA) AREA  from (
+        SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR})) and o.COM_ID=#{comId,jdbcType=VARCHAR}) m,v_emc_unit v
+
+        WHERE m.ID=v.ORGID
+        <if test="feedType != null and feedType !=''">
+        and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        <if test="orgType != null and orgType !=''">
+            AND v.UNITTYPE=#{orgType}
+        </if>
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (SELECT fd.UNITID,SUM(fd.DOSAGE) DOSAGE,SUM(fd.DOSAGE*fd.COAL_COEF) BM,et.TYPE,AVG(fd.AREA) AREA
+        FROM ${tableName} fd LEFT JOIN t_emc_energy_type et on fd.TYPEID=et.ID
+        WHERE  fd.DOSAGE_TIME &gt;=#{startTimeTq,jdbcType=VARCHAR} AND fd.DOSAGE_TIME &lt;= #{endTimeTq,jdbcType=VARCHAR}
+        GROUP BY fd.UNITID,et.TYPE) h on ou.UNITID=h.UNITID
+        GROUP BY h.TYPE,ou.UNITTYPE
+        ) a
+        GROUP BY a.UNITTYPE)d2 on d1.UNITTYPE=d2.UNITTYPE
+    </select>
+
+
+    <select id="exportEnergyDetail" parameterType="java.util.Map" resultMap="BaseResultMap">
+        SELECT
+        d1.UNITTYPE id,
+        (case d1.unittype when '1' then '供热源' when '2' then '一次网' when '3' then '换热站' when '4' then '二次线' when '5' then '民户' end) unitname,
+        d1.dht bqdht,
+        d1.bqwater bqwater,
+        d1.bqe bqelectric,
+        d1.bqg bqgas,
+        d1.bqh bqheat,
+        d1.bqc bqcoal,
+        d1.bql bqoil,
+        d2.dht tqdht,
+        d2.bqwater tqwater,
+        d2.bqe tqelectric,
+        d2.bqg tqgas,
+        d2.bqh tqheat,
+        d2.bqc tqcoal,
+        d2.bql tqoil
+        from
+
+        (SELECT type.unittype,type.typename,
+        IFNULL(c1.dht,0) dht,IFNULL(c1.bqwater,0)bqwater,IFNULL(c1.bqe,0)bqe,IFNULL(c1.bqg,0)bqg,IFNULL(c1.bqh,0)bqh,IFNULL(c1.bqc,0)bqc,IFNULL(c1.bql,0)bql
+        from (SELECT 1 unittype,'源' typename FROM DUAL
+        UNION
+        SELECT 2 unittype,'网' typename FROM DUAL
+        UNION
+        SELECT 3 unittype,'站' typename FROM DUAL
+        UNION
+        SELECT 4 unittype,'先' typename FROM DUAL
+        UNION
+        SELECT 5 unittype,'户' typename FROM DUAL) type
+        LEFT JOIN
+        (SELECT  ROUND(IFNULL(sum(CASE a.TYPE WHEN '4' THEN 0 ELSE a.BM END)/AVG(a.AREA),0),2) dht,a.UNITTYPE,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '1' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqwater,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '2' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqe,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '3' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqg,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '4' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqh,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '5' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqc,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '6' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bql
+        from (
+        SELECT  sum(h.BM) BM,sum(h.DOSAGE) DOSAGE,h.TYPE,ou.UNITTYPE,SUM(h.AREA) AREA  from (
+        SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR})) and o.COM_ID=#{comId,jdbcType=VARCHAR}) m,v_emc_unit v
+
+        WHERE m.ID=v.ORGID
+        <if test="feedType != null and feedType !=''">
+        and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        <if test="orgType != null and orgType !=''">
+            AND v.UNITTYPE=#{orgType}
+        </if>
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (SELECT fd.UNITID,SUM(fd.DOSAGE) DOSAGE,SUM(fd.DOSAGE*fd.COAL_COEF) BM,et.TYPE,AVG(fd.AREA) AREA
+        FROM ${tableName} fd LEFT JOIN t_emc_energy_type et on fd.TYPEID=et.ID
+        WHERE  fd.DOSAGE_TIME &gt;=#{startTime,jdbcType=VARCHAR} AND fd.DOSAGE_TIME &lt;= #{endTime,jdbcType=VARCHAR}
+        GROUP BY fd.UNITID,et.TYPE) h on ou.UNITID=h.UNITID
+        GROUP BY h.TYPE,ou.UNITTYPE
+        ) a
+        GROUP BY a.UNITTYPE)c1 ON c1.UNITTYPE=type.unittype)d1
+        LEFT JOIN
+        (SELECT type.unittype,type.typename,
+        IFNULL(c1.dht,0) dht,IFNULL(c1.bqwater,0)bqwater,IFNULL(c1.bqe,0)bqe,IFNULL(c1.bqg,0)bqg,IFNULL(c1.bqh,0)bqh,IFNULL(c1.bqc,0)bqc,IFNULL(c1.bql,0)bql
+        from (SELECT 1 unittype,'源' typename FROM DUAL
+        UNION
+        SELECT 2 unittype,'网' typename FROM DUAL
+        UNION
+        SELECT 3 unittype,'站' typename FROM DUAL
+        UNION
+        SELECT 4 unittype,'先' typename FROM DUAL
+        UNION
+        SELECT 5 unittype,'户' typename FROM DUAL) type
+        LEFT JOIN
+        (SELECT  ROUND(IFNULL(sum(CASE a.TYPE WHEN '4' THEN 0 ELSE a.BM END)/AVG(a.AREA),0),2) dht,a.UNITTYPE,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '1' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqwater,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '2' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqe,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '3' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqg,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '4' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqh,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '5' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bqc,
+        ROUND(IFNULL(MAX(CASE a.TYPE WHEN '6' THEN a.DOSAGE ELSE 0 END)/AVG(a.AREA),0),2) bql
+        from (
+        SELECT  sum(h.BM) BM,sum(h.DOSAGE) DOSAGE,h.TYPE,ou.UNITTYPE,SUM(h.AREA) AREA  from (
+        SELECT v.UNITTYPE,v.UNITID from (SELECT ID FROM
+        t_emc_org o WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId,jdbcType=VARCHAR})) and o.COM_ID=#{comId,jdbcType=VARCHAR}) m,v_emc_unit v
+
+        WHERE m.ID=v.ORGID
+        <if test="feedType != null and feedType !=''">
+        and v.HEAT_TYPE=#{feedType,jdbcType=VARCHAR}
+        </if>
+        <if test="orgType != null and orgType !=''">
+            AND v.UNITTYPE=#{orgType}
+        </if>
+        GROUP BY v.UNITID,v.UNITTYPE
+        ) ou
+        LEFT JOIN
+        (SELECT fd.UNITID,SUM(fd.DOSAGE) DOSAGE,SUM(fd.DOSAGE*fd.COAL_COEF) BM,et.TYPE,AVG(fd.AREA) AREA
+        FROM ${tableName} fd LEFT JOIN t_emc_energy_type et on fd.TYPEID=et.ID
+        WHERE  fd.DOSAGE_TIME &gt;=#{startTimeTq,jdbcType=VARCHAR} AND fd.DOSAGE_TIME &lt;= #{endTimeTq,jdbcType=VARCHAR}
+        GROUP BY fd.UNITID,et.TYPE) h on ou.UNITID=h.UNITID
+        GROUP BY h.TYPE,ou.UNITTYPE
+        ) a
+        GROUP BY a.UNITTYPE)c1 ON c1.UNITTYPE=type.unittype)d2 on d1.UNITTYPE=d2.UNITTYPE
+        ORDER BY d1.UNITTYPE
+    </select>
+</mapper>

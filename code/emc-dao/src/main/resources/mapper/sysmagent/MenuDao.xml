@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.auth.dao.MenuDao">
+    <resultMap id="BaseResultMap" type="com.huak.auth.model.Menu" >
+        <constructor>
+            <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="MENU_NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="MENU_URL" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="P_MENU_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="CREATOR" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="CREAT_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="MENU_TYPE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+            <arg column="TYPE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+            <arg column="SEQ" javaType="java.lang.Integer" jdbcType="INTEGER" />
+            <arg column="MENU_ICON" javaType="java.lang.String" jdbcType="INTEGER" />
+        </constructor>
+    </resultMap>
+
+    <resultMap id="TreeResultMap" type="java.util.Map" >
+        <constructor>
+            <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="MENU_NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="P_MENU_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="MENU_TYPE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+            <arg column="TYPE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+        </constructor>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        ID, MENU_NAME, MENU_URL, P_MENU_ID, CREATOR,CREAT_TIME, MENU_TYPE, TYPE,SEQ,MENU_ICON
+    </sql>
+    <sql id="Base_Column_List_Vo">
+        ID, MENU_NAME, P_MENU_ID,  MENU_TYPE, TYPE
+    </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        ID, MENU_NAME, MENU_URL, P_MENU_ID, CREATOR,CREAT_TIME, MENU_TYPE, TYPE,SEQ,MENU_ICON
+        from t_emc_auth_menu
+        where ID = #{id,jdbcType=VARCHAR}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+        delete from t_emc_auth_menu
+        where ID = #{id,jdbcType=VARCHAR}
+    </delete>
+    <insert id="insert" parameterType="com.huak.auth.model.Menu">
+        insert into t_emc_auth_menu (ID, MENU_NAME, MENU_URL,
+        P_MENU_ID, CREATOR, CREAT_TIME,
+        MENU_TYPE, TYPE,SEQ,MENU_ICON)
+        values (#{id,jdbcType=VARCHAR}, #{menuName,jdbcType=VARCHAR}, #{menuUrl,jdbcType=VARCHAR},
+        #{pMenuId,jdbcType=VARCHAR}, #{creator,jdbcType=VARCHAR}, #{creatTime,jdbcType=VARCHAR},
+        #{menuType,jdbcType=TINYINT}, #{type,jdbcType=TINYINT}, #{seq,jdbcType=INTEGER},#{menuIcon,jdbcType=VARCHAR})
+    </insert>
+    <insert id="insertSelective" parameterType="com.huak.auth.model.Menu">
+        insert into t_emc_auth_menu
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                ID,
+            </if>
+            <if test="menuName != null">
+                MENU_NAME,
+            </if>
+            <if test="menuUrl != null">
+                MENU_URL,
+            </if>
+            <if test="pMenuId != null">
+                P_MENU_ID,
+            </if>
+            <if test="creator != null">
+                CREATOR,
+            </if>
+            <if test="creatTime != null">
+                CREAT_TIME,
+            </if>
+            <if test="menuType != null">
+                MENU_TYPE,
+            </if>
+            <if test="type != null">
+                TYPE,
+            </if>
+            <if test="seq != null">
+                SEQ,
+            </if>
+            <if test="menuIcon != null">
+                MENU_ICON,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="menuName != null">
+                #{menuName,jdbcType=VARCHAR},
+            </if>
+            <if test="menuUrl != null">
+                #{menuUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="pMenuId != null">
+                #{pMenuId,jdbcType=VARCHAR},
+            </if>
+            <if test="creator != null">
+                #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="creatTime != null">
+                #{creatTime,jdbcType=VARCHAR},
+            </if>
+            <if test="menuType != null">
+                #{menuType,jdbcType=TINYINT},
+            </if>
+            <if test="type != null">
+                #{type,jdbcType=TINYINT},
+            </if>
+            <if test="seq != null">
+                #{seq,jdbcType=INTEGER}
+            </if>
+            <if test="menuIcon != null">
+                #{menuIcon,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.huak.auth.model.Menu">
+        update t_emc_auth_menu
+        <set>
+            <if test="menuName != null">
+                MENU_NAME = #{menuName,jdbcType=VARCHAR},
+            </if>
+            <if test="menuUrl != null">
+                MENU_URL = #{menuUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="pMenuId != null">
+                P_MENU_ID = #{pMenuId,jdbcType=VARCHAR},
+            </if>
+            <if test="creator != null">
+                CREATOR = #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="creatTime != null">
+                CREAT_TIME = #{creatTime,jdbcType=VARCHAR},
+            </if>
+            <if test="menuType != null">
+                MENU_TYPE = #{menuType,jdbcType=TINYINT},
+            </if>
+            <if test="type != null">
+                TYPE = #{type,jdbcType=TINYINT},
+            </if>
+            <if test="seq != null">
+                SEQ = #{seq,jdbcType=INTEGER},
+            </if>
+            <if test="menuIcon != null">
+               MENU_ICON = #{menuIcon,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where ID = #{id,jdbcType=VARCHAR}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.huak.auth.model.Menu">
+    update t_emc_auth_menu
+    set MENU_NAME = #{menuName,jdbcType=VARCHAR},
+      MENU_URL = #{menuUrl,jdbcType=VARCHAR},
+      P_MENU_ID = #{pMenuId,jdbcType=VARCHAR},
+      CREATOR = #{creator,jdbcType=VARCHAR},
+      CREAT_TIME = #{creatTime,jdbcType=VARCHAR},
+      MENU_TYPE = #{menuType,jdbcType=TINYINT},
+      TYPE = #{type,jdbcType=TINYINT},
+      SEQ = #{seq,jdbcType=INTEGER},
+       MENU_ICON = #{menuIcon,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+
+    <select id="selectPageByName" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_auth_menu
+        where 1=1
+        <if test="menuName != null and menuName !=''">
+            and  MENU_NAME like CONCAT('%',#{menuName},'%')
+        </if>
+        order by id
+    </select>
+
+
+
+    <select id="selectMenuTree"  resultType="java.util.Map" parameterType="java.util.Map">
+        select
+        ID as id, MENU_NAME as name, P_MENU_ID as pId,
+        'true' open
+        from t_emc_auth_menu
+        where 1=1
+        <if test="menuName != null and menuName !=''">
+            and  MENU_NAME like CONCAT('%',#{menuName},'%')
+        </if>
+        <if test="id != null and id !=''">
+            and  FIND_IN_SET(id,emc_func_menu_getChilds(#{id}))
+            and id != #{id}
+        </if>
+        order by seq
+    </select>
+
+    <select id="selectCheck"  resultType="java.lang.Integer" parameterType="java.util.Map">
+        select
+          count(1)
+        from t_emc_auth_menu
+        where 1=1
+        <if test="menuName != null and menuName !=''">
+            and  MENU_NAME = #{menuName}
+        </if>
+        <if test="seq != null and seq !=''">
+            and  SEQ = #{seq}
+        </if>
+        <if test="pMenuId != null and pMenuId !=''">
+            and  P_MENU_ID = #{pMenuId}
+        </if>
+    </select>
+
+    <delete id="delete"  parameterType="java.lang.String">
+        delete from t_emc_auth_menu
+        where ID in
+        <foreach  index="index" item="id" collection="array" open="(" separator="," close=")"> #{id} </foreach>
+    </delete>
+
+    <select id="selectAuthByMap" parameterType="java.util.Map" resultType="java.util.Map">
+        select
+        ID id,
+        MENU_NAME menuName,
+        MENU_URL menuUrl,
+        P_MENU_ID pMenuId,
+        CREATOR creator,
+        CREAT_TIME createTime,
+        MENU_TYPE menuType,
+        TYPE type,SEQ seq,MENU_ICON
+        from t_emc_auth_menu
+        where 1=1
+        <if test="menuName != null and menuName !=''">
+            and  MENU_NAME = #{menuName}
+        </if>
+        <if test="menuType != null and menuType !=''">
+            and  MENU_TYPE = #{menuType}
+        </if>
+        <if test="pMenuId != null and pMenuId !=''">
+            and  P_MENU_ID = #{pMenuId}
+        </if>
+        order by SEQ ASC
+    </select>
+
+    <select id="getMenuModel" parameterType="java.util.Map" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_auth_menu
+        where 1=1
+        <if test="menuName != null and menuName !=''">
+            and  MENU_NAME=#{menuName}
+        </if>
+        <if test="menuType != null and menuType !=''">
+            and  MENU_TYPE=#{menuType}
+        </if>
+        <if test="type != null and type !=''">
+            and  TYPE=#{type}
+        </if>
+        limit 1
+    </select>
+</mapper>

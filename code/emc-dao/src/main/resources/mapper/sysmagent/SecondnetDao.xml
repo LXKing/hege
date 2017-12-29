@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.org.dao.SecondnetDao">
+    <resultMap id="BaseResultMap" type="com.huak.org.model.vo.Secondnet">
+        <constructor>
+
+            <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="LINE_NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="LINE_CODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="NET_TYPE_ID" javaType="java.lang.Byte" jdbcType="TINYINT" />
+            <arg column="LENGTH" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="CELL_NUM" javaType="java.lang.Integer" jdbcType="INTEGER" />
+            <arg column="PART_NUM" javaType="java.lang.Integer" jdbcType="INTEGER" />
+            <arg column="MEDIUM" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="ORG_ID" javaType="java.lang.Long" jdbcType="BIGINT" />
+            <arg column="COM_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="HEAT_TYPE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+            <arg column="FEED_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="STATION_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="stationName" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="feedName" javaType="java.lang.String" jdbcType="VARCHAR" />
+        </constructor>
+    </resultMap>
+    <sql id="Base_Column_List">
+        ID,LINE_NAME,LINE_CODE , NET_TYPE_ID, LENGTH, CELL_NUM, PART_NUM, MEDIUM,ORG_ID,COM_ID,HEAT_TYPE,FEED_ID,STATION_ID
+    </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        ID,LINE_NAME,LINE_CODE , NET_TYPE_ID, LENGTH, CELL_NUM, PART_NUM, MEDIUM,ORG_ID,COM_ID,
+        HEAT_TYPE,
+        FEED_ID,
+        STATION_ID,
+        null stationName,
+        null feedName
+        from t_emc_unit_line
+        where ID = #{id,jdbcType=VARCHAR}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+        delete from t_emc_unit_line
+        where ID = #{id,jdbcType=VARCHAR}
+    </delete>
+    <!--NET_NAME,NET_CODE ,ORG_ID,COM_ID HEAT_TYPE,FEED_ID,STATION_ID-->
+
+    <insert id="insert" parameterType="com.huak.org.model.vo.Secondnet">
+        insert into t_emc_unit_line (ID,LINE_NAME,LINE_CODE, NET_TYPE_ID, LENGTH,
+        CELL_NUM, PART_NUM, MEDIUM,ORG_ID,COM_ID,HEAT_TYPE,FEED_ID,STATION_ID
+        )
+        values (#{id,jdbcType=VARCHAR},#{lineName,jdbcType=VARCHAR},#{lineCode,jdbcType=VARCHAR}, #{netTypeId,jdbcType=TINYINT}, #{length,jdbcType=DOUBLE},
+        #{cellNum,jdbcType=INTEGER}, #{partNum,jdbcType=INTEGER}, #{medium,jdbcType=VARCHAR} ,#{orgId,jdbcType=BIGINT} ,#{comId,jdbcType=VARCHAR},
+        #{heatType,jdbcType=TINYINT},#{feedId,jdbcType=VARCHAR}, #{stationId,jdbcType=VARCHAR}
+        )
+    </insert>
+    <insert id="insertSelective" parameterType="com.huak.org.model.vo.Secondnet">
+        insert into t_emc_unit_net
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                ID,
+            </if>
+            <if test="lineName != null">
+                LINE_NAME,
+            </if>
+            <if test="lineCode != null">
+                LINE_CODE,
+            </if>
+            <if test="netTypeId != null">
+                NET_TYPE_ID,
+            </if>
+            <if test="length != null">
+                LENGTH,
+            </if>
+            <if test="cellNum != null">
+                CELL_NUM,
+            </if>
+            <if test="partNum != null">
+                PART_NUM,
+            </if>
+            <if test="medium != null">
+                MEDIUM,
+            </if>
+            <if test="orgId != null">
+                ORG_ID,
+            </if>
+            <if test="comId != null">
+                COM_ID,
+            </if>
+            <if test="heatType != null">
+                HEAT_TYPE,
+            </if>
+            <if test="feedId != null">
+                FEED_ID,
+            </if>
+            <if test="stationId != null">
+                STATION_ID,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="lineName != null">
+                #{lineName,jdbcType=VARCHAR},
+            </if>
+            <if test="lineCode != null">
+                #{lineCode,jdbcType=VARCHAR},
+            </if>
+            <if test="netTypeId != null">
+                #{netTypeId,jdbcType=TINYINT},
+            </if>
+            <if test="length != null">
+                #{length,jdbcType=DOUBLE},
+            </if>
+            <if test="cellNum != null">
+                #{cellNum,jdbcType=INTEGER},
+            </if>
+            <if test="partNum != null">
+                #{partNum,jdbcType=INTEGER},
+            </if>
+            <if test="medium != null">
+                #{medium,jdbcType=VARCHAR},
+            </if>
+            <if test="orgId != null">
+                #{orgId,jdbcType=BIGINT},
+            </if>
+            <if test="comId != null">
+                #{comId,jdbcType=VARCHAR},
+            </if>
+            <if test="heatType != null">
+                #{heatType,jdbcType=TINYINT},
+            </if>
+            <if test="feedId != null">
+                #{feedId,jdbcType=VARCHAR},
+            </if>
+            <if test="stationId != null">
+                #{stationId,jdbcType=VARCHAR}
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.huak.org.model.vo.Secondnet">
+        update t_emc_unit_line
+        <set>
+            <if test="lineName != null">
+                LINE_NAME = #{lineName,jdbcType=VARCHAR},
+            </if>
+            <if test="lineCode != null">
+                LINE_CODE = #{lineCode,jdbcType=VARCHAR},
+            </if>
+            <if test="netTypeId != null">
+                NET_TYPE_ID = #{netTypeId,jdbcType=TINYINT},
+            </if>
+            <if test="length != null">
+                LENGTH = #{length,jdbcType=DOUBLE},
+            </if>
+            <if test="cellNum != null">
+                CELL_NUM = #{cellNum,jdbcType=INTEGER},
+            </if>
+            <if test="partNum != null">
+                PART_NUM = #{partNum,jdbcType=INTEGER},
+            </if>
+            <if test="medium != null">
+                MEDIUM = #{medium,jdbcType=VARCHAR},
+            </if>
+            <if test="orgId != null">
+                ORG_ID = #{orgId,jdbcType=BIGINT},
+            </if>
+            <if test="comId != null">
+                COM_ID = #{comId,jdbcType=VARCHAR},
+            </if>
+            <if test="heatType != null">
+                HEAT_TYPE=#{heatType,jdbcType=TINYINT},
+            </if>
+            <if test="feedId != null">
+                FEED_ID=#{feedId,jdbcType=VARCHAR},
+            </if>
+            <if test="stationId != null">
+               STATION_ID = #{stationId,jdbcType=VARCHAR}
+            </if>
+        </set>
+        where ID = #{id,jdbcType=VARCHAR}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.huak.org.model.vo.Secondnet">
+        update t_emc_unit_line
+        set
+        LINE_NAME=#{lineName,jdbcType=VARCHAR},
+        LINE_CODE=#{lineCode,jdbcType=VARCHAR},
+        NET_TYPE_ID = #{netTypeId,jdbcType=TINYINT},
+        LENGTH = #{length,jdbcType=DOUBLE},
+        CELL_NUM = #{cellNum,jdbcType=INTEGER},
+        PART_NUM = #{partNum,jdbcType=INTEGER},
+        MEDIUM = #{medium,jdbcType=VARCHAR},
+        ORG_ID = #{orgId,jdbcType=BIGINT},
+        COM_ID = #{comId,jdbcType=VARCHAR},
+        HEAT_TYPE=#{heatType,jdbcType=TINYINT},
+        FEED_ID=#{feedId,jdbcType=VARCHAR},
+        STATION_ID = #{stationId,jdbcType=VARCHAR}
+        where ID = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <select id="selectPageByMap" parameterType="java.util.HashMap" resultMap="BaseResultMap">
+        SELECT
+
+        l.ID,
+        l.LINE_NAME,
+        l.LINE_CODE,
+        l.NET_TYPE_ID,
+        l.LENGTH,
+        l.CELL_NUM,
+        l.PART_NUM,
+        l.MEDIUM,
+        l.ORG_ID,
+        l.COM_ID,
+        l.HEAT_TYPE,
+        l.FEED_ID,
+        l.STATION_ID,
+        s.STATION_NAME as stationName,
+        f.FEED_NAME as feedName
+        FROM t_emc_unit_line l
+        LEFT JOIN t_emc_unit_station s on l.STATION_ID=s.ID
+        LEFT JOIN t_emc_unit_feed f on l.FEED_ID=f.ID
+        where 1=1
+        <if test="lineName != null and lineName !=''">
+            and  l.LINE_NAME like concat(concat('%',#{lineName}),'%')
+        </if>
+        <if test="lineCode != null and lineCode !=''">
+            and  l.LINE_CODE like concat(concat('%',#{lineCode}),'%')
+        </if>
+
+        <if test="netTypeId != null and netTypeId !=''">
+            and  l.NET_TYPE_ID =  #{netTypeId,jdbcType=TINYINT}
+        </if>
+
+        <if test="length != null and length!=''">
+            and  l.LENGTH = #{length,jdbcType=DOUBLE}
+        </if>
+        <if test="cellNum != null and cellNum!=''">
+            and l.CELL_NUM = #{cellNum,jdbcType=INTEGER}
+        </if>
+        <if test="partNum != null and partNum!=''">
+            and  l.PART_NUM = #{partNum,jdbcType=INTEGER}
+        </if>
+        <if test="medium != null and medium!=''">
+            and  l.MEDIUM = #{medium,jdbcType=VARCHAR}
+        </if>
+        <if test="orgId != null and orgId!=''">
+            and  l.ORG_ID = #{orgId,jdbcType=BIGINT}
+        </if>
+        <if test="comId != null and comId!=''">
+            and  l.COM_ID = #{comId,jdbcType=VARCHAR}
+        </if>
+        <if test="heatType != null and heatType!=''">
+            and l.HEAT_TYPE=#{heatType,jdbcType=TINYINT}
+        </if>
+        <if test="feedId != null and feedId != ''">
+            and l.FEED_ID=#{feedId,jdbcType=VARCHAR}
+        </if>
+        <if test="stationId != null and stationId != ''">
+            and l.STATION_ID = #{stationId,jdbcType=VARCHAR}
+        </if>
+        order by id
+    </select>
+    <select id="selectLineByMap" parameterType="java.util.HashMap" resultType="java.util.Map">
+        SELECT
+        l.ID,
+        l.LINE_NAME,
+        l.LINE_CODE,
+        (CASE l.NET_TYPE_ID WHEN 1 THEN '干线' WHEN 2 THEN '支线' WHEN 3 THEN '联通线' WHEN 4 THEN '户线' ELSE '' END) NET_TYPE_NAME,
+        l.LENGTH,
+        l.CELL_NUM,
+        l.PART_NUM,
+        (CASE l.HEAT_TYPE WHEN 1 THEN '区域供热' WHEN 2 THEN '集中供热' WHEN 3 THEN '尖峰供热'  ELSE '' END) HEAT_NAME,
+        s.STATION_NAME ,
+        f.FEED_NAME,
+        l.MEDIUM
+        FROM t_emc_unit_line l
+        LEFT JOIN t_emc_unit_station s on l.STATION_ID=s.ID
+        LEFT JOIN t_emc_unit_feed f on l.FEED_ID=f.ID
+        where 1=1
+        <if test="lineName != null and lineName !=''">
+            and  l.LINE_NAME like concat(concat('%',#{lineName}),'%')
+        </if>
+        <if test="lineCode != null and lineCode !=''">
+            and  l.LINE_CODE like concat(concat('%',#{lineCode}),'%')
+        </if>
+
+        <if test="netTypeId != null and netTypeId !=''">
+            and  l.NET_TYPE_ID =  #{netTypeId,jdbcType=TINYINT}
+        </if>
+
+        <if test="length != null and length!=''">
+            and  l.LENGTH = #{length,jdbcType=DOUBLE}
+        </if>
+        <if test="cellNum != null and cellNum!=''">
+            and l.CELL_NUM = #{cellNum,jdbcType=INTEGER}
+        </if>
+        <if test="partNum != null and partNum!=''">
+            and  l.PART_NUM = #{partNum,jdbcType=INTEGER}
+        </if>
+        <if test="medium != null and medium!=''">
+            and  l.MEDIUM = #{medium,jdbcType=VARCHAR}
+        </if>
+        <if test="orgId != null and orgId!=''">
+            and  l.ORG_ID = #{orgId,jdbcType=BIGINT}
+        </if>
+        <if test="comId != null and comId!=''">
+            and  l.COM_ID = #{comId,jdbcType=VARCHAR}
+        </if>
+        <if test="heatType != null and heatType!=''">
+            and l.HEAT_TYPE=#{heatType,jdbcType=TINYINT}
+        </if>
+        <if test="feedId != null and feedId != ''">
+            and l.FEED_ID=#{feedId,jdbcType=VARCHAR}
+        </if>
+        <if test="stationId != null and stationId != ''">
+            and l.STATION_ID = #{stationId,jdbcType=VARCHAR}
+        </if>
+        order by id
+    </select>
+</mapper>

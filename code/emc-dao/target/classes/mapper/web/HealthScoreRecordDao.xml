@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.health.dao.HealthScoreRecordDao">
+  <resultMap id="BaseResultMap" type="com.huak.health.model.HealthScoreRecord">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ORG_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="SCORE" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="USERID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="CREATE_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+    <resultMap id="BaseResultMapA" type="com.huak.health.vo.IndexDataA">
+        <constructor>
+            <idArg column="UNITID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="UNITNAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="TYPE" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="DH" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="ENTERPRISE" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="LOCAL" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="INDUSTRY" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="UNIT_METER" javaType="java.lang.String" jdbcType="VARCHAR" />
+        </constructor>
+    </resultMap>
+
+    <resultMap id="BaseResultMapB" type="com.huak.health.vo.IndexTempA">
+        <constructor>
+            <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="STATION_NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="TEMP" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="ROMM_CODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="COMMUNITY_NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="REDE_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="MAXTEMP" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="MINTEMP" javaType="java.lang.Double" jdbcType="DOUBLE" />
+
+        </constructor>
+    </resultMap>
+    <resultMap id="BaseResultMapC" type="com.huak.health.vo.WorkWarnVo">
+        <constructor>
+            <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="ALARM_NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="ALARM_LEVEL" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="MODEL" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="START_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+
+        </constructor>
+    </resultMap>
+  <sql id="Base_Column_List">
+    ID, ORG_ID, SCORE, USERID, CREATE_TIME
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_health_score_record
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_health_score_record
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.huak.health.model.HealthScoreRecord">
+    insert into t_emc_health_score_record (ID, ORG_ID, SCORE, 
+      USERID, CREATE_TIME)
+    values (#{id,jdbcType=VARCHAR}, #{orgId,jdbcType=VARCHAR}, #{score,jdbcType=DOUBLE},
+      #{userid,jdbcType=VARCHAR}, #{createTime,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.huak.health.model.HealthScoreRecord">
+    insert into t_emc_health_score_record
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="orgId != null">
+        ORG_ID,
+      </if>
+      <if test="score != null">
+        SCORE,
+      </if>
+      <if test="userid != null">
+        USERID,
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="orgId != null">
+        #{orgId,jdbcType=VARCHAR},
+      </if>
+      <if test="score != null">
+        #{score,jdbcType=DOUBLE},
+      </if>
+      <if test="userid != null">
+        #{userid,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.health.model.HealthScoreRecord">
+    update t_emc_health_score_record
+    <set>
+      <if test="orgId != null">
+        ORG_ID = #{orgId,jdbcType=VARCHAR},
+      </if>
+      <if test="score != null">
+        SCORE = #{score,jdbcType=DOUBLE},
+      </if>
+      <if test="userid != null">
+        USERID = #{userid,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        CREATE_TIME = #{createTime,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.huak.health.model.HealthScoreRecord">
+    update t_emc_health_score_record
+    set ORG_ID = #{orgId,jdbcType=VARCHAR},
+      SCORE = #{score,jdbcType=DOUBLE},
+      USERID = #{userid,jdbcType=VARCHAR},
+      CREATE_TIME = #{createTime,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+    <select id="selectHealthScoreRecordById" parameterType="java.util.Map" resultMap="BaseResultMap">
+
+     SELECT
+     <include refid="Base_Column_List" />
+     from t_emc_health_score_record sr
+     where sr.ORG_ID=#{orgId,jdbcType=VARCHAR}
+     and sr.USERID=#{userid,jdbcType=VARCHAR}
+     ORDER BY sr.CREATE_TIME desc LIMIT 1
+    </select>
+
+    <select id="getIndexData" parameterType="java.util.Map" resultMap="BaseResultMapA">
+
+        SELECT a.UNITID,a.UNITNAME,b.type TYPE,b.dh DH,c.NAME,c.ENTERPRISE,c.LOCAL,c.INDUSTRY,c.UNIT_METER from
+        (SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE,v.COMID
+        FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET
+        ( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+        WHERE o.ID=v.ORGID
+        AND COMID=#{comId}
+        ) a
+        LEFT JOIN
+        (SELECT
+        b.type,
+        b.unitid,
+        ROUND(AVG(b.dosage) / (avg(b.area)) ,2) dh
+        FROM
+        ( SELECT
+        a.UNITID unitid,
+        b.type type,
+        DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d %H') time,
+        avg(a.AREA) area,
+        avg(a.DOSAGE) dosage
+        FROM
+        t_emc_final_data_hour_tj a
+        LEFT JOIN t_emc_energy_type b ON a.TYPEID = b.id
+        WHERE 1=1
+
+        <if test="comId != null and comId !=''">
+            and  a.COMID  = #{comId}
+        </if>
+        GROUP BY
+        a.UNITID,
+        b.type,
+        DATE_FORMAT(a.DOSAGE_TIME,'%Y-%m-%d %H')
+        ) b
+        GROUP BY
+        b.type,
+        b.UNITID
+        )b on a.UNITID=b.unitid  LEFT JOIN (
+        SELECT
+        f.NAME,
+        e.UNIT_ID,
+        f.ENERGY_TYPE,
+        e.ENTERPRISE,
+        f.UNIT_TYPE,
+        f.UNIT_METER,
+        e. LOCAL,
+        e.INDUSTRY
+        FROM
+        t_emc_index_record e
+        LEFT JOIN t_emc_index_type f ON e.TYPE_ID = f.ID
+        WHERE
+        e.INDEX_TIME = (
+        SELECT
+        max(INDEX_TIME)
+        FROM
+        t_emc_index_record
+        WHERE
+        UNIT_ID = e.UNIT_ID
+        AND TYPE_ID = e.TYPE_ID
+        GROUP BY
+        UNIT_ID,
+        TYPE_ID
+        )
+        <if test="comId != null and comId !=''">
+            and  e.COM_ID  = #{comId}
+        </if>
+        group by f.ENERGY_TYPE,e.UNIT_ID) c on b.unitid=c.UNIT_ID
+
+        where  c.NAME=#{name}
+
+    </select>
+
+    <select id="getIndexTemp" parameterType="java.util.Map" resultMap="BaseResultMapB">
+        SELECT DISTINCT
+            tj.id,tj.STATION_NAME,tj.TEMP,tj.ROMM_CODE,tj.COMMUNITY_NAME,tj.REDE_TIME,t.MAXTEMP,t.MINTEMP
+        FROM
+            t_emc_temperature_tj tj,t_emc_alarm_config_temp t
+        where
+            tj.COM_ID = t.COM_ID
+
+        and tj.REDE_TIME<![CDATA[ >= ]]> #{startTime}
+        and tj.REDE_TIME<![CDATA[ <= ]]> #{endTime}
+        and tj.COM_ID = #{comId}
+    </select>
+
+
+    <select id="getWorkWarnInfo" parameterType="java.util.Map" resultMap="BaseResultMapC">
+
+        SELECT b.ID,b.ALARM_NAME,b.START_TIME,b.MODEL,b.ALARM_LEVEL from
+        (SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE,v.COMID
+        FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET
+        ( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+        WHERE o.ID=v.ORGID
+        AND COMID=#{comId}
+        ) a,
+        (SELECT
+        r.ID,
+        c.ALARM_NAME,
+        c.COM_ID,
+        c.UNIT_ID,
+        c.ALARM_TYPE,
+        (case c.ALARM_LEVEL
+        when 0 then '一级'
+        when 1 then '二级'
+        when 2 then '三级'
+        when 3 then '四级'
+        END) ALARM_LEVEL,
+        (case c.MODEL
+        when 0 then '低低'
+        when 1 then '低'
+        when 2 then '高'
+        when 3 then '高高'
+        END) MODEL ,
+        r.START_TIME
+        FROM
+        t_emc_alarm_config c
+        LEFT JOIN t_emc_alarm_record r ON c.ID = r.CONFIG_ID
+        where r.END_TIME is null and r.START_TIME is not NULL
+        and c.ALARM_NAME like  concat(concat('%',#{alarmName,jdbcType=VARCHAR}),'%')
+        and c.COM_ID=#{comId}
+        ) b  where a.COMID = b.COM_ID and a.UNITID = b.UNIT_ID
+    </select>
+
+</mapper>

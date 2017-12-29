@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.health.dao.AlarmConfigTempDao">
+  <resultMap id="BaseResultMap" type="com.huak.health.model.AlarmConfigTemp">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="COM_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="UNIT_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="MINTEMP" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="MAXTEMP" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="UNIT_TYPE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="ISENABLE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+    </constructor>
+  </resultMap>
+    <resultMap id="BaseResultMapA" type="com.huak.health.vo.AlarmConfigTempVo">
+        <constructor>
+            <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="COM_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="UNIT_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="MINTEMP" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="MAXTEMP" javaType="java.lang.Double" jdbcType="DOUBLE" />
+            <arg column="UNIT_TYPE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+            <arg column="ISENABLE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+            <arg column="ORGID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="ORGNAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="UNITNAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+        </constructor>
+    </resultMap>
+  <sql id="Base_Column_List">
+    ID, COM_ID, UNIT_ID, MINTEMP, MAXTEMP, UNIT_TYPE, ISENABLE
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_alarm_config_temp
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_alarm_config_temp
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.huak.health.model.AlarmConfigTemp">
+    insert into t_emc_alarm_config_temp (ID, COM_ID, UNIT_ID, 
+      MINTEMP, MAXTEMP, UNIT_TYPE, 
+      ISENABLE)
+    values (#{id,jdbcType=VARCHAR}, #{comId,jdbcType=VARCHAR}, #{unitId,jdbcType=VARCHAR}, 
+      #{mintemp,jdbcType=DOUBLE}, #{maxtemp,jdbcType=DOUBLE}, #{unitType,jdbcType=TINYINT}, 
+      #{isenable,jdbcType=TINYINT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.huak.health.model.AlarmConfigTemp">
+    insert into t_emc_alarm_config_temp
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="comId != null">
+        COM_ID,
+      </if>
+      <if test="unitId != null">
+        UNIT_ID,
+      </if>
+      <if test="mintemp != null">
+        MINTEMP,
+      </if>
+      <if test="maxtemp != null">
+        MAXTEMP,
+      </if>
+      <if test="unitType != null">
+        UNIT_TYPE,
+      </if>
+      <if test="isenable != null">
+        ISENABLE,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="comId != null">
+        #{comId,jdbcType=VARCHAR},
+      </if>
+      <if test="unitId != null">
+        #{unitId,jdbcType=VARCHAR},
+      </if>
+      <if test="mintemp != null">
+        #{mintemp,jdbcType=DOUBLE},
+      </if>
+      <if test="maxtemp != null">
+        #{maxtemp,jdbcType=DOUBLE},
+      </if>
+      <if test="unitType != null">
+        #{unitType,jdbcType=TINYINT},
+      </if>
+      <if test="isenable != null">
+        #{isenable,jdbcType=TINYINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.health.model.AlarmConfigTemp">
+    update t_emc_alarm_config_temp
+    <set>
+      <if test="comId != null">
+        COM_ID = #{comId,jdbcType=VARCHAR},
+      </if>
+      <if test="unitId != null">
+        UNIT_ID = #{unitId,jdbcType=VARCHAR},
+      </if>
+      <if test="mintemp != null">
+        MINTEMP = #{mintemp,jdbcType=DOUBLE},
+      </if>
+      <if test="maxtemp != null">
+        MAXTEMP = #{maxtemp,jdbcType=DOUBLE},
+      </if>
+      <if test="unitType != null">
+        UNIT_TYPE = #{unitType,jdbcType=TINYINT},
+      </if>
+      <if test="isenable != null">
+        ISENABLE = #{isenable,jdbcType=TINYINT},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.huak.health.model.AlarmConfigTemp">
+    update t_emc_alarm_config_temp
+    set COM_ID = #{comId,jdbcType=VARCHAR},
+      UNIT_ID = #{unitId,jdbcType=VARCHAR},
+      MINTEMP = #{mintemp,jdbcType=DOUBLE},
+      MAXTEMP = #{maxtemp,jdbcType=DOUBLE},
+      UNIT_TYPE = #{unitType,jdbcType=TINYINT},
+      ISENABLE = #{isenable,jdbcType=TINYINT}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+
+
+    <select id="selectPageByMap" parameterType="java.util.HashMap" resultMap="BaseResultMapA">
+        SELECT
+        c.*,
+        v.ORGID,
+        v.ORGNAME,
+        v.UNITNAME from t_emc_alarm_config_temp c,v_emc_unit v where c.COM_ID = v.COMID
+        AND c.UNIT_TYPE = v.UNITTYPE
+        AND c.UNIT_ID = v.UNITID
+        <if test="unitType != null and unitType !=''">
+            AND c.UNIT_TYPE=#{unitType}
+        </if>
+        <if test="comId != null and comId !=''">
+            AND c.COM_ID = #{comId}
+        </if>
+        <if test="unitName != null and unitName !=''">
+            and  v.UNITNAME like CONCAT('%',#{unitName},'%')
+        </if>
+        order by c.UNIT_TYPE,c.UNIT_ID,v.UNITNAME ASC
+    </select>
+
+    <select id="checkUnitName" parameterType="java.util.HashMap"  resultType="java.lang.Long">
+        SELECT
+        count(id) num
+        from t_emc_alarm_config_temp
+        where UNIT_ID = #{unitId}
+    </select>
+
+
+    <select id="selectUpdate" parameterType="java.lang.String" resultMap="BaseResultMap">
+
+        SELECT <include refid="Base_Column_List" />  from t_emc_alarm_config_temp c
+                        where c.id=#{id,jdbcType=VARCHAR}
+    </select>
+
+    <select id="exportTempConfig" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT
+        c.ID,c.MAXTEMP,c.MINTEMP,c.COM_ID,c.UNIT_ID,c.UNIT_TYPE,c.ISENABLE,
+        v.UNITNAME from t_emc_alarm_config_temp c,v_emc_unit v where c.COM_ID = v.COMID
+        AND c.UNIT_TYPE = v.UNITTYPE
+        AND c.UNIT_ID = v.UNITID
+        <if test="unitType != null and unitType !=''">
+            AND c.UNIT_TYPE=#{unitType}
+        </if>
+        <if test="comId != null and comId !=''">
+            AND c.COM_ID = #{comId}
+        </if>
+        <if test="unitName != null and unitName !=''">
+            and  v.UNITNAME like CONCAT('%',#{unitName},'%')
+        </if>
+        order by c.UNIT_TYPE,c.UNIT_ID,v.UNITNAME ASC
+    </select>
+
+</mapper>

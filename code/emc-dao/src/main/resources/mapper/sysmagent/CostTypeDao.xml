@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.sys.dao.CostTypeDao">
+  <resultMap id="BaseResultMap" type="com.huak.sys.model.CostType">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="NAME_ZH" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="NAME_EN" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="DOSAGE_UNIT" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    ID, NAME_ZH, NAME_EN, DOSAGE_UNIT
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_cost_type
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_cost_type
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+
+  <insert id="insertSelective" parameterType="com.huak.sys.model.CostType">
+    insert into t_emc_cost_type
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="nameZh != null">
+        NAME_ZH,
+      </if>
+      <if test="nameEn != null">
+        NAME_EN,
+      </if>
+      <if test="dosageUnit != null">
+        DOSAGE_UNIT,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="nameZh != null">
+        #{nameZh,jdbcType=VARCHAR},
+      </if>
+      <if test="nameEn != null">
+        #{nameEn,jdbcType=VARCHAR},
+      </if>
+      <if test="dosageUnit != null">
+        #{dosageUnit,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.sys.model.CostType">
+    update t_emc_cost_type
+    <set>
+      <if test="nameZh != null">
+        NAME_ZH = #{nameZh,jdbcType=VARCHAR},
+      </if>
+      <if test="nameEn != null">
+        NAME_EN = #{nameEn,jdbcType=VARCHAR},
+      </if>
+      <if test="dosageUnit != null">
+        DOSAGE_UNIT = #{dosageUnit,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+
+    <select id="selectPageByMap" parameterType="java.util.HashMap" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_cost_type
+        where 1=1
+        <if test="nameZh != null and nameZh !=''">
+            and  NAME_ZH like CONCAT('%',#{nameZh},'%')
+        </if>
+        <if test="nameEn != null and nameEn !=''">
+            and  NAME_EN = #{nameEn}
+        </if>
+    </select>
+    <select id="exportCostTypes" parameterType="java.util.HashMap" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_cost_type
+        where 1=1
+        <if test="nameZh != null and nameZh !=''">
+            and  NAME_ZH like CONCAT('%',#{nameZh},'%')
+        </if>
+        <if test="nameEn != null and nameEn !=''">
+            and  NAME_EN = #{nameEn}
+        </if>
+    </select>
+    <select id="queryByMap" parameterType="java.util.HashMap" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_cost_type
+        where 1=1
+        <if test="nameZh != null and nameZh !=''">
+            and  NAME_ZH like CONCAT('%',#{nameZh},'%')
+        </if>
+        <if test="nameEn != null and nameEn !=''">
+            and  NAME_EN = #{nameEn}
+        </if>
+    </select>
+
+    <select id="checkNameZh" parameterType="java.util.HashMap" resultType="java.lang.Long">
+        select count(ID) FROM t_emc_cost_type where NAME_ZH = #{nameZh}
+    </select>
+
+    <select id="checkNameEn" parameterType="java.util.HashMap" resultType="java.lang.Long">
+        select count(ID) FROM t_emc_cost_type where NAME_EN = #{nameEn}
+    </select>
+</mapper>

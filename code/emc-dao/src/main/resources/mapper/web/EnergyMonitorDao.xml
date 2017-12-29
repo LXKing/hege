@@ -1,0 +1,786 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huak.home.dao.EnergyMonitorDao" >
+  <resultMap id="BaseResultMap" type="com.huak.home.model.EnergyMonitor" >
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="COMID" property="comid" jdbcType="VARCHAR" />
+    <result column="UNITID" property="unitid" jdbcType="VARCHAR" />
+    <result column="NODEID" property="nodeid" jdbcType="VARCHAR" />
+    <result column="TYPEID" property="typeid" jdbcType="VARCHAR" />
+    <result column="DOSAGE_TIME" property="dosageTime" jdbcType="VARCHAR" />
+    <result column="DOSAGE" property="dosage" jdbcType="DOUBLE" />
+    <result column="AREA" property="area" jdbcType="DOUBLE" />
+    <result column="PRICE" property="price" jdbcType="DECIMAL" />
+    <result column="WTEMP" property="wtemp" jdbcType="DOUBLE" />
+    <result column="CWTEMP" property="cwtemp" jdbcType="DOUBLE" />
+    <result column="COAL_COEF" property="coalCoef" jdbcType="DOUBLE" />
+    <result column="C_COEF" property="cCoef" jdbcType="DOUBLE" />
+    <result column="ITEMP" property="itemp" jdbcType="DOUBLE" />
+    <result column="CITEMP" property="citemp" jdbcType="DOUBLE" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, COMID, UNITID, NODEID, TYPEID, DOSAGE_TIME, DOSAGE, AREA, PRICE, WTEMP, CWTEMP, 
+    COAL_COEF, C_COEF, ITEMP, CITEMP
+  </sql>
+  <select id="get" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from ${tableName}
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+
+    <select id="selectBmBqLine" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT ROUND(SUM(b.BM),2) dayValue,b.DOSAGE_TIME dayDate FROM (
+        SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+        FROM (
+		       SELECT ID FROM t_emc_org WHERE FIND_IN_SET(
+		              ID, emc_func_org_getchilds (#{orgId}))
+		    ) o,v_emc_unit v
+        WHERE o.ID=v.ORGID AND COMID=#{comId}
+        <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+        <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+         ) a,
+        ( SELECT SUM(d.BM) BM,d.UNITID,d.DOSAGE_TIME FROM
+             (SELECT et.ID FROM t_emc_energy_type et
+				<if test="type!=null and type!=''">
+					WHERE  et.TYPE=#{type}
+				</if>
+				<if test="type==null or type==''">
+					WHERE et.TYPE<![CDATA[ <> ]]>'4'
+				</if>
+             ) t ,
+          ( SELECT SUM(dh.DOSAGE*dh.COAL_COEF) BM,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') DOSAGE_TIME,dh.UNITID,dh.TYPEID FROM
+			${tableName} dh
+			WHERE dh.COMID=#{comId} AND dh.DOSAGE_TIME<![CDATA[ >= ]]>#{startTime} AND dh.DOSAGE_TIME<![CDATA[ <= ]]>#{endTime}
+			GROUP BY DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d'),dh.UNITID,dh.TYPEID
+		  ) d
+        WHERE t.ID = d.TYPEID
+        GROUP BY d.UNITID,d.DOSAGE_TIME
+		) b
+        WHERE a.UNITID = b.UNITID
+        GROUP BY b.DOSAGE_TIME
+        ORDER BY b.DOSAGE_TIME
+    </select>
+    <select id="selectBmTqLine" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT ROUND(SUM(b.BM),2) dayValue,b.DOSAGE_TIME dayDate FROM (
+        SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+        FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+        WHERE o.ID=v.ORGID AND COMID=#{comId}
+        <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+        <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+        ) a,
+        (SELECT SUM(d.BM) BM,d.UNITID,d.DOSAGE_TIME FROM
+        (SELECT et.ID FROM t_emc_energy_type et
+        <if test="type!=null and type!=''">
+            WHERE  et.TYPE=#{type}
+        </if>
+        <if test="type==null or type==''">
+            WHERE et.TYPE<![CDATA[ <> ]]>'4'
+        </if>
+        ) t ,
+        (SELECT SUM(dh.DOSAGE*dh.COAL_COEF) BM,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') DOSAGE_TIME,dh.UNITID,dh.TYPEID FROM ${tableName} dh
+        WHERE dh.COMID=#{comId} AND dh.DOSAGE_TIME<![CDATA[ >= ]]>#{startTimeTq} AND dh.DOSAGE_TIME<![CDATA[ <= ]]>#{endTimeTq}
+        GROUP BY DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d'),dh.UNITID,dh.TYPEID) d
+        WHERE t.ID = d.TYPEID
+        GROUP BY d.UNITID,d.DOSAGE_TIME) b
+        WHERE a.UNITID = b.UNITID
+        GROUP BY b.DOSAGE_TIME
+        ORDER BY b.DOSAGE_TIME
+    </select>
+    <select id="selectBmBqTotal" resultType="java.lang.Double" parameterType="java.util.Map">
+        SELECT ROUND(SUM(b.BM),2) BM FROM (
+        SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+        FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+        WHERE o.ID=v.ORGID AND COMID=#{comId}
+        <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+        <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+        ) a,
+        (SELECT SUM(d.BM) BM,d.UNITID FROM
+        (SELECT et.ID FROM t_emc_energy_type et
+        <if test="type!=null and type!=''">
+            WHERE  et.TYPE=#{type}
+        </if>
+        <if test="type==null or type==''">
+            WHERE et.TYPE<![CDATA[ <> ]]>'4'
+        </if>
+        ) t ,
+        (SELECT SUM(dh.DOSAGE*dh.COAL_COEF) BM,dh.UNITID,dh.TYPEID FROM ${tableName} dh
+        WHERE dh.COMID=#{comId} AND dh.DOSAGE_TIME<![CDATA[ >= ]]>#{startTime} AND dh.DOSAGE_TIME<![CDATA[ <= ]]>#{endTime}
+        GROUP BY dh.UNITID,dh.TYPEID) d
+        WHERE t.ID = d.TYPEID
+        GROUP BY d.UNITID) b
+        WHERE a.UNITID = b.UNITID
+    </select>
+    <select id="selectBmTqTotal" resultType="java.lang.Double" parameterType="java.util.Map">
+        SELECT ROUND(SUM(b.BM),2) BM FROM (
+        SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+        FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+        WHERE o.ID=v.ORGID AND COMID=#{comId}
+        <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+        <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+        ) a,
+        (SELECT SUM(d.BM) BM,d.UNITID FROM
+        (SELECT et.ID FROM t_emc_energy_type et
+        <if test="type!=null and type!=''">
+            WHERE  et.TYPE=#{type}
+        </if>
+        <if test="type==null or type==''">
+            WHERE et.TYPE<![CDATA[ <> ]]>'4'
+        </if>
+        ) t ,
+        (SELECT SUM(dh.DOSAGE*dh.COAL_COEF) BM,dh.UNITID,dh.TYPEID FROM ${tableName} dh
+        WHERE dh.COMID=#{comId} AND dh.DOSAGE_TIME<![CDATA[ >= ]]>#{startTimeTq} AND dh.DOSAGE_TIME<![CDATA[ <= ]]>#{endTimeTq}
+        GROUP BY dh.UNITID,dh.TYPEID) d
+        WHERE t.ID = d.TYPEID
+        GROUP BY d.UNITID) b
+        WHERE a.UNITID = b.UNITID
+    </select>
+
+    <select id="selectYlBqLine" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        SUM( CASE b.TYPE WHEN '2' THEN b.DOSAGE ELSE 0 END ) AS electric,
+        SUM( CASE b.TYPE WHEN '1' THEN b.DOSAGE ELSE 0 END ) AS water,
+        SUM( CASE b.TYPE WHEN '4' THEN b.DOSAGE ELSE 0 END ) AS heat,
+        SUM( CASE b.TYPE WHEN '3' THEN b.DOSAGE ELSE 0 END ) AS gas,
+        SUM( CASE b.TYPE WHEN '5' THEN b.DOSAGE ELSE 0 END ) AS coal,
+        SUM( CASE b.TYPE WHEN '6' THEN b.DOSAGE ELSE 0 END ) AS oil,  b.DOSAGE_TIME dayDate FROM (
+        SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+        FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+        WHERE o.ID=v.ORGID AND COMID=#{comId}
+        <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+        <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+        ) a,
+        (SELECT SUM(d.DOSAGE) DOSAGE,d.UNITID,d.DOSAGE_TIME,t.TYPE FROM
+        (SELECT et.ID,et.TYPE FROM t_emc_energy_type et) t ,
+        (SELECT SUM(dh.DOSAGE) DOSAGE,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') DOSAGE_TIME,dh.UNITID,dh.TYPEID FROM ${tableName} dh
+        WHERE dh.COMID=#{comId} AND dh.DOSAGE_TIME <![CDATA[ >= ]]> #{startTime} AND dh.DOSAGE_TIME  <![CDATA[ <= ]]> #{endTime}
+        GROUP BY DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d'),dh.UNITID,dh.TYPEID) d
+        WHERE t.ID = d.TYPEID
+        GROUP BY d.UNITID,d.DOSAGE_TIME,t.TYPE) b
+        WHERE a.UNITID = b.UNITID
+        GROUP BY b.DOSAGE_TIME
+        ORDER BY b.DOSAGE_TIME
+    </select>
+    <select id="selectYlTqLine" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        SUM( CASE b.TYPE WHEN '2' THEN b.DOSAGE ELSE 0 END ) AS electric,
+        SUM( CASE b.TYPE WHEN '1' THEN b.DOSAGE ELSE 0 END ) AS water,
+        SUM( CASE b.TYPE WHEN '3' THEN b.DOSAGE ELSE 0 END ) AS gas,
+        SUM( CASE b.TYPE WHEN '4' THEN b.DOSAGE ELSE 0 END ) AS heat,
+        SUM( CASE b.TYPE WHEN '5' THEN b.DOSAGE ELSE 0 END ) AS coal,
+        SUM( CASE b.TYPE WHEN '6' THEN b.DOSAGE ELSE 0 END ) AS oil,b.DOSAGE_TIME dayDate FROM (
+        SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+        FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+        WHERE o.ID=v.ORGID AND COMID=#{comId}
+        <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+        <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+        ) a,
+        (SELECT SUM(d.DOSAGE) DOSAGE,d.UNITID,d.DOSAGE_TIME,t.TYPE FROM
+        (SELECT et.ID,et.TYPE FROM t_emc_energy_type et
+        ) t ,
+        (SELECT SUM(dh.DOSAGE) DOSAGE,DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d') DOSAGE_TIME,dh.UNITID,dh.TYPEID FROM ${tableName} dh
+        WHERE dh.COMID=#{comId} AND dh.DOSAGE_TIME <![CDATA[ >= ]]> #{startTimeTq} AND dh.DOSAGE_TIME  <![CDATA[ <= ]]> #{endTimeTq}
+        GROUP BY DATE_FORMAT(dh.DOSAGE_TIME,'%Y-%m-%d'),dh.UNITID,dh.TYPEID) d
+        WHERE t.ID = d.TYPEID
+        GROUP BY d.UNITID,d.DOSAGE_TIME,t.TYPE) b
+        WHERE a.UNITID = b.UNITID
+        GROUP BY b.DOSAGE_TIME
+        ORDER BY b.DOSAGE_TIME
+    </select>
+    <select id="selectYlBqTotal" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        SUM( CASE b.TYPE WHEN '2' THEN b.DOSAGE ELSE 0 END ) AS electric,
+        SUM( CASE b.TYPE WHEN '1' THEN b.DOSAGE ELSE 0 END ) AS water,
+        SUM( CASE b.TYPE WHEN '3' THEN b.DOSAGE ELSE 0 END ) AS gas,
+        SUM( CASE b.TYPE WHEN '4' THEN b.DOSAGE ELSE 0 END ) AS heat,
+        SUM( CASE b.TYPE WHEN '5' THEN b.DOSAGE ELSE 0 END ) AS coal,
+        SUM( CASE b.TYPE WHEN '6' THEN b.DOSAGE ELSE 0 END ) AS oil
+        FROM (
+        SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+        FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+        WHERE o.ID=v.ORGID AND COMID=#{comId}
+        <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+        <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+        ) a,
+        (SELECT SUM(d.DOSAGE) DOSAGE,d.UNITID,t.TYPE FROM
+        (SELECT et.ID,et.TYPE FROM t_emc_energy_type et
+        ) t ,
+        (SELECT SUM(dh.DOSAGE) DOSAGE,dh.UNITID,dh.TYPEID FROM ${tableName} dh
+        WHERE dh.COMID=#{comId} AND dh.DOSAGE_TIME<![CDATA[ >= ]]>#{startTime} AND dh.DOSAGE_TIME<![CDATA[ <= ]]>#{endTime}
+        GROUP BY dh.UNITID,dh.TYPEID) d
+        WHERE t.ID = d.TYPEID
+        GROUP BY d.UNITID,t.TYPE) b
+        WHERE a.UNITID = b.UNITID
+    </select>
+    <select id="selectYlTqTotal" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        SUM( CASE b.TYPE WHEN '2' THEN b.DOSAGE ELSE 0 END ) AS electric,
+        SUM( CASE b.TYPE WHEN '1' THEN b.DOSAGE ELSE 0 END ) AS water,
+        SUM( CASE b.TYPE WHEN '3' THEN b.DOSAGE ELSE 0 END ) AS gas,
+        SUM( CASE b.TYPE WHEN '4' THEN b.DOSAGE ELSE 0 END ) AS heat,
+        SUM( CASE b.TYPE WHEN '5' THEN b.DOSAGE ELSE 0 END ) AS coal,
+        SUM( CASE b.TYPE WHEN '6' THEN b.DOSAGE ELSE 0 END ) AS oil
+        FROM (
+        SELECT v.UNITID,v.UNITNAME,v.HEAT_TYPE,v.UNITTYPE
+        FROM (SELECT ID FROM t_emc_org WHERE FIND_IN_SET( ID, emc_func_org_getchilds (#{orgId}))) o,v_emc_unit v
+        WHERE o.ID=v.ORGID AND COMID=#{comId}
+        <if test="feedType != null and feedType !=''"> AND HEAT_TYPE=#{feedType} </if>
+        <if test="orgType!=null and orgType!=''"> AND UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+        ) a,
+        (SELECT SUM(d.DOSAGE) DOSAGE,d.UNITID,t.TYPE FROM
+        (SELECT et.ID,et.TYPE FROM t_emc_energy_type et
+        ) t ,
+        (SELECT SUM(dh.DOSAGE) DOSAGE,dh.UNITID,dh.TYPEID FROM ${tableName} dh
+        WHERE dh.COMID=#{comId} AND dh.DOSAGE_TIME<![CDATA[ >= ]]>#{startTimeTq} AND dh.DOSAGE_TIME<![CDATA[ <= ]]>#{endTimeTq}
+        GROUP BY dh.UNITID,dh.TYPEID) d
+        WHERE t.ID = d.TYPEID
+        GROUP BY d.UNITID,t.TYPE) b
+        WHERE a.UNITID = b.UNITID
+    </select>
+  
+  <!-- 能耗子页面，能耗曲线，能源流相关数据查询开始 -->
+  <!-- 查询今年的集团能耗 -->
+  <!-- 查询条件map内容：{orgId=38, feedType=2, startTime=2016-11-15, endTime=2017-06-15, orgType=} -->
+  <sql id="cur_last_time">
+  	<choose>
+		<when test="startTime!=null and startTime!=''">
+			AND (DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') >= DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		</when>
+		<otherwise>
+			AND (DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') >= SUBDATE(CURDATE(), INTERVAL 5 DAY)
+		</otherwise>
+	</choose>
+	<choose>
+		<when test="endTime!=null and endTime!=''">
+			AND DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d'))
+		</when>
+		<otherwise>
+			AND DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') &lt;= CURDATE())
+		</otherwise>
+	</choose>
+	<choose>
+		<when test="startTime!=null and startTime!=''">
+			OR (DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') >= SUBDATE(DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d'), INTERVAL 1 YEAR)
+		</when>
+		<otherwise>
+			OR (DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') >= SUBDATE(SUBDATE(CURDATE(), INTERVAL 5 DAY), INTERVAL 1 YEAR)
+		</otherwise>
+	</choose>
+	<choose>
+		<when test="endTime!=null and endTime!=''">
+			AND DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') &lt;= SUBDATE(DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d'), INTERVAL 1 YEAR))
+		</when>
+		<otherwise>
+			AND DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') &lt;= SUBDATE(CURDATE(), INTERVAL 1 YEAR))
+		</otherwise>
+	</choose>
+  </sql>
+  <sql id="cur_time">
+  	<choose>
+		<when test="startTime!=null and startTime!=''">
+			AND (DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') >= DATE_FORMAT(#{startTime,jdbcType=VARCHAR},'%Y-%m-%d')
+		</when>
+		<otherwise>
+			AND (DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') >= SUBDATE(CURDATE(), INTERVAL 5 DAY)
+		</otherwise>
+	</choose>
+	<choose>
+		<when test="endTime!=null and endTime!=''">
+			AND DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime,jdbcType=VARCHAR},'%Y-%m-%d'))
+		</when>
+		<otherwise>
+			AND DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') &lt;= CURDATE())
+		</otherwise>
+	</choose>
+  </sql>
+  <sql id="between_and">
+  	BETWEEN 
+		<choose>
+		<when test="startTime!=null and startTime!=''">
+            DATE_FORMAT(#{startTime,jdbcType=VARCHAR}, '%Y-%m-%d')
+		</when>
+		<otherwise>
+            DATE_FORMAT(SUBDATE(CURDATE(), INTERVAL 5 DAY), '%Y-%m-%d')
+		</otherwise>
+	</choose>
+	AND 
+	<choose>
+		<when test="endTime!=null and endTime!=''">
+            DATE_FORMAT(#{endTime,jdbcType=VARCHAR}, '%Y-%m-%d')
+		</when>
+		<otherwise>
+            DATE_FORMAT(CURDATE(), '%Y-%m-%d')
+		</otherwise>
+	</choose>
+  </sql>
+  <select id="groupEnergy" resultType="java.util.Map" parameterType="java.util.Map">
+  	select (D.water+D.electric+D.gas+D.coal+D.oil) groupEnergy,D.* from (
+		SELECT 
+			sum( CASE C.energyType WHEN '4' THEN C.dosage ELSE 0 END) AS hotEnergy, 
+			sum( CASE C.energyType WHEN '2' THEN C.dosage ELSE 0 END ) AS electricEnergy, 
+			SUM( CASE C.energyType WHEN '1' THEN C.dosage ELSE 0 END ) AS waterEnergy, 
+			SUM( CASE C.energyType WHEN '3' THEN C.dosage ELSE 0 END ) AS gasEnergy, 
+			SUM( CASE C.energyType WHEN '5' THEN C.dosage ELSE 0 END ) AS coalEnergy, 
+			SUM( CASE C.energyType WHEN '6' THEN C.dosage ELSE 0 END ) AS oilEnergy,
+			sum( CASE C.energyType WHEN '2' THEN C.total ELSE 0 END ) AS electric, 
+			SUM( CASE C.energyType WHEN '1' THEN C.total ELSE 0 END ) AS water, 
+			SUM( CASE C.energyType WHEN '3' THEN C.total ELSE 0 END ) AS gas, 
+			SUM( CASE C.energyType WHEN '5' THEN C.total ELSE 0 END ) AS coal, 
+			SUM( CASE C.energyType WHEN '6' THEN C.total ELSE 0 END ) AS oil, C.yeardate,
+			( CASE WHEN DATE_FORMAT(C.yeardate, '%Y-%m-%d') <include refid="between_and" /> THEN '1' ELSE '0' END ) curyear 
+		FROM ( 
+			SELECT SUM(B.dosage) dosage,SUM(B.total) total, B.energytype, B.yeardate 
+			FROM ( SELECT vu.UNITID FROM ( t_emc_org LEFT JOIN v_emc_unit vu ON ID = vu.ORGID 
+				   <if test="feedType!=null and feedType!=''"> AND vu.heat_type = #{feedType,jdbcType=VARCHAR} </if> 
+				   <if test="orgType!=null and orgType!=''"> AND vu.UNITTYPE = #{orgType,jdbcType=VARCHAR} </if> 
+				 ) 
+			WHERE FIND_IN_SET( ID, emc_func_org_getchilds (<if test="orgId!=null and orgId!=''">#{orgId,jdbcType=VARCHAR}</if>) ) AND P_ORG_ID != '0' ) A 
+			LEFT JOIN ( 
+				SELECT h.UNITID AS unitid,sum(h.DOSAGE) dosage, sum(h.DOSAGE * h.COAL_COEF) AS total, et.type AS energytype, 
+				DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') AS yeardate
+				FROM ( ${tableName} h LEFT JOIN t_emc_energy_type et ON h.TYPEID = et.id )
+				WHERE 1 = 1 <include refid="cur_last_time" /> 
+				GROUP BY unitid, energytype, yeardate 
+			) B ON A.UNITID = B.unitid 
+			GROUP BY B.energytype, B.yeardate 
+		) C where C.yeardate is not NULL 
+		GROUP BY C.yeardate ORDER BY C.yearDate ASC 
+	)D
+  </select>
+  
+  <!-- 查询能源流明细 -->
+  <select id="energyFlowTable" resultType="java.util.Map" parameterType="java.util.Map">
+	  SELECT
+        type.unittype,
+		(case type.unittype when '1' then '供热源' when '2' then '一次网' when '3' then '换热站' when '4' then '二次线' when '5' then '民户' end) unitname,
+		IFNULL(D.curGroupEnergy,0) groupE,
+		round(IFNULL(if(D.lastGroupEnergy=0,0,(D.curGroupEnergy-D.lastGroupEnergy)/D.lastGroupEnergy*100),0),2) groupS,
+		if(D.lastGroupEnergy>D.curGroupEnergy,'1','0') groupR,
+		IFNULL(D.curWaterEnergy,0) waterE,
+		round(IFNULL(if(D.lastWaterEnergy=0,0,(D.curWaterEnergy-D.lastWaterEnergy)/D.lastWaterEnergy*100),0),2) waterS,
+		if(D.lastWaterEnergy>D.curWaterEnergy,'1','0') waterR,
+		IFNULL(D.curElectricEnergy,0) elecE,
+		round(IFNULL(if(D.lastElectricEnergy=0,0,(D.curElectricEnergy-D.lastElectricEnergy)/D.lastElectricEnergy*100),0),2) elecS,
+		if(D.lastElectricEnergy>D.curElectricEnergy,'1','0') elecR,
+		IFNULL(D.curGasEnergy,0) gasE,
+		round(IFNULL(if(D.lastGasEnergy=0,0,(D.curGasEnergy-D.lastGasEnergy)/D.lastGasEnergy*100),0),2) gasS,
+		if(D.lastGasEnergy>D.curGasEnergy,'1','0') gasR,
+		IFNULL(D.curHotEnergy,0) hotE,
+		round(IFNULL(if(D.lastHotEnergy=0,0,(D.curHotEnergy-D.lastHotEnergy)/D.lastHotEnergy*100),0),2) hotS,
+		if(D.lastHotEnergy>D.curHotEnergy,'1','0') hotR,
+		IFNULL(D.curCoalEnergy,0) coalE,
+		round(IFNULL(if(D.lastCoalEnergy=0,0,(D.curCoalEnergy-D.lastCoalEnergy)/D.lastCoalEnergy*100),0),2) coalS,
+		if(D.lastCoalEnergy>D.curCoalEnergy,'1','0') coalR,
+		IFNULL(D.curOilEnergy,0) oilE,
+		round(IFNULL(if(D.lastOilEnergy=0,0,(D.curOilEnergy-D.lastOilEnergy)/D.lastOilEnergy*100),0),2) oilS,
+		if(D.lastOilEnergy>D.curOilEnergy,'1','0') oilR
+	FROM
+		(
+	  		SELECT '1' unittype FROM DUAL UNION SELECT '2' unittype FROM DUAL UNION SELECT '3' unittype FROM DUAL UNION 
+	  		SELECT '4' unittype FROM DUAL UNION SELECT '5' unittype FROM DUAL) type 
+	  		LEFT JOIN( 
+	  			select (CC.curWater+CC.curElectric+CC.curGas+CC.curCoal+CC.curOil) curGroupEnergy,
+				(CC.lastWater+CC.lastElectric+CC.lastGas+CC.lastCoal+CC.lastOil) lastGroupEnergy,
+				CC.* from (
+					SELECT C.UNITTYPE,
+		  			SUM( CASE WHEN C.energyType = '1' AND C.season = '0' THEN C.dosage ELSE 0 END ) AS lastWaterEnergy, 
+		  			SUM( CASE WHEN C.energyType = '1' AND C.season = '1' THEN C.dosage ELSE 0 END ) AS curWaterEnergy, 
+		  			sum( CASE WHEN C.energyType = '2' AND C.season = '0' THEN C.dosage ELSE 0 END ) AS lastElectricEnergy, 
+		  			sum( CASE WHEN C.energyType = '2' AND C.season = '1' THEN C.dosage ELSE 0 END ) AS curElectricEnergy, 
+		  			SUM( CASE WHEN C.energyType = '3' AND C.season = '0' THEN C.dosage ELSE 0 END ) AS lastGasEnergy, 
+		  			SUM( CASE WHEN C.energyType = '3' AND C.season = '1' THEN C.dosage ELSE 0 END ) AS curGasEnergy, 
+		  			sum( CASE WHEN C.energyType = '4' AND C.season = '0' THEN C.dosage ELSE 0 END ) AS lastHotEnergy, 
+		  			sum( CASE WHEN C.energyType = '4' AND C.season = '1' THEN C.dosage ELSE 0 END ) AS curHotEnergy, 
+		  			SUM( CASE WHEN C.energyType = '5' AND C.season = '0' THEN C.dosage ELSE 0 END ) AS lastCoalEnergy, 
+		  			SUM( CASE WHEN C.energyType = '5' AND C.season = '1' THEN C.dosage ELSE 0 END ) AS curCoalEnergy, 
+		  			SUM( CASE WHEN C.energyType = '6' AND C.season = '0' THEN C.dosage ELSE 0 END ) AS lastOilEnergy, 
+		  			SUM( CASE WHEN C.energyType = '6' AND C.season = '1' THEN C.dosage ELSE 0 END ) AS curOilEnergy, 
+		  			SUM( CASE WHEN C.energyType = '1' AND C.season = '0' THEN C.total ELSE 0 END ) AS lastWater, 
+		  			SUM( CASE WHEN C.energyType = '1' AND C.season = '1' THEN C.total ELSE 0 END ) AS curWater, 
+		  			sum( CASE WHEN C.energyType = '2' AND C.season = '0' THEN C.total ELSE 0 END ) AS lastElectric, 
+		  			sum( CASE WHEN C.energyType = '2' AND C.season = '1' THEN C.total ELSE 0 END ) AS curElectric, 
+		  			SUM( CASE WHEN C.energyType = '3' AND C.season = '0' THEN C.total ELSE 0 END ) AS lastGas, 
+		  			SUM( CASE WHEN C.energyType = '3' AND C.season = '1' THEN C.total ELSE 0 END ) AS curGas, 
+		  			SUM( CASE WHEN C.energyType = '5' AND C.season = '0' THEN C.total ELSE 0 END ) AS lastCoal, 
+		  			SUM( CASE WHEN C.energyType = '5' AND C.season = '1' THEN C.total ELSE 0 END ) AS curCoal, 
+		  			SUM( CASE WHEN C.energyType = '6' AND C.season = '0' THEN C.total ELSE 0 END ) AS lastOil, 
+		  			SUM( CASE WHEN C.energyType = '6' AND C.season = '1' THEN C.total ELSE 0 END ) AS curOil 
+		  			FROM ( 
+		  				SELECT A.UNITTYPE, SUM(B.dosage) dosage,SUM(B.total) total, B.energytype, B.season 
+		  				FROM ( 
+		  					SELECT vu.UNITID, vu.UNITTYPE 
+		  					FROM ( t_emc_org LEFT JOIN v_emc_unit vu ON ID = vu.ORGID 
+		  					<if test="feedType!=null and feedType!=''"> AND vu.heat_type = #{feedType,jdbcType=VARCHAR} </if>  ) 
+		  					WHERE FIND_IN_SET( ID, emc_func_org_getchilds (<if test="orgId!=null and orgId!=''">#{orgId,jdbcType=VARCHAR}</if>) ) 
+		  					AND P_ORG_ID != '0' AND UNITID IS NOT NULL ) A 
+		  					LEFT JOIN ( 
+		  						SELECT h.UNITID AS unitid,sum(h.DOSAGE) dosage,   
+		  						sum(h.DOSAGE * h.COAL_COEF) AS total, et.type AS energytype, 
+		  						( CASE WHEN DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') <include refid="between_and" /> THEN '1' ELSE '0' END ) season
+		  						FROM ( ${tableName} h LEFT JOIN t_emc_energy_type et ON h.TYPEID = et.id )
+		  						WHERE 1 = 1 <include refid="cur_last_time" /> 
+		  						GROUP BY unitid, energytype,season 
+		  					) B ON A.UNITID = B.unitid 
+		  				WHERE B.total IS NOT NULL 
+		  				GROUP BY A.UNITTYPE, B.energytype, B.season 
+		  			) C 
+	  			GROUP BY C.UNITTYPE
+	  		) CC
+	 ) D ON D.UNITTYPE = type.unittype 
+	 where 1=1 
+	 <if test="orgType!=null and orgType!=''"> AND type.unittype = #{orgType,jdbcType=VARCHAR} </if>
+  </select>
+  <!-- 导出 -->
+  <select id="exportEnergyFlowDetail" resultType="java.util.Map" parameterType="java.util.Map">
+	  SELECT
+		(case type.unittype when '1' then '供热源' when '2' then '一次网' when '3' then '换热站' when '4' then '二次线' when '5' then '民户' end) UNITNAME,
+		round(IFNULL(D.lastGroupEnergy,0),2) LASTGROUP,
+		round(IFNULL(D.curGroupEnergy,0),2) CURGROUP,
+		concat(cast(round(IFNULL(if(D.lastGroupEnergy=0,0,(D.curGroupEnergy-D.lastGroupEnergy)/D.lastGroupEnergy*100),0),2) as CHAR(32)),'%') GROUPS,
+		round(IFNULL(D.lastWaterEnergy,0),2) LASTWATER,
+		round(IFNULL(D.curWaterEnergy,0),2) CURWATER,
+		concat(cast(round(IFNULL(if(D.lastWaterEnergy=0,0,(D.curWaterEnergy-D.lastWaterEnergy)/D.lastWaterEnergy*100),0),2) as CHAR(32)),'%') WATERS,
+		round(IFNULL(D.lastElectricEnergy,0),2) LASTELEC,
+		round(IFNULL(D.curElectricEnergy,0),2) CURELEC,
+		concat(cast(round(IFNULL(if(D.lastElectricEnergy=0,0,(D.curElectricEnergy-D.lastElectricEnergy)/D.lastElectricEnergy*100),0),2) as CHAR(32)),'%') ELECS,
+		round(IFNULL(D.lastGasEnergy,0),2) LASTGAS,
+		round(IFNULL(D.curGasEnergy,0),2) CURGAS,
+		concat(cast(round(IFNULL(if(D.lastGasEnergy=0,0,(D.curGasEnergy-D.lastGasEnergy)/D.lastGasEnergy*100),0),2) as CHAR(32)),'%') GASS,
+		round(IFNULL(D.lastHotEnergy,0),2) LASTHOT,
+		round(IFNULL(D.curHotEnergy,0),2) CURHOT,
+		concat(cast(round(IFNULL(if(D.lastHotEnergy=0,0,(D.curHotEnergy-D.lastHotEnergy)/D.lastHotEnergy*100),0),2) as CHAR(32)),'%') HOTS,
+		round(IFNULL(D.lastCoalEnergy,0),2) LASTCOAL,
+		round(IFNULL(D.curCoalEnergy,0),2) CURCOAL,
+		concat(cast(round(IFNULL(if(D.lastCoalEnergy=0,0,(D.curCoalEnergy-D.lastCoalEnergy)/D.lastCoalEnergy*100),0),2) as CHAR(32)),'%') COALS,
+		round(IFNULL(D.lastOilEnergy,0),2) LASTOIL,
+		round(IFNULL(D.curOilEnergy,0),2) CUROIL,
+		concat(cast(round(IFNULL(if(D.lastOilEnergy=0,0,(D.curOilEnergy-D.lastOilEnergy)/D.lastOilEnergy*100),0),2) as CHAR(32)),'%') OILS
+	FROM
+		(
+	  		SELECT '1' unittype FROM DUAL UNION SELECT '2' unittype FROM DUAL UNION SELECT '3' unittype FROM DUAL UNION 
+	  		SELECT '4' unittype FROM DUAL UNION SELECT '5' unittype FROM DUAL) type 
+	  		LEFT JOIN( 
+	  			select (CC.curWater+CC.curElectric+CC.curGas+CC.curCoal+CC.curOil) curGroupEnergy,
+				(CC.lastWater+CC.lastElectric+CC.lastGas+CC.lastCoal+CC.lastOil) lastGroupEnergy,
+				CC.* from (
+					SELECT C.UNITTYPE,
+		  			SUM( CASE WHEN C.energyType = '1' AND C.season = '0' THEN C.dosage ELSE 0 END ) AS lastWaterEnergy, 
+		  			SUM( CASE WHEN C.energyType = '1' AND C.season = '1' THEN C.dosage ELSE 0 END ) AS curWaterEnergy, 
+		  			sum( CASE WHEN C.energyType = '2' AND C.season = '0' THEN C.dosage ELSE 0 END ) AS lastElectricEnergy, 
+		  			sum( CASE WHEN C.energyType = '2' AND C.season = '1' THEN C.dosage ELSE 0 END ) AS curElectricEnergy, 
+		  			SUM( CASE WHEN C.energyType = '3' AND C.season = '0' THEN C.dosage ELSE 0 END ) AS lastGasEnergy, 
+		  			SUM( CASE WHEN C.energyType = '3' AND C.season = '1' THEN C.dosage ELSE 0 END ) AS curGasEnergy, 
+		  			sum( CASE WHEN C.energyType = '4' AND C.season = '0' THEN C.dosage ELSE 0 END ) AS lastHotEnergy, 
+		  			sum( CASE WHEN C.energyType = '4' AND C.season = '1' THEN C.dosage ELSE 0 END ) AS curHotEnergy, 
+		  			SUM( CASE WHEN C.energyType = '5' AND C.season = '0' THEN C.dosage ELSE 0 END ) AS lastCoalEnergy, 
+		  			SUM( CASE WHEN C.energyType = '5' AND C.season = '1' THEN C.dosage ELSE 0 END ) AS curCoalEnergy, 
+		  			SUM( CASE WHEN C.energyType = '6' AND C.season = '0' THEN C.dosage ELSE 0 END ) AS lastOilEnergy, 
+		  			SUM( CASE WHEN C.energyType = '6' AND C.season = '1' THEN C.dosage ELSE 0 END ) AS curOilEnergy, 
+		  			SUM( CASE WHEN C.energyType = '1' AND C.season = '0' THEN C.total ELSE 0 END ) AS lastWater, 
+		  			SUM( CASE WHEN C.energyType = '1' AND C.season = '1' THEN C.total ELSE 0 END ) AS curWater, 
+		  			sum( CASE WHEN C.energyType = '2' AND C.season = '0' THEN C.total ELSE 0 END ) AS lastElectric, 
+		  			sum( CASE WHEN C.energyType = '2' AND C.season = '1' THEN C.total ELSE 0 END ) AS curElectric, 
+		  			SUM( CASE WHEN C.energyType = '3' AND C.season = '0' THEN C.total ELSE 0 END ) AS lastGas, 
+		  			SUM( CASE WHEN C.energyType = '3' AND C.season = '1' THEN C.total ELSE 0 END ) AS curGas, 
+		  			SUM( CASE WHEN C.energyType = '5' AND C.season = '0' THEN C.total ELSE 0 END ) AS lastCoal, 
+		  			SUM( CASE WHEN C.energyType = '5' AND C.season = '1' THEN C.total ELSE 0 END ) AS curCoal, 
+		  			SUM( CASE WHEN C.energyType = '6' AND C.season = '0' THEN C.total ELSE 0 END ) AS lastOil, 
+		  			SUM( CASE WHEN C.energyType = '6' AND C.season = '1' THEN C.total ELSE 0 END ) AS curOil 
+		  			FROM ( 
+		  				SELECT A.UNITTYPE, SUM(B.dosage) dosage,SUM(B.total) total, B.energytype, B.season 
+		  				FROM ( 
+		  					SELECT vu.UNITID, vu.UNITTYPE 
+		  					FROM ( t_emc_org LEFT JOIN v_emc_unit vu ON ID = vu.ORGID 
+		  					<if test="feedType!=null and feedType!=''"> AND vu.heat_type = #{feedType,jdbcType=VARCHAR} </if> ) 
+		  					WHERE FIND_IN_SET( ID, emc_func_org_getchilds (<if test="orgId!=null and orgId!=''">#{orgId,jdbcType=VARCHAR}</if>) ) 
+		  					AND P_ORG_ID != '0' AND UNITID IS NOT NULL ) A 
+		  					LEFT JOIN ( 
+		  						SELECT h.UNITID AS unitid,sum(h.DOSAGE) dosage,   
+		  						sum(h.DOSAGE * h.COAL_COEF) AS total, et.type AS energytype, 
+		  						( CASE WHEN DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') <include refid="between_and" /> THEN '1' ELSE '0' END ) season
+		  						FROM ( ${tableName} h LEFT JOIN t_emc_energy_type et ON h.TYPEID = et.id )
+		  						WHERE 1 = 1 <include refid="cur_last_time" /> 
+		  						GROUP BY unitid, energytype,season 
+		  					) B ON A.UNITID = B.unitid 
+		  				WHERE B.total IS NOT NULL 
+		  				GROUP BY A.UNITTYPE, B.energytype, B.season 
+		  			) C 
+	  			GROUP BY C.UNITTYPE
+	  		) CC
+	 ) D ON D.UNITTYPE = type.unittype 
+	 where 1=1
+	 <if test="orgType!=null and orgType!=''"> AND type.unittype = #{orgType,jdbcType=VARCHAR} </if>
+  </select>
+  <!-- 查询能源流占比分布图 -->
+  <select id="energyFlowPie" resultType="java.util.Map" parameterType="java.util.Map">
+  	SELECT(CASE type.unittype when '1' then '供热源' when '2' then '一次网' when '3' then '换热站' 
+  		   when '4' then '二次线' when '5' then '民户' end) name, round(IFNULL(C.total,0),2) value 
+  	FROM ( SELECT '1' unittype FROM DUAL UNION SELECT '2' unittype FROM DUAL UNION SELECT '3' unittype 
+  		   FROM DUAL UNION SELECT '4' unittype FROM DUAL UNION SELECT '5' unittype FROM DUAL
+  	) type LEFT JOIN (
+	  	SELECT A.UNITTYPE, sum(B.total) total 
+	  	FROM( 
+	  		SELECT vu.UNITID, vu.UNITTYPE 
+	  		FROM ( t_emc_org LEFT JOIN v_emc_unit vu ON ID = vu.ORGID 
+			<if test="feedType!=null and feedType!=''"> AND vu.heat_type = #{feedType,jdbcType=VARCHAR} </if>
+	             )
+	  		WHERE FIND_IN_SET(
+	                 ID, emc_func_org_getchilds (<if test="orgId!=null and orgId!=''">#{orgId,jdbcType=VARCHAR}</if>)
+	            )
+	  			  AND P_ORG_ID != '0' AND UNITID IS NOT NULL ) A 
+	  		LEFT JOIN ( 
+	  			select BB.unitid,sum(BB.dosage*BB.cc) as total,BB.season from(
+		  			SELECT h.UNITID AS unitid, h.DOSAGE dosage, h.COAL_COEF cc,
+		  			( CASE WHEN DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') <include refid="between_and" /> THEN '1' ELSE '0' END ) season,
+		  			et.TYPE type 
+		  			FROM (
+						${tableName} h
+						LEFT JOIN t_emc_energy_type et ON h.TYPEID = et.id
+					)
+		  			WHERE 1 = 1 <include refid="cur_time" /> 
+		  		) BB where BB.type !='4'
+	  			GROUP BY unitid 
+	  		) B ON A.UNITID = B.unitid 
+	  	WHERE B.total IS NOT NULL 
+	  	GROUP BY A.UNITTYPE
+	) C on type.unittype = C.UNITTYPE 
+	where 1=1 
+	<if test="orgType!=null and orgType!=''"> AND type.unittype = #{orgType,jdbcType=VARCHAR} </if>
+  </select>
+  <!-- 查询能源流趋势对比图 -->
+  <select id="energyFlowLine" resultType="java.util.Map" parameterType="java.util.Map">
+  	SELECT (case A.UNITTYPE when '1' then '供热源' when '2' then '一次网' when '3' then '换热站' when '4' then '二次线' when '5' then '民户' end) unittype,
+  		   SUM(B.total) total, B.yeardate 
+  	FROM( 
+  		SELECT vu.UNITID, vu.UNITTYPE 
+  		FROM ( t_emc_org LEFT JOIN v_emc_unit vu ON ID = vu.ORGID 
+		<if test="feedType!=null and feedType!=''"> AND vu.heat_type = #{feedType,jdbcType=VARCHAR} </if> ) 
+  		WHERE FIND_IN_SET( ID, emc_func_org_getchilds (<if test="orgId!=null and orgId!=''">#{orgId,jdbcType=VARCHAR}</if>) ) 
+  			  AND P_ORG_ID != '0' AND UNITID IS NOT NULL ) A 
+  		LEFT JOIN (
+  			select BB.unitid,sum(BB.dosage*BB.cc) as total,BB.yeardate from ( 
+	  			SELECT h.UNITID AS unitid,h.DOSAGE dosage,h.COAL_COEF cc,
+					   DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') AS yeardate,et.TYPE type
+	  			FROM (
+	  				${tableName} h
+					LEFT JOIN t_emc_energy_type et ON h.TYPEID = et.id 
+				) 
+	  			WHERE 1 = 1 <include refid="cur_time" /> ) BB where BB.type != '4'
+  			GROUP BY unitid,yeardate 
+  		) B ON A.UNITID = B.unitid 
+  	WHERE B.total IS NOT NULL <if test="orgType!=null and orgType!=''"> AND A.UNITTYPE = #{orgType,jdbcType=VARCHAR} </if>
+  	GROUP BY A.UNITTYPE,B.yeardate
+  	ORDER BY B.yeardate asc
+  </select>
+  <!-- 查询能源流同比 -->
+  <select id="energyFlowBar" resultType="java.util.Map" parameterType="java.util.Map">
+  	SELECT type.unittype, round(IFNULL(C.lastTotal,0),2) last, round(IFNULL(C.curTotal,0),2) cur 
+  	FROM( SELECT '1' unittype FROM DUAL UNION SELECT '2' unittype FROM DUAL UNION SELECT '3' unittype FROM DUAL UNION 
+  		  SELECT '4' unittype FROM DUAL UNION SELECT '5' unittype FROM DUAL) type 
+  	LEFT JOIN (
+	  	SELECT A.UNITTYPE, IFNULL(sum(case B.season when '0' then B.total end),0) lastTotal, IFNULL(sum(case B.season when '1' then B.total end),0) curTotal 
+	  	FROM( SELECT vu.UNITID, vu.UNITTYPE FROM ( t_emc_org LEFT JOIN v_emc_unit vu ON ID = vu.ORGID 
+		<if test="feedType!=null and feedType!=''"> AND vu.heat_type = #{feedType,jdbcType=VARCHAR} </if> ) 
+	  	WHERE FIND_IN_SET( ID, emc_func_org_getchilds (<if test="orgId!=null and orgId!=''">#{orgId,jdbcType=VARCHAR}</if>) ) 
+	  		  AND P_ORG_ID != '0' AND UNITID IS NOT NULL ) A 
+	  	LEFT JOIN ( 
+	  		select BB.unitid, sum(BB.dosage * BB.cc) AS total, BB.season
+			from (
+		  		SELECT h.UNITID AS unitid, h.DOSAGE dosage, h.COAL_COEF cc,
+		  		( CASE WHEN DATE_FORMAT(h.DOSAGE_TIME, '%Y-%m-%d') <include refid="between_and" /> THEN '1' ELSE '0' END ) season,
+		  		et.TYPE type 
+		  		FROM (
+		  			${tableName} h
+					LEFT JOIN t_emc_energy_type et ON h.TYPEID = et.id 
+		  		) 
+		  		WHERE 1 = 1 <include refid="cur_last_time" /> ) BB where BB.type != '4'
+	  		GROUP BY unitid,season  
+	  	) B ON A.UNITID = B.unitid 
+	  	WHERE B.total IS NOT NULL 
+	  	GROUP BY A.UNITTYPE
+	) C ON type.unittype = C.UNITTYPE 
+	where 1=1 <if test="orgType!=null and orgType!=''"> AND type.unittype = #{orgType,jdbcType=VARCHAR} </if>
+	ORDER BY type.unittype
+  </select>
+  <!-- 能耗子页面，能耗曲线，能源流相关数据查询结束 -->
+  
+  <delete id="delete" parameterType="java.lang.String" >
+    delete from ${tableName}
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insertByPrimaryKeySelective" parameterType="com.huak.home.model.EnergyMonitor" >
+    insert into ${tableName} (ID, COMID, UNITID,
+      NODEID, TYPEID, DOSAGE_TIME, 
+      DOSAGE, AREA, PRICE, 
+      WTEMP, CWTEMP, COAL_COEF, 
+      C_COEF, ITEMP, CITEMP)
+    values (#{id,jdbcType=VARCHAR}, #{comid,jdbcType=VARCHAR}, #{unitid,jdbcType=VARCHAR}, 
+      #{nodeid,jdbcType=VARCHAR}, #{typeid,jdbcType=VARCHAR}, #{dosageTime,jdbcType=VARCHAR}, 
+      #{dosage,jdbcType=DOUBLE}, #{area,jdbcType=DOUBLE}, #{price,jdbcType=DECIMAL}, 
+      #{wtemp,jdbcType=DOUBLE}, #{cwtemp,jdbcType=DOUBLE}, #{coalCoef,jdbcType=DOUBLE}, 
+      #{cCoef,jdbcType=DOUBLE}, #{itemp,jdbcType=DOUBLE}, #{citemp,jdbcType=DOUBLE})
+  </insert>
+  <insert id="insert" parameterType="com.huak.home.model.EnergyMonitor" >
+    insert into ${tableName}
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="comid != null" >
+        COMID,
+      </if>
+      <if test="unitid != null" >
+        UNITID,
+      </if>
+      <if test="nodeid != null" >
+        NODEID,
+      </if>
+      <if test="typeid != null" >
+        TYPEID,
+      </if>
+      <if test="dosageTime != null" >
+        DOSAGE_TIME,
+      </if>
+      <if test="dosage != null" >
+        DOSAGE,
+      </if>
+      <if test="area != null" >
+        AREA,
+      </if>
+      <if test="price != null" >
+        PRICE,
+      </if>
+      <if test="wtemp != null" >
+        WTEMP,
+      </if>
+      <if test="cwtemp != null" >
+        CWTEMP,
+      </if>
+      <if test="coalCoef != null" >
+        COAL_COEF,
+      </if>
+      <if test="cCoef != null" >
+        C_COEF,
+      </if>
+      <if test="itemp != null" >
+        ITEMP,
+      </if>
+      <if test="citemp != null" >
+        CITEMP,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="comid != null" >
+        #{comid,jdbcType=VARCHAR},
+      </if>
+      <if test="unitid != null" >
+        #{unitid,jdbcType=VARCHAR},
+      </if>
+      <if test="nodeid != null" >
+        #{nodeid,jdbcType=VARCHAR},
+      </if>
+      <if test="typeid != null" >
+        #{typeid,jdbcType=VARCHAR},
+      </if>
+      <if test="dosageTime != null" >
+        #{dosageTime,jdbcType=VARCHAR},
+      </if>
+      <if test="dosage != null" >
+        #{dosage,jdbcType=DOUBLE},
+      </if>
+      <if test="area != null" >
+        #{area,jdbcType=DOUBLE},
+      </if>
+      <if test="price != null" >
+        #{price,jdbcType=DECIMAL},
+      </if>
+      <if test="wtemp != null" >
+        #{wtemp,jdbcType=DOUBLE},
+      </if>
+      <if test="cwtemp != null" >
+        #{cwtemp,jdbcType=DOUBLE},
+      </if>
+      <if test="coalCoef != null" >
+        #{coalCoef,jdbcType=DOUBLE},
+      </if>
+      <if test="cCoef != null" >
+        #{cCoef,jdbcType=DOUBLE},
+      </if>
+      <if test="itemp != null" >
+        #{itemp,jdbcType=DOUBLE},
+      </if>
+      <if test="citemp != null" >
+        #{citemp,jdbcType=DOUBLE},
+      </if>
+    </trim>
+  </insert>
+  <update id="update" parameterType="com.huak.home.model.EnergyMonitor" >
+    update ${tableName}
+    <set >
+      <if test="comid != null" >
+        COMID = #{comid,jdbcType=VARCHAR},
+      </if>
+      <if test="unitid != null" >
+        UNITID = #{unitid,jdbcType=VARCHAR},
+      </if>
+      <if test="nodeid != null" >
+        NODEID = #{nodeid,jdbcType=VARCHAR},
+      </if>
+      <if test="typeid != null" >
+        TYPEID = #{typeid,jdbcType=VARCHAR},
+      </if>
+      <if test="dosageTime != null" >
+        DOSAGE_TIME = #{dosageTime,jdbcType=VARCHAR},
+      </if>
+      <if test="dosage != null" >
+        DOSAGE = #{dosage,jdbcType=DOUBLE},
+      </if>
+      <if test="area != null" >
+        AREA = #{area,jdbcType=DOUBLE},
+      </if>
+      <if test="price != null" >
+        PRICE = #{price,jdbcType=DECIMAL},
+      </if>
+      <if test="wtemp != null" >
+        WTEMP = #{wtemp,jdbcType=DOUBLE},
+      </if>
+      <if test="cwtemp != null" >
+        CWTEMP = #{cwtemp,jdbcType=DOUBLE},
+      </if>
+      <if test="coalCoef != null" >
+        COAL_COEF = #{coalCoef,jdbcType=DOUBLE},
+      </if>
+      <if test="cCoef != null" >
+        C_COEF = #{cCoef,jdbcType=DOUBLE},
+      </if>
+      <if test="itemp != null" >
+        ITEMP = #{itemp,jdbcType=DOUBLE},
+      </if>
+      <if test="citemp != null" >
+        CITEMP = #{citemp,jdbcType=DOUBLE},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.huak.home.model.EnergyMonitor" >
+    update ${tableName}
+    set COMID = #{comid,jdbcType=VARCHAR},
+      UNITID = #{unitid,jdbcType=VARCHAR},
+      NODEID = #{nodeid,jdbcType=VARCHAR},
+      TYPEID = #{typeid,jdbcType=VARCHAR},
+      DOSAGE_TIME = #{dosageTime,jdbcType=VARCHAR},
+      DOSAGE = #{dosage,jdbcType=DOUBLE},
+      AREA = #{area,jdbcType=DOUBLE},
+      PRICE = #{price,jdbcType=DECIMAL},
+      WTEMP = #{wtemp,jdbcType=DOUBLE},
+      CWTEMP = #{cwtemp,jdbcType=DOUBLE},
+      COAL_COEF = #{coalCoef,jdbcType=DOUBLE},
+      C_COEF = #{cCoef,jdbcType=DOUBLE},
+      ITEMP = #{itemp,jdbcType=DOUBLE},
+      CITEMP = #{citemp,jdbcType=DOUBLE}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

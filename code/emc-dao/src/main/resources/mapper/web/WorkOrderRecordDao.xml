@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.workorder.dao.WorkOrderRecordDao">
+  <resultMap id="BaseResultMap" type="com.huak.workorder.model.WorkOrderRecord">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="CODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="BEFOR_STATUS" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="OPERATE_TIME" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+      <arg column="OPERTOR" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="SENDEE" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="AFTER_STATUS" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="DES" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+    <resultMap id="BaseResultMapA" type="com.huak.workorder.vo.WorkOrderRecordA">
+        <constructor>
+            <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="CODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="BEFOR_STATUS" javaType="java.lang.Integer" jdbcType="VARCHAR" />
+            <arg column="OPERATE_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="OPERTOR" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="SENDEE" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="AFTER_STATUS" javaType="java.lang.Integer" jdbcType="VARCHAR" />
+            <arg column="DES" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="EMP_NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="RECIVER" javaType="java.lang.String" jdbcType="VARCHAR" />
+
+        </constructor>
+    </resultMap>
+  <sql id="Base_Column_List">
+    ID, CODE, BEFOR_STATUS, OPERATE_TIME, OPERTOR, SENDEE, AFTER_STATUS, DES
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_work_order_record
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_work_order_record
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.huak.workorder.model.WorkOrderRecord">
+    insert into t_emc_work_order_record (ID, CODE, BEFOR_STATUS, 
+      OPERATE_TIME, OPERTOR, SENDEE, 
+      AFTER_STATUS, DES)
+    values (#{id,jdbcType=VARCHAR}, #{code,jdbcType=VARCHAR}, #{beforStatus,jdbcType=INTEGER}, 
+      #{operateTime,jdbcType=TIMESTAMP}, #{opertor,jdbcType=VARCHAR}, #{sendee,jdbcType=VARCHAR}, 
+      #{afterStatus,jdbcType=INTEGER}, #{des,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.huak.workorder.model.WorkOrderRecord">
+    insert into t_emc_work_order_record
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="code != null">
+        CODE,
+      </if>
+      <if test="beforStatus != null">
+        BEFOR_STATUS,
+      </if>
+      <if test="operateTime != null">
+        OPERATE_TIME,
+      </if>
+      <if test="opertor != null">
+        OPERTOR,
+      </if>
+      <if test="sendee != null">
+        SENDEE,
+      </if>
+      <if test="afterStatus != null">
+        AFTER_STATUS,
+      </if>
+      <if test="des != null">
+        DES,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="code != null">
+        #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="beforStatus != null">
+        #{beforStatus,jdbcType=INTEGER},
+      </if>
+      <if test="operateTime != null">
+        #{operateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="opertor != null">
+        #{opertor,jdbcType=VARCHAR},
+      </if>
+      <if test="sendee != null">
+        #{sendee,jdbcType=VARCHAR},
+      </if>
+      <if test="afterStatus != null">
+        #{afterStatus,jdbcType=INTEGER},
+      </if>
+      <if test="des != null">
+        #{des,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.workorder.model.WorkOrderRecord">
+    update t_emc_work_order_record
+    <set>
+      <if test="code != null">
+        CODE = #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="beforStatus != null">
+        BEFOR_STATUS = #{beforStatus,jdbcType=INTEGER},
+      </if>
+      <if test="operateTime != null">
+        OPERATE_TIME = #{operateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="opertor != null">
+        OPERTOR = #{opertor,jdbcType=VARCHAR},
+      </if>
+      <if test="sendee != null">
+        SENDEE = #{sendee,jdbcType=VARCHAR},
+      </if>
+      <if test="afterStatus != null">
+        AFTER_STATUS = #{afterStatus,jdbcType=INTEGER},
+      </if>
+      <if test="des != null">
+        DES = #{des,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.huak.workorder.model.WorkOrderRecord">
+    update t_emc_work_order_record
+    set CODE = #{code,jdbcType=VARCHAR},
+      BEFOR_STATUS = #{beforStatus,jdbcType=INTEGER},
+      OPERATE_TIME = #{operateTime,jdbcType=TIMESTAMP},
+      OPERTOR = #{opertor,jdbcType=VARCHAR},
+      SENDEE = #{sendee,jdbcType=VARCHAR},
+      AFTER_STATUS = #{afterStatus,jdbcType=INTEGER},
+      DES = #{des,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+
+    <select id="selectAllRecord" parameterType="java.lang.String" resultMap="BaseResultMapA">
+        SELECT
+        wor.*,em.EMP_NAME,em1.EMP_NAME RECIVER
+        FROM
+        t_emc_work_order_record wor
+        LEFT JOIN
+        t_emc_auth_employee em ON wor.OPERTOR = em.ID
+				LEFT JOIN
+        t_emc_auth_employee em1 ON wor.SENDEE = em1.ID
+        where wor.CODE=#{code,jdbcType=VARCHAR}
+				ORDER BY wor.OPERATE_TIME desc
+
+
+    </select>
+
+</mapper>

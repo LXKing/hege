@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.org.dao.OrgDao">
+    <resultMap id="BaseResultMap" type="com.huak.org.model.Org">
+        <constructor>
+            <idArg column="ID" javaType="java.lang.Long" jdbcType="BIGINT" />
+            <arg column="ORG_NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="P_ORG_ID" javaType="java.lang.Long" jdbcType="BIGINT" />
+            <arg column="COM_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="SORT" javaType="java.lang.Integer" jdbcType="INTEGER" />
+        </constructor>
+    </resultMap>
+    <sql id="Base_Column_List">
+        ID, ORG_NAME, P_ORG_ID, COM_ID,SORT
+    </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_org
+        where ID = #{id,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from t_emc_org
+        where ID = #{id,jdbcType=BIGINT}
+    </delete>
+    <insert id="insert" parameterType="com.huak.org.model.Org">
+        insert into t_emc_org (ORG_NAME, P_ORG_ID,
+        COM_ID,SORT)
+        values (
+        #{orgName,jdbcType=VARCHAR}, #{pOrgId,jdbcType=BIGINT},
+        #{comId,jdbcType=VARCHAR},#{sort,jdbcType=INTEGER})
+    </insert>
+    <insert id="insertSelective" parameterType="com.huak.org.model.Org">
+        <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into t_emc_org
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                ID,
+            </if>
+            <if test="orgName != null">
+                ORG_NAME,
+            </if>
+            <if test="pOrgId != null">
+                P_ORG_ID,
+            </if>
+            <if test="comId != null">
+                COM_ID,
+            </if>
+            <if test="sort != null">
+                SORT,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+
+            <if test="orgName != null">
+                #{orgName,jdbcType=VARCHAR},
+            </if>
+            <if test="pOrgId != null">
+                #{pOrgId,jdbcType=BIGINT},
+            </if>
+            <if test="comId != null">
+                #{comId,jdbcType=VARCHAR},
+            </if>
+            <if test="sort != null">
+                #{sort,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.huak.org.model.Org">
+        update t_emc_org
+        <set>
+
+            <if test="orgName != null">
+                ORG_NAME = #{orgName,jdbcType=VARCHAR},
+            </if>
+
+            <if test="pOrgId != null">
+                P_ORG_ID = #{pOrgId,jdbcType=BIGINT},
+            </if>
+
+            <if test="comId != null">
+                COM_ID = #{comId,jdbcType=VARCHAR},
+            </if>
+            <if test="sort != null">
+                SORT = #{sort,jdbcType=INTEGER},
+            </if>
+        </set>
+        where ID = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.huak.org.model.Org">
+        update t_emc_org
+        set
+
+        ORG_NAME = #{orgName,jdbcType=VARCHAR},
+        P_ORG_ID = #{pOrgId,jdbcType=BIGINT},
+        COM_ID = #{comId,jdbcType=VARCHAR},
+        SORT = #{sort,jdbcType=INTEGER}
+        where ID = #{id,jdbcType=BIGINT}
+    </update>
+
+    <select id="selectOrgAll" parameterType="java.util.Map" resultMap="BaseResultMap">
+        select
+       ID, ORG_NAME, P_ORG_ID, COM_ID ,SORT
+        from t_emc_org
+        where 1=1
+        <if test="comId != null and comId !=''">
+            and   COM_ID = #{comId,jdbcType=VARCHAR}
+        </if>
+
+        <if test="orgName != null and orgName !=''">
+            and ORG_NAME = #{orgName,jdbcType=VARCHAR}
+        </if>
+        <if test="pOrgId != null and pOrgId !=''">
+            and P_ORG_ID = #{pOrgId,jdbcType=BIGINT}
+        </if>
+        order by SORT asc
+    </select>
+
+    <!--该方法仅供公共树插件使用-->
+
+    <select id="selectOrgTree"  resultType="java.util.Map" parameterType="java.util.Map">
+        select
+        ID as id, ORG_NAME as name, P_ORG_ID as pId,
+        'true' open
+        from t_emc_org
+        where 1=1
+        <if test="comId != null and comId !=''">
+            AND  COM_ID = #{comId,jdbcType=VARCHAR}
+        </if>
+        <!--插件局部刷新传过来的是id,需要刷新以id为父节点的所有子节点-->
+        <if test="id != null and id !=''">
+            AND  FIND_IN_SET(ID, emc_func_org_getchilds(#{id,jdbcType=BIGINT}))
+            AND ID != #{id,jdbcType=BIGINT}
+        </if>
+        order by ORG_NAME
+    </select>
+
+
+    <!-- CheckOrgName -->
+    <select id="CheckOrgName" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_org
+        where ORG_NAME = #{orgName,jdbcType=VARCHAR}
+
+    </select>
+
+
+    <select id="selectOrgByMap" parameterType="java.util.Map" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_org
+        where 1=1
+        <if test="comId != null and comId !=''">
+            and   COM_ID = #{comId,jdbcType=VARCHAR}
+        </if>
+
+        <if test="orgName != null and orgName !=''">
+            and ORG_NAME = #{orgName,jdbcType=VARCHAR}
+        </if>
+        <if test="pOrgId != null and pOrgId !=''">
+            and P_ORG_ID = #{pOrgId,jdbcType=BIGINT}
+        </if>
+        order by ORG_NAME ASC
+    </select>
+    <update id="updateOrgPid" parameterType="java.lang.String">
+        UPDATE t_emc_org t SET t.P_ORG_ID=
+        (SELECT EMC_ID FROM
+        (
+        SELECT i.EMC_ID,o.ID FROM t_emc_org o ,t_emc_org_inter i WHERE  o.P_ORG_ID = i.ORG_ID
+        and o.COM_ID = #{comId,jdbcType=VARCHAR}
+        AND i.UNIT_TYPE='0'
+        AND o.P_ORG_ID!=0  ) a WHERE a.ID = t.ID)
+        WHERE t.COM_ID=#{comId,jdbcType=VARCHAR}
+        AND t.P_ORG_ID!=0
+
+    </update>
+
+    <select id="selectViewByMap" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT u.UNITID,u.UNITNAME FROM (SELECT * FROM t_emc_org WHERE COM_ID=#{comId}
+        <if test="orgId != null and orgId !=''">
+            AND  FIND_IN_SET(ID, emc_func_org_getchilds(#{orgId}))
+        </if>
+        ) a, v_emc_unit u
+        WHERE a.id=u.ORGID
+        <if test="unitType != null and unitType !=''">
+            AND  u.UNITTYPE=#{unitType}
+        </if>
+    </select>
+</mapper>

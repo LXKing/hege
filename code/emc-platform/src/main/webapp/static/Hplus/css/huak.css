@@ -1,0 +1,59 @@
+.btn-tools{
+    float: right;
+    margin-top: 0;
+    text-align: right;
+}
+
+.custom-styl-2{
+    margin: 11px 0px 0px 20px;
+}
+
+form .control-label {
+    margin-top: 8px;
+    margin-bottom: 5px;
+}
+
+form .control-input {
+    margin-bottom: 10px;
+}
+.ibox-title button {
+    margin-bottom: 0px;
+}
+.row-button {
+    margin-left: 1px;
+}
+.row-button .btn {
+    margin-bottom: 0px;
+}
+
+form .red {
+    color: #ff0000;
+}
+
+.has-success .chosen-single {
+    border-color: #468847;
+}
+.has-error .chosen-single {
+    border-color: #b94a48!important;
+}
+.margin-top5{
+    margin-top: 5px;
+}
+.margin-bottom5{
+    margin-bottom: 5px;
+}
+.btn-text-align{
+    text-align:right;
+}
+.btn-margin-bottom0{
+    margin-bottom: 0px;
+    margin-top: 5px;
+}
+.btn-margin-bottom0 .btn{
+    margin-bottom: 0px;
+}
+.tree-box{
+    border: 1px solid #ccc;
+    background-color: #fff;
+    z-index: 999999;
+}

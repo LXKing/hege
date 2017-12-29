@@ -1,0 +1,577 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.org.dao.NodeDao">
+  <resultMap id="BaseResultMap" type="com.huak.org.model.Node">
+    <constructor>
+        <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <arg column="MANAGE_TYPE_ID" javaType="java.lang.Byte" jdbcType="TINYINT" />
+        <arg column="PROVINCE_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <arg column="CITY_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <arg column="COUNTY_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <arg column="TOWN_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <arg column="VILLAGE_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <arg column="ADDR" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <arg column="LNG" javaType="java.lang.Double" jdbcType="DOUBLE" />
+        <arg column="LAT" javaType="java.lang.Double" jdbcType="DOUBLE" />
+        <arg column="STATION_NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <arg column="STATION_CODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <arg column="HEAT_AREA" javaType="java.lang.Double" jdbcType="DOUBLE" />
+        <arg column="ORG_ID" javaType="java.lang.Long" jdbcType="BIGINT" />
+        <arg column="NET_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <arg column="FEED_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <arg column="COM_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <arg column="STATUS" javaType="java.lang.Byte" jdbcType="TINYINT" />
+        <arg column="HEAT_TYPE" javaType="java.lang.Byte" jdbcType="TINYINT" />
+    </constructor>
+  </resultMap>
+    <sql id="Base_Column_List">
+    ID, MANAGE_TYPE_ID, PROVINCE_ID, CITY_ID, COUNTY_ID, TOWN_ID, VILLAGE_ID, ADDR, LNG, 
+    LAT, STATION_NAME, STATION_CODE, HEAT_AREA, ORG_ID, NET_ID, FEED_ID,  COM_ID,STATUS,HEAT_TYPE
+  </sql>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_unit_station
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_unit_station
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+
+
+  <insert id="insert" parameterType="com.huak.org.model.Node">
+    insert into t_emc_unit_station (ID, MANAGE_TYPE_ID, PROVINCE_ID,
+      CITY_ID, COUNTY_ID, TOWN_ID,
+      VILLAGE_ID, ADDR, LNG,
+      LAT, STATION_NAME, STATION_CODE,
+      HEAT_AREA, ORG_ID, NET_ID,
+      FEED_ID,  COM_ID,STATUS,HEAT_TYPE
+      )
+    values (#{id,jdbcType=VARCHAR}, #{manageTypeId,jdbcType=TINYINT}, #{provinceId,jdbcType=VARCHAR},
+      #{cityId,jdbcType=VARCHAR}, #{countyId,jdbcType=VARCHAR}, #{townId,jdbcType=VARCHAR},
+      #{villageId,jdbcType=VARCHAR}, #{addr,jdbcType=VARCHAR}, #{lng,jdbcType=DOUBLE},
+      #{lat,jdbcType=DOUBLE}, #{stationName,jdbcType=VARCHAR}, #{stationCode,jdbcType=VARCHAR},
+      #{heatArea,jdbcType=DOUBLE}, #{orgId,jdbcType=BIGINT}, #{netId,jdbcType=VARCHAR},
+      #{feedId,jdbcType=VARCHAR}, #{lineId,jdbcType=VARCHAR}, #{comId,jdbcType=VARCHAR}, #{status,jdbcType=TINYINT}, #{heatType,jdbcType=TINYINT}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.huak.org.model.Node">
+    insert into t_emc_unit_station
+      <trim prefix="(" suffix=")" suffixOverrides=",">
+          <if test="id != null">
+              ID,
+          </if>
+          <if test="manageTypeId != null">
+              MANAGE_TYPE_ID,
+          </if>
+          <if test="heatType != null">
+              HEAT_TYPE,
+          </if>
+          <if test="provinceId != null">
+              PROVINCE_ID,
+          </if>
+          <if test="cityId != null">
+              CITY_ID,
+          </if>
+          <if test="countyId != null">
+              COUNTY_ID,
+          </if>
+          <if test="townId != null">
+              TOWN_ID,
+          </if>
+          <if test="villageId != null">
+              VILLAGE_ID,
+          </if>
+          <if test="addr != null">
+              ADDR,
+          </if>
+          <if test="lng != null">
+              LNG,
+          </if>
+          <if test="lat != null">
+              LAT,
+          </if>
+          <if test="stationName != null">
+              STATION_NAME,
+          </if>
+          <if test="stationCode != null">
+              STATION_CODE,
+          </if>
+          <if test="heatArea != null">
+              HEAT_AREA,
+          </if>
+          <if test="orgId != null">
+              ORG_ID,
+          </if>
+          <if test="netId != null">
+              NET_ID,
+          </if>
+          <if test="feedId != null">
+              FEED_ID,
+          </if>
+
+          <if test="comId != null">
+              COM_ID,
+          </if>
+          <if test="status != null">
+              STATUS,
+          </if>
+      </trim>
+      <trim prefix="values (" suffix=")" suffixOverrides=",">
+          <if test="id != null">
+              #{id,jdbcType=VARCHAR},
+          </if>
+          <if test="manageTypeId != null">
+              #{manageTypeId,jdbcType=TINYINT},
+          </if>
+          <if test="heatType != null">
+              #{heatType,jdbcType=TINYINT},
+          </if>
+          <if test="provinceId != null">
+              #{provinceId,jdbcType=VARCHAR},
+          </if>
+          <if test="cityId != null">
+              #{cityId,jdbcType=VARCHAR},
+          </if>
+          <if test="countyId != null">
+              #{countyId,jdbcType=VARCHAR},
+          </if>
+          <if test="townId != null">
+              #{townId,jdbcType=VARCHAR},
+          </if>
+          <if test="villageId != null">
+              #{villageId,jdbcType=VARCHAR},
+          </if>
+          <if test="addr != null">
+              #{addr,jdbcType=VARCHAR},
+          </if>
+          <if test="lng != null">
+              #{lng,jdbcType=DOUBLE},
+          </if>
+          <if test="lat != null">
+              #{lat,jdbcType=DOUBLE},
+          </if>
+          <if test="stationName != null">
+              #{stationName,jdbcType=VARCHAR},
+          </if>
+          <if test="stationCode != null">
+              #{stationCode,jdbcType=VARCHAR},
+          </if>
+          <if test="heatArea != null">
+              #{heatArea,jdbcType=DOUBLE},
+          </if>
+          <if test="orgId != null">
+              #{orgId,jdbcType=BIGINT},
+          </if>
+          <if test="netId != null">
+              #{netId,jdbcType=VARCHAR},
+          </if>
+          <if test="feedId != null">
+              #{feedId,jdbcType=VARCHAR},
+          </if>
+          <if test="comId != null">
+              #{comId,jdbcType=VARCHAR},
+          </if>
+          <if test="status != null">
+              #{status,jdbcType=TINYINT},
+          </if>
+    </trim>
+  </insert>
+
+    <update id="deleteByStatus" parameterType="java.lang.String">
+        update t_emc_unit_station
+        <set>
+            STATUS = '1'
+        </set>
+        where ID = #{id,jdbcType=VARCHAR}
+    </update>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.org.model.Node">
+    update t_emc_unit_station
+      <set>
+          <if test="manageTypeId != null and manageTypeId != ''">
+              MANAGE_TYPE_ID = #{manageTypeId,jdbcType=TINYINT},
+          </if>
+          <if test="provinceId != null  and provinceId != ''">
+              PROVINCE_ID = #{provinceId,jdbcType=VARCHAR},
+          </if>
+          <if test="cityId != null  and cityId != ''">
+              CITY_ID = #{cityId,jdbcType=VARCHAR},
+          </if>
+          <if test="countyId != null  and countyId != ''">
+              COUNTY_ID = #{countyId,jdbcType=VARCHAR},
+          </if>
+          <if test="townId != null  and townId != ''">
+              TOWN_ID = #{townId,jdbcType=VARCHAR},
+          </if>
+          <if test="villageId != null  and villageId != ''">
+              VILLAGE_ID = #{villageId,jdbcType=VARCHAR},
+          </if>
+          <if test="addr != null  and addr != ''">
+              ADDR = #{addr,jdbcType=VARCHAR},
+          </if>
+          <if test="lng != null  and lng != ''">
+              LNG = #{lng,jdbcType=DOUBLE},
+          </if>
+          <if test="lat != null  and lat != ''">
+              LAT = #{lat,jdbcType=DOUBLE},
+          </if>
+          <if test="stationName != null  and stationName != ''">
+              STATION_NAME = #{stationName,jdbcType=VARCHAR},
+          </if>
+          <if test="stationCode != null  and stationCode != ''">
+              STATION_CODE = #{stationCode,jdbcType=VARCHAR},
+          </if>
+          <if test="heatArea != null  and heatArea != ''">
+              HEAT_AREA = #{heatArea,jdbcType=DOUBLE},
+          </if>
+          <if test="orgId != null  and orgId != ''">
+              ORG_ID = #{orgId,jdbcType=BIGINT},
+          </if>
+          <if test="netId != null  and netId != ''">
+              NET_ID = #{netId,jdbcType=VARCHAR},
+          </if>
+          <if test="feedId != null  and feedId != ''">
+              FEED_ID = #{feedId,jdbcType=VARCHAR},
+          </if>
+
+          <if test="comId != null  and comId != ''">
+              COM_ID = #{comId,jdbcType=VARCHAR},
+          </if>
+          <if test="status != null  and status != ''">
+              STATUS = #{status,jdbcType=TINYINT},
+          </if>
+          <if test="heatType != null  and heatType != ''">
+              HEAT_TYPE = #{heatType,jdbcType=TINYINT},
+          </if>
+      </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.huak.org.model.Node">
+     update t_emc_unit_station
+    set MANAGE_TYPE_ID = #{manageTypeId,jdbcType=TINYINT},
+      PROVINCE_ID = #{provinceId,jdbcType=VARCHAR},
+      CITY_ID = #{cityId,jdbcType=VARCHAR},
+      COUNTY_ID = #{countyId,jdbcType=VARCHAR},
+      TOWN_ID = #{townId,jdbcType=VARCHAR},
+      VILLAGE_ID = #{villageId,jdbcType=VARCHAR},
+      ADDR = #{addr,jdbcType=VARCHAR},
+      LNG = #{lng,jdbcType=DOUBLE},
+      LAT = #{lat,jdbcType=DOUBLE},
+      STATION_NAME = #{stationName,jdbcType=VARCHAR},
+      STATION_CODE = #{stationCode,jdbcType=VARCHAR},
+      HEAT_AREA = #{heatArea,jdbcType=DOUBLE},
+      ORG_ID = #{orgId,jdbcType=BIGINT},
+      NET_ID = #{netId,jdbcType=VARCHAR},
+      FEED_ID = #{feedId,jdbcType=VARCHAR},
+      COM_ID = #{comId,jdbcType=VARCHAR},
+      STATUS = #{status,jdbcType=TINYINT},
+      HEAT_TYPE = #{heatType,jdbcType=TINYINT}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+
+  <select id="selectPageByMap" resultMap="BaseResultMap" parameterType="java.util.Map">
+      select
+          <include refid="Base_Column_List" />
+      FROM t_emc_unit_station WHERE 1=1
+      <if test="manageTypeId != null and manageTypeId != ''">
+        and  MANAGE_TYPE_ID = #{manageTypeId,jdbcType=TINYINT}
+      </if>
+      <if test="provinceId != null and provinceId != ''">
+          and  PROVINCE_ID = #{provinceId,jdbcType=VARCHAR}
+      </if>
+      <if test="cityId != null and cityId != ''">
+          and CITY_ID = #{cityId,jdbcType=VARCHAR}
+      </if>
+      <if test="countyId != null and countyId != ''">
+          and  COUNTY_ID = #{countyId,jdbcType=VARCHAR}
+      </if>
+      <if test="townId != null and townId != ''">
+          and  TOWN_ID = #{townId,jdbcType=VARCHAR}
+      </if>
+      <if test="villageId != null and villageId != ''">
+          and VILLAGE_ID = #{villageId,jdbcType=VARCHAR}
+      </if>
+      <if test="addr != null and addr != ''">
+          and ADDR = #{addr,jdbcType=VARCHAR}
+      </if>
+      <if test="lng != null and lng != ''">
+          and LNG = #{lng,jdbcType=DOUBLE}
+      </if>
+      <if test="lat != null and lat != ''">
+          and LAT = #{lat,jdbcType=DOUBLE}
+      </if>
+      <if test="stationName != null and stationName != ''">
+          and STATION_NAME like concat(concat('%',#{stationName,jdbcType=VARCHAR}),'%')
+      </if>
+      <if test="stationCode != null and stationCode != ''">
+          and  STATION_CODE = #{stationCode,jdbcType=VARCHAR}
+      </if>
+      <if test="heatArea != null and heatArea != ''">
+          and HEAT_AREA = #{heatArea,jdbcType=DOUBLE}
+      </if>
+      <if test="orgId != null and orgId != ''">
+          and ORG_ID = #{orgId,jdbcType=BIGINT}
+      </if>
+      <if test="netId != null and netId != ''">
+          and NET_ID = #{netId,jdbcType=VARCHAR}
+      </if>
+      <if test="feedId != null and feedId != ''">
+          and FEED_ID = #{feedId,jdbcType=VARCHAR}
+      </if>
+      <if test="comId != null and comId != ''">
+          and  COM_ID = #{comId,jdbcType=VARCHAR}
+      </if>
+      <if test="status != null and status != ''">
+          and  STATUS = #{status,jdbcType=TINYINT}
+      </if>
+      <if test="heatType != null and heatType != ''">
+          and  HEAT_TYPE = #{heatType,jdbcType=TINYINT}
+      </if>
+  </select>
+
+    <select id="selectStationByMap" parameterType="java.util.Map" resultType="java.util.Map">
+        select
+        ID as id,MANAGE_TYPE_ID as manageTypeId,
+        (CASE MANAGE_TYPE_ID WHEN 1 THEN '统管' WHEN 2 THEN '自管' WHEN 3 THEN '代管' ELSE '' END)  manageType,
+        PROVINCE_ID as provinceId, CITY_ID as cityId, COUNTY_ID as countyId, TOWN_ID as townId, VILLAGE_ID as villageId, ADDR as addr, LNG as lng,
+        LAT as lat, STATION_NAME as stationName, STATION_CODE as stationCode, HEAT_AREA as heatArea, ORG_ID as orgId, NET_ID as netId, FEED_ID as feedId,  COM_ID as comId,
+        HEAT_TYPE AS heatType
+        from t_emc_unit_station
+        where 1=1
+        <if test="manageTypeId != null and manageTypeId != ''">
+            and  MANAGE_TYPE_ID = #{manageTypeId,jdbcType=TINYINT}
+        </if>
+        <if test="provinceId != null and provinceId != ''">
+            and  PROVINCE_ID = #{provinceId,jdbcType=VARCHAR}
+        </if>
+        <if test="cityId != null and cityId != ''">
+            and CITY_ID = #{cityId,jdbcType=VARCHAR}
+        </if>
+        <if test="countyId != null and countyId != ''">
+            and  COUNTY_ID = #{countyId,jdbcType=VARCHAR}
+        </if>
+        <if test="townId != null and townId != ''">
+            and  TOWN_ID = #{townId,jdbcType=VARCHAR}
+        </if>
+        <if test="villageId != null and villageId != ''">
+            and VILLAGE_ID = #{villageId,jdbcType=VARCHAR}
+        </if>
+        <if test="addr != null and addr != ''">
+            and ADDR = #{addr,jdbcType=VARCHAR}
+        </if>
+        <if test="lng != null and lng != ''">
+            and LNG = #{lng,jdbcType=DOUBLE}
+        </if>
+        <if test="lat != null and lat != ''">
+            and LAT = #{lat,jdbcType=DOUBLE}
+        </if>
+        <if test="stationName != null and stationName != ''">
+            and STATION_NAME like concat(concat('%',#{stationName,jdbcType=VARCHAR}),'%')
+
+        </if>
+        <if test="stationCode != null and stationCode != ''">
+            and  STATION_CODE = #{stationCode,jdbcType=VARCHAR}
+        </if>
+        <if test="heatArea != null and heatArea != ''">
+            and HEAT_AREA = #{heatArea,jdbcType=DOUBLE}
+        </if>
+        <if test="orgId != null and orgId != ''">
+            and ORG_ID = #{orgId,jdbcType=BIGINT}
+        </if>
+        <if test="netId != null and netId != ''">
+            and NET_ID = #{netId,jdbcType=VARCHAR}
+        </if>
+        <if test="feedId != null and feedId != ''">
+            and FEED_ID = #{feedId,jdbcType=VARCHAR}
+        </if>
+
+        <if test="comId != null and comId != ''">
+            and  COM_ID = #{comId,jdbcType=VARCHAR}
+        </if>
+        <if test="status != null and status != ''">
+            and  STATUS = #{status,jdbcType=TINYINT}
+        </if>
+        <if test="heatType != null and heatType != ''">
+            and  HEAT_TYPE = #{heatType,jdbcType=TINYINT}
+        </if>
+        order by STATION_NAME ASC
+    </select>
+
+    <select id="export" resultType="java.util.Map" parameterType="java.util.Map">
+        select
+        ID ,MANAGE_TYPE_ID,
+        (CASE MANAGE_TYPE_ID WHEN 1 THEN '统管' WHEN 2 THEN '自管' WHEN 3 THEN '代管' ELSE '' END)  MANAGE_TYPE,
+        PROVINCE_ID , CITY_ID , COUNTY_ID , TOWN_ID, VILLAGE_ID , ADDR , LNG ,
+        LAT, STATION_NAME , STATION_CODE , HEAT_AREA , ORG_ID , NET_ID , FEED_ID ,  COM_ID,HEAT_TYPE
+        FROM t_emc_unit_station WHERE 1=1
+        <if test="manageTypeId != null and manageTypeId != ''">
+            and  MANAGE_TYPE_ID = #{manageTypeId,jdbcType=TINYINT}
+        </if>
+        <if test="provinceId != null and provinceId != ''">
+            and  PROVINCE_ID = #{provinceId,jdbcType=VARCHAR}
+        </if>
+        <if test="cityId != null and cityId != ''">
+            and CITY_ID = #{cityId,jdbcType=VARCHAR}
+        </if>
+        <if test="countyId != null and countyId != ''">
+            and  COUNTY_ID = #{countyId,jdbcType=VARCHAR}
+        </if>
+        <if test="townId != null and townId != ''">
+            and  TOWN_ID = #{townId,jdbcType=VARCHAR}
+        </if>
+        <if test="villageId != null and villageId != ''">
+            and VILLAGE_ID = #{villageId,jdbcType=VARCHAR}
+        </if>
+        <if test="addr != null and addr != ''">
+            and ADDR = #{addr,jdbcType=VARCHAR}
+        </if>
+        <if test="lng != null and lng != ''">
+            and LNG = #{lng,jdbcType=DOUBLE}
+        </if>
+        <if test="lat != null and lat != ''">
+            and LAT = #{lat,jdbcType=DOUBLE}
+        </if>
+        <if test="stationName != null and stationName != ''">
+            and STATION_NAME like concat(concat('%',#{stationName,jdbcType=VARCHAR}),'%')
+        </if>
+        <if test="stationCode != null and stationCode != ''">
+            and  STATION_CODE = #{stationCode,jdbcType=VARCHAR}
+        </if>
+        <if test="heatArea != null and heatArea != ''">
+            and HEAT_AREA = #{heatArea,jdbcType=DOUBLE}
+        </if>
+        <if test="orgId != null and orgId != ''">
+            and ORG_ID = #{orgId,jdbcType=BIGINT}
+        </if>
+        <if test="netId != null and netId != ''">
+            and NET_ID = #{netId,jdbcType=VARCHAR}
+        </if>
+        <if test="feedId != null and feedId != ''">
+            and FEED_ID = #{feedId,jdbcType=VARCHAR}
+        </if>
+        <if test="comId != null and comId != ''">
+            and  COM_ID = #{comId,jdbcType=VARCHAR}
+        </if>
+        <if test="status != null and status != ''">
+            and  STATUS = #{status,jdbcType=TINYINT}
+        </if>
+        <if test="heatType != null and heatType != ''">
+            and  HEAT_TYPE = #{heatType,jdbcType=TINYINT}
+        </if>
+    </select>
+
+
+    <select id="selectNetByMap" parameterType="java.util.Map" resultType="java.util.Map">
+        select
+        ID,
+        NET_NAME,
+        NET_CODE,
+        NET_TYPE_ID,
+        LENGTH,
+        CELL_NUM,
+        PART_NUM,
+        MEDIUM,
+        ORG_ID,
+        COM_ID,
+        HEAT_TYPE
+        from t_emc_unit_net
+        where 1=1
+
+        <if test="netName != null and netName !=''">
+            and  NET_NAME =  #{netName,jdbcType=VARCHAR}
+        </if>
+        <if test="netCode != null and netCode !=''">
+            and  NET_CODE =  #{netCode,jdbcType=VARCHAR}
+        </if>
+
+        <if test="netTypeId != null and netTypeId !=''">
+            and  NET_TYPE_ID =  #{netTypeId,jdbcType=TINYINT}
+        </if>
+
+        <if test="length != null and length!=''">
+            and  LENGTH = #{length,jdbcType=DOUBLE}
+        </if>
+        <if test="cellNum != null and cellNum!=''">
+            and CELL_NUM = #{cellNum,jdbcType=INTEGER}
+        </if>
+        <if test="partNum != null and partNum!=''">
+            and  PART_NUM = #{partNum,jdbcType=INTEGER}
+        </if>
+        <if test="medium != null and medium!=''">
+            and  MEDIUM = #{medium,jdbcType=VARCHAR}
+        </if>
+        <if test="orgId != null and orgId!='' and orgId !='null'">
+            and  ORG_ID = #{orgId,jdbcType=BIGINT}
+        </if>
+        <if test="comId != null and comId!='' and comId !='null'">
+            and  COM_ID = #{comId,jdbcType=VARCHAR}
+        </if>
+        <if test="heatType != null and heatType!=''">
+            and  HEAT_TYPE = #{heatType,jdbcType=TINYINT}
+        </if>
+        order by id
+    </select>
+
+    <select id="selectLineByMap" parameterType="java.util.HashMap" resultType="java.util.Map">
+        select
+        ID,
+        LINE_NAME,
+        LINE_CODE,
+        NET_TYPE_ID,
+        LENGTH,
+        CELL_NUM,
+        PART_NUM,
+        MEDIUM,
+        ORG_ID,
+        COM_ID,
+        HEAT_TYPE,
+        FEED_ID,
+        STATION_ID
+        from t_emc_unit_line
+        where 1=1
+
+        <if test="lineName != null and lineName !=''">
+            and  LINE_NAME =  #{lineName,jdbcType=VARCHAR}
+        </if>
+        <if test="lineCode != null and lineCode !=''">
+            and  LINE_CODE =  #{lineCode,jdbcType=VARCHAR}
+        </if>
+
+        <if test="netTypeId != null and netTypeId !=''">
+            and  NET_TYPE_ID =  #{netTypeId,jdbcType=TINYINT}
+        </if>
+
+        <if test="length != null and length!=''">
+            and  LENGTH = #{length,jdbcType=DOUBLE}
+        </if>
+        <if test="cellNum != null and cellNum!=''">
+            and CELL_NUM = #{cellNum,jdbcType=INTEGER}
+        </if>
+        <if test="partNum != null and partNum!=''">
+            and  PART_NUM = #{partNum,jdbcType=INTEGER}
+        </if>
+        <if test="medium != null and medium!=''">
+            and  MEDIUM = #{medium,jdbcType=VARCHAR}
+        </if>
+        <if test="orgId != null and orgId!='' and orgId != 'null'">
+            and  ORG_ID = #{orgId,jdbcType=BIGINT}
+        </if>
+        <if test="comId != null and comId!='' and comId !='null'">
+            and  COM_ID = #{comId,jdbcType=VARCHAR}
+        </if>
+        <if test="heatType != null and heatType!=''">
+            and  HEAT_TYPE = #{heatType,jdbcType=TINYINT}
+        </if>
+        <if test="feedId != null and feedId!=''">
+            and  FEED_ID = #{feedId,jdbcType=TINYINT}
+        </if>
+        <if test="stationId != null and stationId!=''">
+            and  STATION_ID = #{stationId,jdbcType=TINYINT}
+        </if>
+        order by id
+    </select>
+
+</mapper>

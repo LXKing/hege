@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/mvc
+       http://www.springframework.org/schema/mvc/spring-mvc.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/task
+	   http://www.springframework.org/schema/task/spring-task-3.0.xsd ">
+    <!-- 自动扫描 -->
+    <context:component-scan base-package="com.huak.*" />
+
+    <context:property-placeholder location="classpath:application-env.properties" ignore-unresolvable="true" />
+
+    <mvc:default-servlet-handler/>
+
+    <mvc:annotation-driven ></mvc:annotation-driven>
+    <task:scheduled-tasks>
+        <!--每小时21分采集当前时间天气-->
+        <task:scheduled ref="weatherTask" method="currentWeather" cron="0 21 * * * ?"/>
+        <!--每天凌晨2点采集天气预报-->
+        <task:scheduled ref="weatherTask" method="forcastWeather7d" cron="0 0 2 * * ?"/>
+        <!--每隔10分钟检测一次报警-->
+        <task:scheduled ref="workWarnTask" method="workWarnInfo" cron="0 0/10 * * * ?"/>
+        <!--每天晚22点自动填报一次-->
+        <task:scheduled ref="energyDataTask" method="autoSaveEnergyData" cron="0 50 21 * * ?"/>
+    </task:scheduled-tasks>
+
+</beans>

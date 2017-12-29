@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.mdc.dao.CarbonFormulaDao">
+  <resultMap id="BaseResultMap" type="com.huak.mdc.model.CarbonFormula">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="COMID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="TYPEID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="CAMOUNT" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="CRATE" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="SDATE" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    ID, COMID, TYPEID, CAMOUNT, CRATE, SDATE
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_carbon_formula
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_carbon_formula
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+
+  <insert id="insertSelective" parameterType="com.huak.mdc.model.CarbonFormula">
+    insert into t_emc_carbon_formula
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="comid != null">
+        COMID,
+      </if>
+      <if test="typeid != null">
+        TYPEID,
+      </if>
+      <if test="camount != null">
+        CAMOUNT,
+      </if>
+      <if test="crate != null">
+        CRATE,
+      </if>
+      <if test="sdate != null">
+        SDATE,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="comid != null">
+        #{comid,jdbcType=VARCHAR},
+      </if>
+      <if test="typeid != null">
+        #{typeid,jdbcType=VARCHAR},
+      </if>
+      <if test="camount != null">
+        #{camount,jdbcType=DOUBLE},
+      </if>
+      <if test="crate != null">
+        #{crate,jdbcType=DOUBLE},
+      </if>
+      <if test="sdate != null">
+        #{sdate,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.mdc.model.CarbonFormula">
+    update t_emc_carbon_formula
+    <set>
+      <if test="comid != null">
+        COMID = #{comid,jdbcType=VARCHAR},
+      </if>
+      <if test="typeid != null">
+        TYPEID = #{typeid,jdbcType=VARCHAR},
+      </if>
+      <if test="camount != null">
+        CAMOUNT = #{camount,jdbcType=DOUBLE},
+      </if>
+      <if test="crate != null">
+        CRATE = #{crate,jdbcType=DOUBLE},
+      </if>
+      <if test="sdate != null">
+        SDATE = #{sdate,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+
+    <select id="getCarbonFormulaByTime" parameterType="java.util.Map" resultType="java.lang.Double">
+        SELECT CAMOUNT*CRATE FROM t_emc_carbon_formula
+        WHERE COMID = #{id} AND TYPEID = #{energyTypeId}
+        AND  SDATE <![CDATA[ <= ]]> #{time}
+        ORDER BY SDATE DESC LIMIT 1
+    </select>
+</mapper>

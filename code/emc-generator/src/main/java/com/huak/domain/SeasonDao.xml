@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.dao.SeasonDao">
+  <resultMap id="BaseResultMap" type="com.huak.model.Season">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="COMID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="SDATE" javaType="java.util.Date" jdbcType="DATE" />
+      <arg column="EDATE" javaType="java.util.Date" jdbcType="DATE" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    ID, COMID, NAME, SDATE, EDATE
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_heat_season
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_heat_season
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.huak.model.Season">
+    insert into t_emc_heat_season (ID, COMID, NAME, 
+      SDATE, EDATE)
+    values (#{id,jdbcType=VARCHAR}, #{comid,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, 
+      #{sdate,jdbcType=DATE}, #{edate,jdbcType=DATE})
+  </insert>
+  <insert id="insertSelective" parameterType="com.huak.model.Season">
+    insert into t_emc_heat_season
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="comid != null">
+        COMID,
+      </if>
+      <if test="name != null">
+        NAME,
+      </if>
+      <if test="sdate != null">
+        SDATE,
+      </if>
+      <if test="edate != null">
+        EDATE,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="comid != null">
+        #{comid,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="sdate != null">
+        #{sdate,jdbcType=DATE},
+      </if>
+      <if test="edate != null">
+        #{edate,jdbcType=DATE},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.model.Season">
+    update t_emc_heat_season
+    <set>
+      <if test="comid != null">
+        COMID = #{comid,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        NAME = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="sdate != null">
+        SDATE = #{sdate,jdbcType=DATE},
+      </if>
+      <if test="edate != null">
+        EDATE = #{edate,jdbcType=DATE},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.huak.model.Season">
+    update t_emc_heat_season
+    set COMID = #{comid,jdbcType=VARCHAR},
+      NAME = #{name,jdbcType=VARCHAR},
+      SDATE = #{sdate,jdbcType=DATE},
+      EDATE = #{edate,jdbcType=DATE}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

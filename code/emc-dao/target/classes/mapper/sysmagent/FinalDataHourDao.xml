@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.mdc.dao.FinalDataHourDao">
+  <resultMap id="BaseResultMap" type="com.huak.mdc.model.FinalDataHour">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="COMID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="UNITID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="NODEID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="TYPEID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="DOSAGE_TIME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="DOSAGE" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="AREA" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="PRICE" javaType="java.math.BigDecimal" jdbcType="DECIMAL" />
+      <arg column="WTEMP" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="CWTEMP" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="COAL_COEF" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="C_COEF" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="ITEMP" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="CITEMP" javaType="java.lang.Double" jdbcType="DOUBLE" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    ID, COMID, UNITID, NODEID, TYPEID, DOSAGE_TIME, DOSAGE, AREA, PRICE, WTEMP, CWTEMP, 
+    COAL_COEF, C_COEF, ITEMP, CITEMP
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.util.Map" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from ${tableName}
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.util.Map">
+    delete from ${tableName}
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+
+  <insert id="insertSelective" parameterType="com.huak.mdc.model.FinalDataHour">
+    insert into ${tableName}
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="comid != null">
+        COMID,
+      </if>
+      <if test="unitid != null">
+        UNITID,
+      </if>
+      <if test="nodeid != null">
+        NODEID,
+      </if>
+      <if test="typeid != null">
+        TYPEID,
+      </if>
+      <if test="dosageTime != null">
+        DOSAGE_TIME,
+      </if>
+      <if test="dosage != null">
+        DOSAGE,
+      </if>
+      <if test="area != null">
+        AREA,
+      </if>
+      <if test="price != null">
+        PRICE,
+      </if>
+      <if test="wtemp != null">
+        WTEMP,
+      </if>
+      <if test="cwtemp != null">
+        CWTEMP,
+      </if>
+      <if test="coalCoef != null">
+        COAL_COEF,
+      </if>
+      <if test="cCoef != null">
+        C_COEF,
+      </if>
+      <if test="itemp != null">
+        ITEMP,
+      </if>
+      <if test="citemp != null">
+        CITEMP,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="comid != null">
+        #{comid,jdbcType=VARCHAR},
+      </if>
+      <if test="unitid != null">
+        #{unitid,jdbcType=VARCHAR},
+      </if>
+      <if test="nodeid != null">
+        #{nodeid,jdbcType=VARCHAR},
+      </if>
+      <if test="typeid != null">
+        #{typeid,jdbcType=VARCHAR},
+      </if>
+      <if test="dosageTime != null">
+        #{dosageTime,jdbcType=VARCHAR},
+      </if>
+      <if test="dosage != null">
+        #{dosage,jdbcType=DOUBLE},
+      </if>
+      <if test="area != null">
+        #{area,jdbcType=DOUBLE},
+      </if>
+      <if test="price != null">
+        #{price,jdbcType=DECIMAL},
+      </if>
+      <if test="wtemp != null">
+        #{wtemp,jdbcType=DOUBLE},
+      </if>
+      <if test="cwtemp != null">
+        #{cwtemp,jdbcType=DOUBLE},
+      </if>
+      <if test="coalCoef != null">
+        #{coalCoef,jdbcType=DOUBLE},
+      </if>
+      <if test="cCoef != null">
+        #{cCoef,jdbcType=DOUBLE},
+      </if>
+      <if test="itemp != null">
+        #{itemp,jdbcType=DOUBLE},
+      </if>
+      <if test="citemp != null">
+        #{citemp,jdbcType=DOUBLE},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.mdc.model.FinalDataHour">
+    update ${tableName}
+    <set>
+      <if test="comid != null">
+        COMID = #{comid,jdbcType=VARCHAR},
+      </if>
+      <if test="unitid != null">
+        UNITID = #{unitid,jdbcType=VARCHAR},
+      </if>
+      <if test="nodeid != null">
+        NODEID = #{nodeid,jdbcType=VARCHAR},
+      </if>
+      <if test="typeid != null">
+        TYPEID = #{typeid,jdbcType=VARCHAR},
+      </if>
+      <if test="dosageTime != null">
+        DOSAGE_TIME = #{dosageTime,jdbcType=VARCHAR},
+      </if>
+      <if test="dosage != null">
+        DOSAGE = #{dosage,jdbcType=DOUBLE},
+      </if>
+      <if test="area != null">
+        AREA = #{area,jdbcType=DOUBLE},
+      </if>
+      <if test="price != null">
+        PRICE = #{price,jdbcType=DECIMAL},
+      </if>
+      <if test="wtemp != null">
+        WTEMP = #{wtemp,jdbcType=DOUBLE},
+      </if>
+      <if test="cwtemp != null">
+        CWTEMP = #{cwtemp,jdbcType=DOUBLE},
+      </if>
+      <if test="coalCoef != null">
+        COAL_COEF = #{coalCoef,jdbcType=DOUBLE},
+      </if>
+      <if test="cCoef != null">
+        C_COEF = #{cCoef,jdbcType=DOUBLE},
+      </if>
+      <if test="itemp != null">
+        ITEMP = #{itemp,jdbcType=DOUBLE},
+      </if>
+      <if test="citemp != null">
+        CITEMP = #{citemp,jdbcType=DOUBLE},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+
+    <insert id="insertOrUpdate"  parameterType="com.huak.mdc.model.FinalDataHour">
+        <selectKey keyProperty="count" resultType="java.lang.Long" order="BEFORE">
+            select count(*) from ${tableName} where NODEID = #{nodeid} and DOSAGE_TIME=#{dosageTime}
+        </selectKey>
+        <if test="count > 0">
+            update ${tableName}
+            <set>
+                <if test="comid != null">
+                    COMID = #{comid,jdbcType=VARCHAR},
+                </if>
+                <if test="unitid != null">
+                    UNITID = #{unitid,jdbcType=VARCHAR},
+                </if>
+                <if test="typeid != null">
+                    TYPEID = #{typeid,jdbcType=VARCHAR},
+                </if>
+                <if test="dosage != null">
+                    DOSAGE = #{dosage,jdbcType=DOUBLE},
+                </if>
+                <if test="area != null">
+                    AREA = #{area,jdbcType=DOUBLE},
+                </if>
+                <if test="price != null">
+                    PRICE = #{price,jdbcType=DECIMAL},
+                </if>
+                <if test="wtemp != null">
+                    WTEMP = #{wtemp,jdbcType=DOUBLE},
+                </if>
+                <if test="cwtemp != null">
+                    CWTEMP = #{cwtemp,jdbcType=DOUBLE},
+                </if>
+                <if test="coalCoef != null">
+                    COAL_COEF = #{coalCoef,jdbcType=DOUBLE},
+                </if>
+                <if test="cCoef != null">
+                    C_COEF = #{cCoef,jdbcType=DOUBLE},
+                </if>
+                <if test="itemp != null">
+                    ITEMP = #{itemp,jdbcType=DOUBLE},
+                </if>
+                <if test="citemp != null">
+                    CITEMP = #{citemp,jdbcType=DOUBLE},
+                </if>
+            </set>
+            where NODEID = #{nodeid} and DOSAGE_TIME=#{dosageTime}
+        </if>
+        <if test="count==0">
+
+            insert into ${tableName}
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="id != null">
+                    ID,
+                </if>
+                <if test="comid != null">
+                    COMID,
+                </if>
+                <if test="unitid != null">
+                    UNITID,
+                </if>
+                <if test="nodeid != null">
+                    NODEID,
+                </if>
+                <if test="typeid != null">
+                    TYPEID,
+                </if>
+                <if test="dosageTime != null">
+                    DOSAGE_TIME,
+                </if>
+                <if test="dosage != null">
+                    DOSAGE,
+                </if>
+                <if test="area != null">
+                    AREA,
+                </if>
+                <if test="price != null">
+                    PRICE,
+                </if>
+                <if test="wtemp != null">
+                    WTEMP,
+                </if>
+                <if test="cwtemp != null">
+                    CWTEMP,
+                </if>
+                <if test="coalCoef != null">
+                    COAL_COEF,
+                </if>
+                <if test="cCoef != null">
+                    C_COEF,
+                </if>
+                <if test="itemp != null">
+                    ITEMP,
+                </if>
+                <if test="citemp != null">
+                    CITEMP,
+                </if>
+            </trim>
+            <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="id != null">
+                    #{id,jdbcType=VARCHAR},
+                </if>
+                <if test="comid != null">
+                    #{comid,jdbcType=VARCHAR},
+                </if>
+                <if test="unitid != null">
+                    #{unitid,jdbcType=VARCHAR},
+                </if>
+                <if test="nodeid != null">
+                    #{nodeid,jdbcType=VARCHAR},
+                </if>
+                <if test="typeid != null">
+                    #{typeid,jdbcType=VARCHAR},
+                </if>
+                <if test="dosageTime != null">
+                    #{dosageTime,jdbcType=VARCHAR},
+                </if>
+                <if test="dosage != null">
+                    #{dosage,jdbcType=DOUBLE},
+                </if>
+                <if test="area != null">
+                    #{area,jdbcType=DOUBLE},
+                </if>
+                <if test="price != null">
+                    #{price,jdbcType=DECIMAL},
+                </if>
+                <if test="wtemp != null">
+                    #{wtemp,jdbcType=DOUBLE},
+                </if>
+                <if test="cwtemp != null">
+                    #{cwtemp,jdbcType=DOUBLE},
+                </if>
+                <if test="coalCoef != null">
+                    #{coalCoef,jdbcType=DOUBLE},
+                </if>
+                <if test="cCoef != null">
+                    #{cCoef,jdbcType=DOUBLE},
+                </if>
+                <if test="itemp != null">
+                    #{itemp,jdbcType=DOUBLE},
+                </if>
+                <if test="citemp != null">
+                    #{citemp,jdbcType=DOUBLE},
+                </if>
+            </trim>
+        </if>
+    </insert>
+
+    <select id="selectCodeValue" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT CODE,DOSAGE FROM
+(SELECT ID,CODE FROM t_emc_meter_collect WHERE COM_ID = #{comId} AND CODE IN
+        <foreach collection="codes" item="code" index="index"
+                 open="(" close=")" separator=",">
+            #{code}
+        </foreach>
+)c
+LEFT JOIN ${tableName} d ON d.NODEID = c.id WHERE d.DOSAGE_TIME =#{time}
+    </select>
+</mapper>

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.org.dao.CompanyDao">
+  <resultMap id="BaseResultMap" type="com.huak.org.model.Company">
+    <constructor>
+      <idArg column="id" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="cname" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="NEXT_DES" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="WCODE" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <arg column="WNAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <arg column="TABLE_NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+        <arg column="LOGO_IMG" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    ID, CNAME,NEXT_DES,WCODE,TABLE_NAME,LOGO_IMG
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+      select
+      ID, CNAME,NEXT_DES,WCODE,TABLE_NAME,LOGO_IMG,
+      case  when WCODE is null then NULL ELSE IFNULL(W_NAME,CNAME) END WNAME
+      from t_emc_company t left join t_emc_weather_city c on t.WCODE=c.W_CODE
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_company
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+
+  <insert id="insertSelective" parameterType="com.huak.org.model.Company">
+    insert into t_emc_company
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="cname != null">
+        cname,
+      </if>
+        <if test="nextDes != null">
+            NEXT_DES,
+        </if>
+        <if test="wcode != null">
+            WCODE,
+        </if>
+        <if test="tableName != null">
+            TABLE_NAME,
+        </if>
+        <if test="logoImg != null">
+            LOGO_IMG,
+        </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="cname != null">
+        #{cname,jdbcType=VARCHAR},
+      </if>
+        <if test="nextDes != null">
+            #{nextDes,jdbcType=VARCHAR},
+        </if>
+        <if test="wcode != null">
+            #{wcode,jdbcType=VARCHAR},
+        </if>
+        <if test="tableName != null">
+            #{tableName,jdbcType=VARCHAR},
+        </if>
+        <if test="logoImg != null">
+            #{logoImg,jdbcType=VARCHAR},
+        </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.org.model.Company">
+    update t_emc_company
+    <set>
+      <if test="cname != null">
+        cname = #{cname,jdbcType=VARCHAR},
+      </if>
+        <if test="nextDes != null">
+            NEXT_DES = #{nextDes,jdbcType=VARCHAR},
+        </if>
+        <if test="wcode != null">
+            WCODE = #{wcode,jdbcType=VARCHAR},
+        </if>
+        <if test="tableName != null">
+            TABLE_NAME = #{tableName,jdbcType=VARCHAR},
+        </if>
+        <if test="logoImg != null">
+            LOGO_IMG = #{logoImg,jdbcType=VARCHAR},
+        </if>
+
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+    <select id="selectPageByMap" parameterType="java.util.HashMap" resultMap="BaseResultMap">
+        select
+        ID, CNAME,NEXT_DES,WCODE,TABLE_NAME,LOGO_IMG,
+        case  when WCODE is null then NULL ELSE IFNULL(W_NAME,CNAME) END WNAME
+        from t_emc_company t left join t_emc_weather_city c on t.WCODE=c.W_CODE
+        where 1=1
+        <if test="cname != null and cname !=''">
+            and  CNAME like CONCAT('%',#{cname},'%')
+        </if>
+        order by id
+    </select>
+    <select id="exportCompanys" parameterType="java.util.HashMap" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_company
+        where 1=1
+        <if test="cname != null and cname !=''">
+            and  CNAME like CONCAT('%',#{cname},'%')
+        </if>
+        order by id
+    </select>
+    <select id="selectAllByMap" parameterType="java.util.HashMap" resultMap="BaseResultMap">
+        select
+        ID, CNAME,NEXT_DES,WCODE,TABLE_NAME,LOGO_IMG,
+        case  when WCODE is null then NULL ELSE IFNULL(W_NAME,CNAME) END WNAME
+        from t_emc_company t left join t_emc_weather_city c on t.WCODE=c.W_CODE
+        where 1=1
+        <if test="cname != null and cname !=''">
+            and  CNAME like CONCAT('%',#{cname},'%')
+        </if>
+        order by id
+    </select>
+    <select id="selectCompanyAll" parameterType="java.lang.String" resultMap="BaseResultMap">
+         select
+        ID, CNAME,NEXT_DES,WCODE,TABLE_NAME,LOGO_IMG,
+        case  when WCODE is null then NULL ELSE IFNULL(W_NAME,CNAME) END WNAME
+        from t_emc_company t left join t_emc_weather_city c on t.WCODE=c.W_CODE
+
+        order by ID
+    </select>
+
+    <select id="selectWeatherCity" parameterType="java.util.HashMap" resultType="java.util.Map">
+        select
+        W_CODE, W_NAME,W_LEVEL,W_P_CODE
+        from t_emc_weather_city
+        where 1=1
+        <if test="wLevel != null and wLevel !=''">
+            and  W_LEVEL = #{wLevel}
+        </if>
+        <if test="wPCode != null and wPCode !=''">
+            and  W_P_CODE = #{wPCode}
+        </if>
+        order by W_CODE
+    </select>
+
+    <select id="selectParentWeatherByCode" parameterType="java.lang.String" resultType="java.util.Map">
+        select
+        *
+        from t_emc_weather_city
+        where W_CODE = (SELECT W_P_CODE FROM t_emc_weather_city WHERE W_CODE=#{code})
+    </select>
+
+    <select id="checkTableName" parameterType="java.util.HashMap" resultType="java.lang.Long">
+        select count(id) num
+        from t_emc_company
+        where 1=1
+        <if test="tableName != null and tableName !=''">
+            and  TABLE_NAME = #{tableName}
+        </if>
+    </select>
+
+</mapper>

@@ -1,0 +1,6 @@
+<script type="text/javascript">
+    $(function () {
+        // Invoke the plugin
+        $('input, textarea').placeholder();
+    });
+</script>

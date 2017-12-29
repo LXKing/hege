@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.auth.dao.FuncDao">
+  <resultMap id="BaseResultMap" type="com.huak.auth.model.Func">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="MENU_ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="UNAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="FUNC_NAME" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="ISSEARCH" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="SEQ" javaType="java.lang.Integer" jdbcType="INTEGER" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    ID, MENU_ID, UNAME, FUNC_NAME, ISSEARCH, SEQ
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_auth_func
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_auth_func
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insertSelective" parameterType="com.huak.auth.model.Func">
+    insert into t_emc_auth_func
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="menuId != null">
+        MENU_ID,
+      </if>
+      <if test="uname != null">
+        UNAME,
+      </if>
+      <if test="funcName != null">
+        FUNC_NAME,
+      </if>
+      <if test="issearch != null">
+        ISSEARCH,
+      </if>
+      <if test="seq != null">
+        SEQ,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="menuId != null">
+        #{menuId,jdbcType=VARCHAR},
+      </if>
+      <if test="uname != null">
+        #{uname,jdbcType=VARCHAR},
+      </if>
+      <if test="funcName != null">
+        #{funcName,jdbcType=VARCHAR},
+      </if>
+      <if test="issearch != null">
+        #{issearch,jdbcType=TINYINT},
+      </if>
+      <if test="seq != null">
+        #{seq,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.auth.model.Func">
+    update t_emc_auth_func
+    <set>
+      <if test="menuId != null">
+        MENU_ID = #{menuId,jdbcType=VARCHAR},
+      </if>
+      <if test="uname != null">
+        UNAME = #{uname,jdbcType=VARCHAR},
+      </if>
+      <if test="funcName != null">
+        FUNC_NAME = #{funcName,jdbcType=VARCHAR},
+      </if>
+      <if test="issearch != null">
+        ISSEARCH = #{issearch,jdbcType=TINYINT},
+      </if>
+      <if test="seq != null">
+        SEQ = #{seq,jdbcType=INTEGER},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+    <select id="selectAllByMap" parameterType="java.util.HashMap" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_auth_func
+        where 1=1
+        <if test="menuId != null and menuId !=''">
+            and  MENU_ID = #{menuId}
+        </if>
+        order by ISSEARCH ASC ,SEQ ASC
+    </select>
+
+    <select id="checkUName" parameterType="java.util.HashMap" resultType="java.lang.Long">
+        select count(id)  from t_emc_auth_func  where UNAME = #{uname}
+    </select>
+    <select id="checkName" parameterType="java.util.HashMap" resultType="java.lang.Long">
+        select count(id)  from t_emc_auth_func  where FUNC_NAME = #{funcName} and MENU_ID = #{menuId}
+    </select>
+    <select id="checkSearch" parameterType="java.util.HashMap" resultType="java.lang.Long">
+        select count(id)  from t_emc_auth_func  where ISSEARCH = 0 and  MENU_ID = #{menuId}
+    </select>
+</mapper>

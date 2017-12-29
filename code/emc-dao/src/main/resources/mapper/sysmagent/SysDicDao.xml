@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huak.sys.dao.SysDicDao">
+  <resultMap id="BaseResultMap" type="com.huak.sys.model.SysDic">
+    <constructor>
+      <idArg column="ID" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="DES" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="TYPE_US" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="TYPE_ZH" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="SEQ" javaType="java.lang.Integer" jdbcType="INTEGER" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    ID, DES, TYPE_US, TYPE_ZH, SEQ
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_sys_dic
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_emc_sys_dic
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+
+  <insert id="insertSelective" parameterType="com.huak.sys.model.SysDic">
+    insert into t_emc_sys_dic
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        ID,
+      </if>
+      <if test="des != null">
+        DES,
+      </if>
+      <if test="typeUs != null">
+        TYPE_US,
+      </if>
+      <if test="typeZh != null">
+        TYPE_ZH,
+      </if>
+      <if test="seq != null">
+        SEQ,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="des != null">
+        #{des,jdbcType=VARCHAR},
+      </if>
+      <if test="typeUs != null">
+        #{typeUs,jdbcType=VARCHAR},
+      </if>
+      <if test="typeZh != null">
+        #{typeZh,jdbcType=VARCHAR},
+      </if>
+      <if test="seq != null">
+        #{seq,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.huak.sys.model.SysDic">
+    update t_emc_sys_dic
+    <set>
+      <if test="des != null">
+        DES = #{des,jdbcType=VARCHAR},
+      </if>
+      <if test="typeUs != null">
+        TYPE_US = #{typeUs,jdbcType=VARCHAR},
+      </if>
+      <if test="typeZh != null">
+        TYPE_ZH = #{typeZh,jdbcType=VARCHAR},
+      </if>
+      <if test="seq != null">
+        SEQ = #{seq,jdbcType=INTEGER},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+    <select id="selectPageByMap" parameterType="java.util.HashMap" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_sys_dic
+        where 1=1
+        <if test="typeZh != null and typeZh !=''">
+            and  TYPE_ZH like CONCAT('%',#{typeZh},'%')
+        </if>
+        <if test="typeUs != null and typeUs !=''">
+            and  TYPE_US like CONCAT('%',#{typeUs},'%')
+        </if>
+        <if test="des != null and des !=''">
+            and  DES like CONCAT('%',#{des},'%')
+        </if>
+        order by TYPE_US,SEQ ASC
+    </select>
+    <select id="exportSysDics" parameterType="java.util.HashMap" resultType="java.util.Map">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_sys_dic
+        where 1=1
+        <if test="typeZh != null and typeZh !=''">
+            and  TYPE_ZH like CONCAT('%',#{typeZh},'%')
+        </if>
+        <if test="typeUs != null and typeUs !=''">
+            and  TYPE_US like CONCAT('%',#{typeUs},'%')
+        </if>
+        <if test="des != null and des !=''">
+            and  DES like CONCAT('%',#{des},'%')
+        </if>
+        order by TYPE_US,SEQ ASC
+    </select>
+    <select id="selectAllByMap" parameterType="java.util.HashMap" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from t_emc_sys_dic
+        where 1=1
+        <if test="typeZh != null and typeZh !=''">
+            and  TYPE_ZH like CONCAT('%',#{typeZh},'%')
+        </if>
+        <if test="typeUs != null and typeUs !=''">
+            and  TYPE_US like CONCAT('%',#{typeUs},'%')
+        </if>
+        <if test="des != null and des !=''">
+            and  DES like CONCAT('%',#{des},'%')
+        </if>
+        order by TYPE_US,SEQ ASC
+    </select>
+    <select id="selectGroup" parameterType="java.util.HashMap" resultType="java.util.Map">
+        select TYPE_US typeUs, TYPE_ZH typeZh
+        from t_emc_sys_dic
+        where 1=1
+        <if test="typeZh != null and typeZh !=''">
+            and  TYPE_ZH like CONCAT('%',#{typeZh},'%')
+        </if>
+        <if test="typeUs != null and typeUs !=''">
+            and  TYPE_US like CONCAT('%',#{typeUs},'%')
+        </if>
+        GROUP by TYPE_US,TYPE_ZH
+        order by TYPE_US DESC
+    </select>
+
+    <select id="checkName" parameterType="java.util.HashMap" resultType="java.lang.Long">
+        select count(id)  from t_emc_sys_dic  where DES = #{des} and TYPE_US=#{typeUs}
+    </select>
+    <select id="checkSeq" parameterType="java.util.HashMap" resultType="java.lang.Long">
+        select count(id)  from t_emc_sys_dic  where SEQ = #{seq} and TYPE_US=#{typeUs}
+    </select>
+
+    <select id="selectCheckTypeUs" parameterType="java.util.HashMap" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" />  from t_emc_sys_dic where 1=1
+        <if test="typeUs != null and typeUs !=''">
+            and  TYPE_US = #{typeUs}
+        </if>
+    </select>
+
+    <select id="selectCheckTypeZh" parameterType="java.util.HashMap" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" />  from t_emc_sys_dic where 1=1
+        <if test="typeZh != null and typeZh !=''">
+            and  TYPE_ZH = #{typeZh}
+        </if>
+    </select>
+</mapper>

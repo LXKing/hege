@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huak.org.dao.CellDao" >
+  <resultMap id="BaseResultMap" type="com.huak.org.model.Cell" >
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="NAME" property="cellName" jdbcType="VARCHAR" />
+    <result column="COMMUNITY_ID" property="communityId" jdbcType="VARCHAR" />
+    <result column="BAN_ID" property="banId" jdbcType="VARCHAR" />
+    <result column="ORG_ID" property="orgId" jdbcType="BIGINT" />
+    <result column="COM_ID" property="comId" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <resultMap id="BaseVOResultMap" type="com.huak.org.model.vo.CellVo" >
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="CELL_NAME" property="cellName" jdbcType="VARCHAR" />
+    <result column="BAN_ID" property="banId" jdbcType="VARCHAR" />
+    <result column="BAN_NAME" property="banName" jdbcType="VARCHAR" />
+    <result column="COMMUNITY_ID" property="communityId" jdbcType="VARCHAR" />
+    <result column="COMMUNITY_NAME" property="communityName" jdbcType="VARCHAR" />
+    <result column="ORG_ID" property="orgId" jdbcType="BIGINT" />
+    <result column="COM_ID" property="comId" jdbcType="VARCHAR" />
+    <result column="COM_NAME" property="comName" jdbcType="VARCHAR" />
+    <result column="ORG_NAME" property="orgName" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    ID, NAME, BAN_ID, ORG_ID, COM_ID,COMMUNITY_ID
+  </sql>
+  
+  <!-- 根据主键获取单元信息 -->
+  <select id="get" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_emc_unit_cell
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 分页查询单元信息 -->
+  <select id="selectByPage" resultMap="BaseVOResultMap" parameterType="java.util.Map" >
+    select c.ID, c.`NAME` CELL_NAME, b.ID BAN_ID, b.BAN_NAME,cn.ID COMMUNITY_ID, cn.COMMUNITY_NAME,
+	com.CNAME COM_NAME, o.ORG_NAME, c.ORG_ID, c.COM_ID
+	from t_emc_unit_cell c, t_emc_unit_ban b, t_emc_unit_community cn,
+	t_emc_company com, t_emc_org o
+	where c.BAN_ID = b.ID AND b.COMMUNITY_ID = cn.ID AND c.ORG_ID = o.id AND c.COM_ID = com.id
+    <if test="cellName!=null and cellName!=''"> and c.NAME LIKE CONCAT('%',#{cellName,jdbcType=VARCHAR},'%')</if>
+    <if test="communityId!=null and communityId!=''"> and c.COMMUNITY_ID = #{communityId,jdbcType=VARCHAR}</if>
+    <if test="banId!=null and banId!=''"> and c.BAN_ID = #{banId,jdbcType=VARCHAR}</if>
+    <if test="orgId!=null and orgId!=''"> and c.ORG_ID = #{orgId,jdbcType=VARCHAR}</if>
+    <if test="comId!=null and comId!=''"> and c.COM_ID = #{comId,jdbcType=VARCHAR}</if>
+  </select>
+  
+  <!-- 导出单元信息 -->
+  <select id="export" resultType="java.util.Map" parameterType="java.util.Map">
+  	select c.ID, c.`NAME` CELL_NAME, b.ID BAN_ID, b.BAN_NAME,cn.ID COMMUNITY_ID, cn.COMMUNITY_NAME,
+	com.CNAME COM_NAME, o.ORG_NAME, c.ORG_ID, c.COM_ID
+	from t_emc_unit_cell c, t_emc_unit_ban b, t_emc_unit_community cn,
+	t_emc_company com, t_emc_org o
+	where c.BAN_ID = b.ID AND b.COMMUNITY_ID = cn.ID AND c.ORG_ID = o.id AND c.COM_ID = com.id
+    <if test="cellName!=null and cellName!=''"> and c.NAME LIKE CONCAT('%',#{cellName,jdbcType=VARCHAR},'%')</if>
+    <if test="communityId!=null and communityId!=''"> and c.COMMUNITY_ID = #{communityId,jdbcType=VARCHAR}</if>
+    <if test="banId!=null and banId!=''"> and c.BAN_ID = #{banId,jdbcType=VARCHAR}</if>
+    <if test="orgId!=null and orgId!=''"> and c.ORG_ID = #{orgId,jdbcType=VARCHAR}</if>
+    <if test="comId!=null and comId!=''"> and c.COM_ID = #{comId,jdbcType=VARCHAR}</if>
+  </select>
+  
+  <select id="selectCellCount" parameterType="java.util.Map" resultType="java.lang.Long">
+      select count(1) from t_emc_unit_cell where NAME = #{cellName,jdbcType=VARCHAR} 
+  	  and COMMUNITY_ID = #{communityId,jdbcType=VARCHAR} and BAN_ID = #{banId,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 删除单元信息 -->
+  <delete id="deleteCell" parameterType="java.lang.String" >
+    delete from t_emc_unit_cell
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  
+  <insert id="insertByPrimaryKeySelective" parameterType="com.huak.org.model.Cell" >
+    insert into t_emc_unit_cell (ID, NAME, BAN_ID, 
+      ORG_ID, COM_ID,COMMUNITY_ID)
+    values (#{id,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{banId,jdbcType=VARCHAR}, 
+      #{orgId,jdbcType=BIGINT}, #{comId,jdbcType=VARCHAR},#{communityId,jdbcType=VARCHAR})
+  </insert>
+  
+  <!-- 新增单元信息 -->
+  <insert id="insertCell" parameterType="com.huak.org.model.Cell" >
+    insert into t_emc_unit_cell
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="cellName != null" >
+        NAME,
+      </if>
+      <if test="banId != null" >
+        BAN_ID,
+      </if>
+      <if test="orgId != null" >
+        ORG_ID,
+      </if>
+      <if test="comId != null" >
+        COM_ID,
+      </if>
+      <if test="communityId != null" >
+        COMMUNITY_ID,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="cellName != null" >
+        #{cellName,jdbcType=VARCHAR},
+      </if>
+      <if test="banId != null" >
+        #{banId,jdbcType=VARCHAR},
+      </if>
+      <if test="orgId != null" >
+        #{orgId,jdbcType=BIGINT},
+      </if>
+      <if test="comId != null" >
+        #{comId,jdbcType=VARCHAR},
+      </if>
+      <if test="communityId != null" >
+        #{communityId,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  
+  <!-- 更新单元信息 -->
+  <update id="updateCell" parameterType="com.huak.org.model.Cell" >
+    update t_emc_unit_cell
+    <set >
+      <if test="cellName != null" >
+        NAME = #{cellName,jdbcType=VARCHAR},
+      </if>
+      <if test="banId != null" >
+        BAN_ID = #{banId,jdbcType=VARCHAR},
+      </if>
+      <if test="orgId != null" >
+        ORG_ID = #{orgId,jdbcType=BIGINT},
+      </if>
+      <if test="comId != null" >
+        COM_ID = #{comId,jdbcType=VARCHAR},
+      </if>
+      <if test="communityId != null" >
+        COMMUNITY_ID = #{communityId,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <update id="updateByPrimaryKey" parameterType="com.huak.org.model.Cell" >
+    update t_emc_unit_cell
+    set NAME = #{cellName,jdbcType=VARCHAR},
+      BAN_ID = #{banId,jdbcType=VARCHAR},
+      ORG_ID = #{orgId,jdbcType=BIGINT},
+      COM_ID = #{comId,jdbcType=VARCHAR},
+      COMMUNITY_ID = #{communityId,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

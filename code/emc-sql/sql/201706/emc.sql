@@ -1,0 +1,4 @@
+/**
+2017年6月1日15:29:36
+ */
+ ALTER TABLE t_emc_energy_type MODIFY COLUMN TYPE TINYINT NOT NULL COMMENT '类型 1水、2电、3气、4热、5煤、6油';
